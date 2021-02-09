@@ -42,9 +42,18 @@ namespace Holofunk
         public static float FingerNonAdjacencyMinimum = 1.5f;
 
         /// <summary>
-        /// The maximum ratio of distance between the base joint pair and the end joint pair for a pair of fingers to
-        /// be considered adjacent.
+        /// The minimum colinearity between adjacent fingers to consider them extended together.
         /// </summary>
-        public static float FingerAdjacencyMaximum = 1.2f;
+        public static float FingersExtendedColinearityMinimum = 0.8f;
+
+        /// <summary>
+        /// The maximum colinearity between adjacent fingers to consider them NOT extended together.
+        /// </summary>
+        public static float FingersNotExtendedColinearityMaximum = 0.3f;
+
+        /// <summary>
+        /// Minimum colinearity value to consider the finger aligned with the eye (e.g. on the other side of the palm from the eye).
+        /// </summary>
+        public static float FingerEyeColinearityMinimum = 0.7f;
     }
 }

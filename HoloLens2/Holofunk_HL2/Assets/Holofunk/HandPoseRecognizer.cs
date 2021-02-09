@@ -22,18 +22,20 @@ namespace Holofunk
         void Update()
         {
             var handJointService = CoreServices.GetInputSystemDataProvider<IMixedRealityHandJointService>();
+            var gazeProvider = CoreServices.InputSystem.EyeGazeProvider;
             Handedness handedness = GetComponent<SolverHandler>().TrackedHandness;
             if (handJointService != null && handJointService.IsHandTracked(handedness))
             {
-                _fullHandPose.Recalculate(handJointService, handedness);
+                _fullHandPose.Recalculate(handJointService, gazeProvider, handedness);
 
                 // and update the text
                 TextMesh textMesh = gameObject.transform.GetChild(0).GetComponent<TextMesh>();
                 textMesh.text =
-$@"Poses: {Pose(Finger.Thumb)}, {Pose(Finger.Index)}, {Pose(Finger.Middle)}, {Pose(Finger.Ring)}, {Pose(Finger.Pinky)}
-Colinearities: {Colin(Finger.Thumb),0:f}, {Colin(Finger.Index),0:f}, {Colin(Finger.Middle),0:f}, {Colin(Finger.Ring),0:f}, {Colin(Finger.Pinky),0:f}
-Adjacencies: {Adj(Finger.Thumb)}, {Adj(Finger.Index)}, {Adj(Finger.Middle)}, {Adj(Finger.Ring)}
-Ratios: {Ratio(Finger.Thumb),0:f}, {Ratio(Finger.Index),0:f}, {Ratio(Finger.Middle),0:f}, {Ratio(Finger.Ring),0:f}
+$@"Finger Poses: {Pose(Finger.Thumb)}, {Pose(Finger.Index)}, {Pose(Finger.Middle)}, {Pose(Finger.Ring)}, {Pose(Finger.Pinky)}
+Finger linearities: {Colin(Finger.Thumb),0:f}, {Colin(Finger.Index),0:f}, {Colin(Finger.Middle),0:f}, {Colin(Finger.Ring),0:f}, {Colin(Finger.Pinky),0:f}
+Finger co-extensions: {Ext(Finger.Thumb)}, {Ext(Finger.Index)}, {Ext(Finger.Middle)}, {Ext(Finger.Ring)}
+Finger co-linearities: {PairColin(Finger.Thumb),0:f}, {PairColin(Finger.Index),0:f}, {PairColin(Finger.Middle),0:f}, {PairColin(Finger.Ring),0:f}
+Eye co-linearities: {EyeColin(Finger.Index),0:f}, {EyeColin(Finger.Middle),0:f}, {EyeColin(Finger.Ring),0:f}
 Hand Pose: {_fullHandPose.GetHandPose()}";
 
                 string Pose(Finger finger)
@@ -44,13 +46,15 @@ Hand Pose: {_fullHandPose.GetHandPose()}";
 
                 float Colin(Finger finger) => _fullHandPose.GetFingerColinearity(finger); // short for "Colinearity"
 
-                string Adj(Finger finger) // short for "Adjacency"
+                string Ext(Finger finger) // short for "Extension"
                 {
-                    FingerAdjacency adj = _fullHandPose.GetFingerAdjacency(finger);
-                    return adj == FingerAdjacency.Adjacent ? "Adj" : adj == FingerAdjacency.NotAdjacent ? "Non" : "?";
+                    FingerExtension ext = _fullHandPose.GetFingerExtension(finger);
+                    return ext == FingerExtension.ExtendedTogether ? "Ext" : ext == FingerExtension.NotExtendedTogether ? "Not" : "?";
                 }
 
-                float Ratio(Finger finger) => _fullHandPose.GetFingerAdjacencyRatio(finger);
+                float PairColin(Finger finger) => _fullHandPose.GetFingerPairColinearity(finger);
+
+                float EyeColin(Finger finger) => _fullHandPose.GetFingerEyeColinearity(finger);
             }
         }
     }

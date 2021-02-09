@@ -31,15 +31,13 @@ namespace Holofunk
     }
 
     /// <summary>
-    /// For each pair of adjacent fingers, how adjacent are they?
+    /// For each pair of fingers, how extended and adjacent are they?
     /// </summary>
     /// <remarks>
-    /// This is calculated by determining the distances between neighboring knuckles, relative to the
-    /// distance between the two base knuckles. Note that currently this only applies to the four
-    /// fingers, not the thumb (which doesn't have a good adjacent-base-knuckle baseline to normalize
-    /// against).
+    /// This is calculated by determining how colinear the fingers are; if two adjacent fingers
+    /// are highly colinear, they're guaranteed to be pointing in the same direction, hence together.
     /// </remarks>
-    public enum FingerAdjacency
+    public enum FingerExtension
     {
         /// <summary>
         /// We don't know how close this pair of fingers are.
@@ -47,19 +45,23 @@ namespace Holofunk
         Unknown,
 
         /// <summary>
-        /// We are pretty confident these two fingertips are not adjacent.
+        /// We are pretty confident these two fingers are extended side by side.
         /// </summary>
-        NotAdjacent,
+        ExtendedTogether,
 
         /// <summary>
-        /// We are pretty confident these two fingers are adjacent.
+        /// We are pretty confident these two fingers are NOT extended side by side.
         /// </summary>
-        Adjacent
+        NotExtendedTogether
     }
 
     /// <summary>
     /// What overall shape do we think the hand is in?
     /// </summary>
+    /// <remarks>
+    /// This list of poses is heavily informed by what is easy to recognize with some trivial linear
+    /// algebra, intersecting with what the HL2 can reliably detect.
+    /// </remarks>
     public enum HandPose
     {
         /// <summary>
@@ -75,6 +77,12 @@ namespace Holofunk
         /// <summary>
         /// Pretty sure hand is closed more or less into a fist.
         /// </summary>
+        /// <remarks>
+        /// If the hand is closed into a fist with fingers on the other side of the hand from the device, the device
+        /// is prone to guess that the occluded fingers are extended. So we determine whether the finger vertices are
+        /// colinear with a vector from the eye to the knuckle; if so, they are on the other side of the palm and we
+        /// err on the side of assuming the hand is closed.
+        /// </remarks>
         Closed,
 
         /// <summary>
@@ -94,12 +102,17 @@ namespace Holofunk
         /// <summary>
         /// Pretty sure hand is pointing with index and middle fingers adjacent.
         /// </summary>
+        /// <remarks>
+        /// Note that HL2 gets very unreliable at seeing the ring and pinky fingers precisely, for example
+        /// it can't reliably see pointing with index, middle, and ring, and nor can it see the Vulcan greeting
+        /// gesture.
+        /// </remarks>
         PointingIndexAndMiddle,
 
         /// <summary>
-        /// Pretty sure hand is pointing with index, middle, and ring fingers adjacent.
+        /// Bringing all fingertips together above the palm; the "bloom" gesture.
         /// </summary>
-        PointingIndexMiddleAndRing,
+        Bloom,
 
         /// <summary>
         /// Pretty sure hand is fully flat with all fingers extended and adjacent.
@@ -107,9 +120,9 @@ namespace Holofunk
         Flat,
 
         /// <summary>
-        /// Pretty sure hand is Spock's.
+        /// Thumbs up!
         /// </summary>
-        VulcanGreeting
+        ThumbsUp,
     }
 
     /// <summary>
@@ -156,17 +169,6 @@ namespace Holofunk
         };
 
         /// <summary>
-        /// The pairs of joints to compare for adjacency, by Finger value of the first finger in the pair.
-        /// </summary>
-        static readonly TrackedHandJoint[][] _fingerAdjacencyPairs = new[]
-        {
-            new[] { TrackedHandJoint.IndexKnuckle, TrackedHandJoint.MiddleKnuckle, TrackedHandJoint.ThumbDistalJoint, TrackedHandJoint.IndexKnuckle },
-            new[] { TrackedHandJoint.IndexKnuckle, TrackedHandJoint.MiddleKnuckle, TrackedHandJoint.IndexTip, TrackedHandJoint.MiddleTip },
-            new[] { TrackedHandJoint.MiddleKnuckle, TrackedHandJoint.RingKnuckle, TrackedHandJoint.MiddleTip, TrackedHandJoint.RingTip },
-            new[] { TrackedHandJoint.RingKnuckle, TrackedHandJoint.PinkyKnuckle, TrackedHandJoint.RingDistalJoint, TrackedHandJoint.PinkyTip },
-        };
-
-        /// <summary>
         /// The five finger poses.
         /// </summary>
         readonly FingerPose[] _fingerPoses;
@@ -177,70 +179,88 @@ namespace Holofunk
         /// <remarks>
         /// Really only for debugging, shouldn't be serialized over the network.
         /// </remarks>
-        readonly float[] _fingerColinearities;
+        readonly float[] _jointColinearities;
 
         /// <summary>
-        /// The three finger adjacencies (index-middle; middle-ring; ring-pinky).
+        /// The three finger extensions (index-middle; middle-ring; ring-pinky).
         /// </summary>
-        readonly FingerAdjacency[] _fingerAdjacencies;
+        readonly FingerExtension[] _fingerExtensions;
 
         /// <summary>
-        /// The raw ratio values for determining finger adjacency.
+        /// The raw colinearities between adjacent pairs of fingers.
         /// </summary>
         /// <remarks>
         /// Really only for debugging, shouldn't be serialized over the network.
         /// </remarks>
-        readonly float[] _fingerAdjacencyRatios;
+        readonly float[] _fingerPairColinearities;
 
         /// <summary>
-        /// The overall hand pose, if known.
+        /// The colinearities between the eye->knuckle vector, and the knuckle->fingertip vector.
+        /// </summary>
+        /// <remarks>
+        /// A closed hand, with all fingers on the other side of the hand from the eye, results in the HL2
+        /// guessing at the poses of the non-visible fingers. This measurement lets us determine whether
+        /// the fingers are aligned with the eye, which will tell us whether they are effectively not
+        /// actually visible. Theoretically.
+        /// </remarks>
+        readonly float[] _fingerEyeColinearities;
+
+        /// <summary>
+        /// The overall hand pose.
         /// </summary>
         HandPose _handPose;
 
         /// <summary>
+        /// Construct a new hand pose instance.
         /// </summary>
         /// <param name="service"></param>
         public FullHandPose()
         {
             _fingerPoses = new FingerPose[(int)Finger.Max + 1];
-            _fingerColinearities = new float[(int)Finger.Max + 1];
-            _fingerAdjacencies = new FingerAdjacency[(int)Finger.Max];
-            _fingerAdjacencyRatios = new float[(int)Finger.Max];
+            _jointColinearities = new float[(int)Finger.Max + 1];
+            _fingerExtensions = new FingerExtension[(int)Finger.Max];
+            _fingerPairColinearities = new float[(int)Finger.Max];
+            _fingerEyeColinearities = new float[(int)Finger.Max];
         }
 
         /// <summary>
         /// Recalculate this pose based on the current joint positions of the given hand.
         /// </summary>
-        /// <param name="service"></param>
-        public void Recalculate(IMixedRealityHandJointService service, Handedness handedness)
+        public void Recalculate(
+            IMixedRealityHandJointService handJointService,
+            IMixedRealityGazeProvider gazeProvider,
+            Handedness handedness)
         {
             // First determine the finger poses.
             for (Finger finger = Finger.Thumb; finger <= Finger.Max; finger++)
             {
-                (FingerPose pose, float fingerColinearity) = CalculateFingerPose(service, handedness, finger);
+                (FingerPose pose, float fingerColinearity) = CalculateFingerPose(handJointService, handedness, finger);
                 _fingerPoses[(int)finger] = pose;
-                _fingerColinearities[(int)finger] = fingerColinearity;
+                _jointColinearities[(int)finger] = fingerColinearity;
             }
 
-            // Now the finger adjacencies.
+            // Now the finger extensions.
             for (Finger finger = Finger.Thumb; finger <= Finger.Ring; finger++)
             {
-                (FingerAdjacency fingerAdjacency, float fingerAdjacencyRatio) = CalculateFingerAdjacency(service, handedness, finger);
-                _fingerAdjacencies[(int)finger] = fingerAdjacency;
-                _fingerAdjacencyRatios[(int)finger] = fingerAdjacencyRatio;
+                (FingerExtension fingerExtension, float fingerPairColinearity) = CalculateFingerExtension(handJointService, handedness, finger);
+                _fingerExtensions[(int)finger] = fingerExtension;
+                _fingerPairColinearities[(int)finger] = fingerPairColinearity;
+            }
+
+            // Now the eye->knuckle colinearites.
+            for (Finger finger = Finger.Thumb; finger <= Finger.Max; finger++)
+            {
+                float fingerEyeColinearity = CalculateFingerEyeColinearity(handJointService, gazeProvider, handedness, finger);
+                _fingerEyeColinearities[(int)finger] = fingerEyeColinearity;
             }
 
             // Now classify overall hand pose.
-            if (AllFingerPose(FingerPose.Extended) 
+            if (AllFingerPose(FingerPose.Extended)
                 && GetFingerPose(Finger.Thumb) == FingerPose.Extended
-                && AllFingerAdjacency(FingerAdjacency.NotAdjacent)
-                && GetFingerAdjacency(Finger.Thumb) == FingerAdjacency.NotAdjacent)
+                && AllFingerExtension(FingerExtension.NotExtendedTogether)
+                && GetFingerExtension(Finger.Thumb) == FingerExtension.NotExtendedTogether)
             {
                 _handPose = HandPose.Opened;
-            }
-            else if (AllFingerPose(FingerPose.Curled))
-            {
-                _handPose = HandPose.Closed;
             }
             else if (GetFingerPose(Finger.Index) == FingerPose.Extended
                     && GetFingerPose(Finger.Middle) != FingerPose.Extended
@@ -253,7 +273,7 @@ namespace Holofunk
                 && GetFingerPose(Finger.Middle) == FingerPose.Extended
                 && GetFingerPose(Finger.Ring) != FingerPose.Extended
                 && GetFingerPose(Finger.Pinky) != FingerPose.Extended
-                && GetFingerAdjacency(Finger.Index) == FingerAdjacency.Adjacent)
+                && GetFingerExtension(Finger.Index) == FingerExtension.ExtendedTogether)
             {
                 _handPose = HandPose.PointingIndexAndMiddle;
             }
@@ -264,28 +284,17 @@ namespace Holofunk
             {
                 _handPose = HandPose.PointingMiddle;
             }
-            else if (GetFingerPose(Finger.Index) == FingerPose.Extended
-                && GetFingerPose(Finger.Middle) == FingerPose.Extended
-                && GetFingerPose(Finger.Ring) == FingerPose.Extended
-                && GetFingerPose(Finger.Pinky) != FingerPose.Extended
-                && GetFingerAdjacency(Finger.Index) == FingerAdjacency.Adjacent
-                && GetFingerAdjacency(Finger.Middle) == FingerAdjacency.Adjacent)
+            // If all fingers are curled, or the thumb is curled and all the other fingers are aligned with the eye,
+            // then consider the hand to be closed.
+            else if (AllFingerPose(FingerPose.Curled)
+                || (GetFingerPose(Finger.Thumb) != FingerPose.Extended && FingerEyeColinearityHigh()))
             {
-                _handPose = HandPose.PointingIndexMiddleAndRing;
+                _handPose = HandPose.Closed;
             }
             else if (AllFingerPose(FingerPose.Extended)
                 && GetFingerPose(Finger.Thumb) == FingerPose.Extended
-                && GetFingerAdjacency(Finger.Thumb) != FingerAdjacency.Adjacent
-                && GetFingerAdjacency(Finger.Index) == FingerAdjacency.Adjacent
-                && GetFingerAdjacency(Finger.Middle) != FingerAdjacency.Adjacent
-                && GetFingerAdjacency(Finger.Ring) == FingerAdjacency.Adjacent)
-            {
-                _handPose = HandPose.VulcanGreeting;
-            }
-            else if (AllFingerPose(FingerPose.Extended)
-                && GetFingerPose(Finger.Thumb) == FingerPose.Extended
-                && AllFingerAdjacency(FingerAdjacency.Adjacent)
-                && GetFingerAdjacency(Finger.Thumb) == FingerAdjacency.Adjacent)
+                && AllFingerExtension(FingerExtension.ExtendedTogether)
+                && GetFingerExtension(Finger.Thumb) == FingerExtension.ExtendedTogether)
             {
                 _handPose = HandPose.Flat;
             }
@@ -302,11 +311,19 @@ namespace Holofunk
                     && GetFingerPose(Finger.Pinky) == pose;
             }
 
-            bool AllFingerAdjacency(FingerAdjacency adjacency)
+            bool AllFingerExtension(FingerExtension extension)
             {
-                return GetFingerAdjacency(Finger.Index) == adjacency
-                    && GetFingerAdjacency(Finger.Middle) == adjacency
-                    && GetFingerAdjacency(Finger.Ring) == adjacency;
+                return GetFingerExtension(Finger.Index) == extension
+                    && GetFingerExtension(Finger.Middle) == extension
+                    && GetFingerExtension(Finger.Ring) == extension;
+            }
+
+            bool FingerEyeColinearityHigh()
+            {
+                return GetFingerEyeColinearity(Finger.Index) >= MagicNumbers.FingerEyeColinearityMinimum
+                    && GetFingerEyeColinearity(Finger.Middle) >= MagicNumbers.FingerEyeColinearityMinimum
+                    && GetFingerEyeColinearity(Finger.Ring) >= MagicNumbers.FingerEyeColinearityMinimum
+                    && GetFingerEyeColinearity(Finger.Pinky) >= MagicNumbers.FingerEyeColinearityMinimum;
             }
         }
 
@@ -376,36 +393,65 @@ namespace Holofunk
         }
 
         /// <summary>
-        /// Calculate the adjacency of this pair of fingers; this is a read-only method (mutates no state).
+        /// Calculate the colinearity of this pair of fingers; this is a read-only method (mutates no state).
         /// </summary>
         /// <remarks>
-        /// Adjacency is calculated by comparing the distance between a "base" pair of joints (typically the knuckles), and an "end"
-        /// pair of joints (typically the fingertips).
+        /// Colinearity is calculated by getting the dot product of the normalized vectors between the fingers' knuckles and fingertips.
         /// </remarks>
         /// <returns>
-        /// The classified adjacency (or unknown), and the distance ratio value that was computed.
+        /// The classified colinearity (or unknown), and the colinearity value that was computed.
         /// </returns>
-        private (FingerAdjacency, float) CalculateFingerAdjacency(IMixedRealityHandJointService service, Handedness handedness, Finger firstFinger)
+        private (FingerExtension, float) CalculateFingerExtension(IMixedRealityHandJointService service, Handedness handedness, Finger firstFinger)
         {
-            TrackedHandJoint[] jointPairs = _fingerAdjacencyPairs[(int)firstFinger];
+            TrackedHandJoint[] finger0Joints = _fingerPoseJoints[(int)firstFinger - 1];
+            TrackedHandJoint[] finger1Joints = _fingerPoseJoints[(int)firstFinger];
 
-            float baseDistance = (JointPosition(service, handedness, jointPairs[0]) - JointPosition(service, handedness, jointPairs[1])).magnitude;
-            float endDistance = (JointPosition(service, handedness, jointPairs[2]) - JointPosition(service, handedness, jointPairs[3])).magnitude;
+            Vector3 knuckleToFingertip0 = JointPosition(service, handedness, finger0Joints[finger0Joints.Length - 1])
+                - JointPosition(service, handedness, finger0Joints[1]);
+            Vector3 knuckleToFingertip1 = JointPosition(service, handedness, finger1Joints[finger1Joints.Length - 1])
+                - JointPosition(service, handedness, finger1Joints[1]);
 
-            float ratio = endDistance / baseDistance;
+            float colinearity = Vector3.Dot(knuckleToFingertip0.normalized, knuckleToFingertip1.normalized);
 
-            if (ratio <= MagicNumbers.FingerAdjacencyMaximum)
+            if (colinearity >= MagicNumbers.FingersExtendedColinearityMinimum)
             {
-                return (Holofunk.FingerAdjacency.Adjacent, ratio);
+                return (Holofunk.FingerExtension.ExtendedTogether, colinearity);
             }
-            else if (ratio >= MagicNumbers.FingerNonAdjacencyMinimum)
+            else if (colinearity <= MagicNumbers.FingersNotExtendedColinearityMaximum)
             {
-                return (Holofunk.FingerAdjacency.NotAdjacent, ratio);
+                return (Holofunk.FingerExtension.NotExtendedTogether, colinearity);
             }
             else
             {
-                return (Holofunk.FingerAdjacency.Unknown, ratio);
+                return (Holofunk.FingerExtension.Unknown, colinearity);
             }
+        }
+
+        /// <summary>
+        /// Calculate how aligned this finger is with the vector from the eye to the knuckle.
+        /// </summary>
+        /// <remarks>
+        /// This is calculated by determining the colinearity of the eye->knuckle vector with the knuckle->fingertip vector.
+        /// </remarks>
+        /// <returns>
+        /// The colinearity value that was computed..
+        /// </returns>
+        private float CalculateFingerEyeColinearity(
+            IMixedRealityHandJointService handJointService, 
+            IMixedRealityGazeProvider gazeProvider, 
+            Handedness handedness, 
+            Finger firstFinger)
+        {
+            TrackedHandJoint[] fingerJoints = _fingerPoseJoints[(int)firstFinger - 1];
+
+            Vector3 knuckleToFingertip = JointPosition(handJointService, handedness, fingerJoints[fingerJoints.Length - 1])
+                - JointPosition(handJointService, handedness, fingerJoints[1]);
+
+            Vector3 eyeToKnuckle = JointPosition(handJointService, handedness, fingerJoints[1]) - gazeProvider.GazeOrigin;
+
+            float colinearity = Vector3.Dot(knuckleToFingertip.normalized, eyeToKnuckle.normalized);
+
+            return colinearity;
         }
 
         private Vector3 JointPosition(IMixedRealityHandJointService service, Handedness handedness, TrackedHandJoint joint)
@@ -413,15 +459,17 @@ namespace Holofunk
 
         public FingerPose GetFingerPose(Finger finger) => _fingerPoses[(int)finger];
 
-        public float GetFingerColinearity(Finger finger) => _fingerColinearities[(int)finger];
+        public float GetFingerColinearity(Finger finger) => _jointColinearities[(int)finger];
 
         /// <summary>
         /// Get the finger adjacency for the pair of fingers including this one (as the lower-indexed finger).
         /// </summary>
-        public FingerAdjacency GetFingerAdjacency(Finger finger) => _fingerAdjacencies[(int)finger];
+        public FingerExtension GetFingerExtension(Finger finger) => _fingerExtensions[(int)finger];
 
         /// <returns></returns>
-        public float GetFingerAdjacencyRatio(Finger finger) => _fingerAdjacencyRatios[(int)finger];
+        public float GetFingerPairColinearity(Finger finger) => _fingerPairColinearities[(int)finger];
+
+        public float GetFingerEyeColinearity(Finger finger) => _fingerEyeColinearities[(int)finger];
 
         public HandPose GetHandPose() => _handPose;
     }
