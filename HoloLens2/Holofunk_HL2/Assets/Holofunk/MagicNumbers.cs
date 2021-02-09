@@ -55,5 +55,15 @@ namespace Holofunk
         /// Minimum colinearity value to consider the finger aligned with the eye (e.g. on the other side of the palm from the eye).
         /// </summary>
         public static float FingerEyeColinearityMinimum = 0.7f;
+
+        /// <summary>
+        /// For detecting the 'bloom' gesture (all fingers together, above palm).
+        /// </summary>
+        public static float FingertipSumDistanceToKnuckleSumDistanceRatioMaximum = 0.3f;
+
+        /// <summary>
+        /// The minimum total summed fingertip altitude (above corresponding knuckle) to be considered a valid bloom gesture.
+        /// </summary>
+        public static float FingertipSumAltitudeMinimum = 0.1f;
     }
 }

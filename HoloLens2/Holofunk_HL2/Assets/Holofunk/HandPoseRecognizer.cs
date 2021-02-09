@@ -31,12 +31,13 @@ namespace Holofunk
                 // and update the text
                 TextMesh textMesh = gameObject.transform.GetChild(0).GetComponent<TextMesh>();
                 textMesh.text =
-$@"Finger Poses: {Pose(Finger.Thumb)}, {Pose(Finger.Index)}, {Pose(Finger.Middle)}, {Pose(Finger.Ring)}, {Pose(Finger.Pinky)}
+$@"Finger poses: {Pose(Finger.Thumb)}, {Pose(Finger.Index)}, {Pose(Finger.Middle)}, {Pose(Finger.Ring)}, {Pose(Finger.Pinky)}
 Finger linearities: {Colin(Finger.Thumb),0:f}, {Colin(Finger.Index),0:f}, {Colin(Finger.Middle),0:f}, {Colin(Finger.Ring),0:f}, {Colin(Finger.Pinky),0:f}
 Finger co-extensions: {Ext(Finger.Thumb)}, {Ext(Finger.Index)}, {Ext(Finger.Middle)}, {Ext(Finger.Ring)}
 Finger co-linearities: {PairColin(Finger.Thumb),0:f}, {PairColin(Finger.Index),0:f}, {PairColin(Finger.Middle),0:f}, {PairColin(Finger.Ring),0:f}
 Eye co-linearities: {EyeColin(Finger.Index),0:f}, {EyeColin(Finger.Middle),0:f}, {EyeColin(Finger.Ring),0:f}
-Hand Pose: {_fullHandPose.GetHandPose()}";
+Fingertip / knuckle distances: {_fullHandPose.GetSumPairwiseFingertipDistances(),0:f} / {_fullHandPose.GetSumPairwiseKnuckleDistances():0,f} = {_fullHandPose.GetSumPairwiseFingertipDistances()/_fullHandPose.GetSumPairwiseKnuckleDistances(),0:f} (alt {_fullHandPose.GetSumFingertipAltitudes(),0:f})
+Hand pose: {_fullHandPose.GetHandPose()}";
 
                 string Pose(Finger finger)
                 {

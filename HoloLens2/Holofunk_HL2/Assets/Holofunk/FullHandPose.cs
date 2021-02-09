@@ -206,6 +206,21 @@ namespace Holofunk
         readonly float[] _fingerEyeColinearities;
 
         /// <summary>
+        /// The sum of the distances between neighboring fingertips.
+        /// </summary>
+        float _sumPairwiseFingertipDistances;
+
+        /// <summary>
+        /// The sum of the distances between neighboring knuckles.
+        /// </summary>
+        float _sumPairwiseKnuckleDistances;
+
+        /// <summary>
+        /// The sum of the Y distance between each fingertip and its corresponding knuckle.
+        /// </summary>
+        float _sumFingerTipAltitudes;
+
+        /// <summary>
         /// The overall hand pose.
         /// </summary>
         HandPose _handPose;
@@ -232,26 +247,39 @@ namespace Holofunk
             Handedness handedness)
         {
             // First determine the finger poses.
+            _sumPairwiseFingertipDistances = 0;
+            _sumPairwiseKnuckleDistances = 0;
+            _sumFingerTipAltitudes = 0;
             for (Finger finger = Finger.Thumb; finger <= Finger.Max; finger++)
             {
                 (FingerPose pose, float fingerColinearity) = CalculateFingerPose(handJointService, handedness, finger);
                 _fingerPoses[(int)finger] = pose;
                 _jointColinearities[(int)finger] = fingerColinearity;
-            }
 
-            // Now the finger extensions.
-            for (Finger finger = Finger.Thumb; finger <= Finger.Ring; finger++)
-            {
+                // Now the finger extensions; requires the finger poses.
                 (FingerExtension fingerExtension, float fingerPairColinearity) = CalculateFingerExtension(handJointService, handedness, finger);
                 _fingerExtensions[(int)finger] = fingerExtension;
                 _fingerPairColinearities[(int)finger] = fingerPairColinearity;
-            }
 
-            // Now the eye->knuckle colinearites.
-            for (Finger finger = Finger.Thumb; finger <= Finger.Max; finger++)
-            {
+                // Now the eye->knuckle colinearities.
                 float fingerEyeColinearity = CalculateFingerEyeColinearity(handJointService, gazeProvider, handedness, finger);
                 _fingerEyeColinearities[(int)finger] = fingerEyeColinearity;
+
+                if (finger < Finger.Pinky)
+                {
+                    TrackedHandJoint[] finger0Joints = finger == Finger.Thumb ? _thumbPoseJoints : _fingerPoseJoints[(int)finger - 1];
+                    TrackedHandJoint[] finger1Joints = _fingerPoseJoints[(int)finger];
+                    // add in the fingertip-to-fingertip and knuckle-to-knuckle distances
+                    Vector3 finger0knuckle = JointPosition(handJointService, handedness, finger0Joints[1]);
+                    Vector3 finger1knuckle = JointPosition(handJointService, handedness, finger1Joints[1]);
+
+                    Vector3 finger0tip = JointPosition(handJointService, handedness, finger0Joints[finger0Joints.Length - 1]);
+                    Vector3 finger1tip = JointPosition(handJointService, handedness, finger1Joints[finger1Joints.Length - 1]);
+
+                    _sumPairwiseKnuckleDistances += (finger0knuckle - finger1knuckle).magnitude;
+                    _sumPairwiseFingertipDistances += (finger0tip - finger1tip).magnitude;
+                    _sumFingerTipAltitudes += (finger0tip - finger0knuckle).y + (finger1tip - finger1knuckle).y;
+                }
             }
 
             // Now classify overall hand pose.
@@ -283,6 +311,13 @@ namespace Holofunk
                 && GetFingerPose(Finger.Pinky) != FingerPose.Extended)
             {
                 _handPose = HandPose.PointingMiddle;
+            }
+            // If all fingertips are close together and all are above their respective knuckles,
+            // then consider it the bloom gesture.
+            else if ((_sumPairwiseFingertipDistances / _sumPairwiseKnuckleDistances) <= MagicNumbers.FingertipSumDistanceToKnuckleSumDistanceRatioMaximum
+                && _sumFingerTipAltitudes >= MagicNumbers.FingertipSumAltitudeMinimum)
+            {
+                _handPose = HandPose.Bloom;
             }
             // If all fingers are curled, or the thumb is curled and all the other fingers are aligned with the eye,
             // then consider the hand to be closed.
@@ -359,8 +394,8 @@ namespace Holofunk
                 jointsToTrack = _fingerPoseJoints[(int)finger - 1];
             }
 
-            Vector3 joint0Position = service.RequestJointTransform(jointsToTrack[0], handedness).position;
-            Vector3 joint1Position = service.RequestJointTransform(jointsToTrack[1], handedness).position;
+            Vector3 joint0Position = JointPosition(service, handedness, jointsToTrack[0]);
+            Vector3 joint1Position = JointPosition(service, handedness, jointsToTrack[1]);
             Vector3 joint0to1 = (joint1Position - joint0Position).normalized;
 
             float colinearity = 0;
@@ -470,6 +505,12 @@ namespace Holofunk
         public float GetFingerPairColinearity(Finger finger) => _fingerPairColinearities[(int)finger];
 
         public float GetFingerEyeColinearity(Finger finger) => _fingerEyeColinearities[(int)finger];
+
+        public float GetSumPairwiseFingertipDistances() => _sumPairwiseFingertipDistances;
+
+        public float GetSumPairwiseKnuckleDistances() => _sumPairwiseKnuckleDistances;
+
+        public float GetSumFingertipAltitudes() => _sumFingerTipAltitudes;
 
         public HandPose GetHandPose() => _handPose;
     }
