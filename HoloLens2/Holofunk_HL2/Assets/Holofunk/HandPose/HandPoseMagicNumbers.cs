@@ -9,7 +9,7 @@ namespace Holofunk
     /// These are deliberately mutable in case it becomes useful to tune some of them during execution.
     /// However, not all of these are safe to modify randomly during execution.
     /// </remarks>
-    public static class MagicNumbers
+    public static class HandPoseMagicNumbers
     {
         /// <summary>
         /// The threshold value for finger linearity (as calculated by HandPoseRecognizer.CalculateFingerPose), above which
@@ -44,12 +44,15 @@ namespace Holofunk
         /// <summary>
         /// The minimum colinearity between adjacent fingers to consider them extended together.
         /// </summary>
-        public static float FingersExtendedColinearityMinimum = 0.8f;
+        /// <remarks>
+        /// This seems high but "open" fingers still have colinearity of around 0.95 to 0.96.
+        /// </remarks>
+        public static float FingersExtendedColinearityMinimum = 0.99f;
 
         /// <summary>
         /// The maximum colinearity between adjacent fingers to consider them NOT extended together.
         /// </summary>
-        public static float FingersNotExtendedColinearityMaximum = 0.3f;
+        public static float FingersNotExtendedColinearityMaximum = 0.95f;
 
         /// <summary>
         /// Minimum colinearity value to consider the finger aligned with the eye (e.g. on the other side of the palm from the eye).
@@ -59,11 +62,14 @@ namespace Holofunk
         /// <summary>
         /// For detecting the 'bloom' gesture (all fingers together, above palm).
         /// </summary>
-        public static float FingertipSumDistanceToKnuckleSumDistanceRatioMaximum = 0.3f;
+        public static float FingertipSumDistanceToKnuckleSumDistanceRatioMaximum = 0.6f;
 
         /// <summary>
         /// The minimum total summed fingertip altitude (above corresponding knuckle) to be considered a valid bloom gesture.
         /// </summary>
-        public static float FingertipSumAltitudeMinimum = 0.1f;
+        /// <remarks>
+        /// TODO: make this be relative to some other hand measurement, rather than based on world space measurement.
+        /// </remarks>
+        public static float FingertipSumAltitudeMinimum = 0.5f;
     }
 }

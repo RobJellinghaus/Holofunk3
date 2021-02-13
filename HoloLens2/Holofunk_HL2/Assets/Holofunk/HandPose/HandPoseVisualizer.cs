@@ -16,7 +16,7 @@ namespace Holofunk
     /// </summary>
     public class HandPoseRecognizer : MonoBehaviour
     {
-        private FullHandPose _fullHandPose = new FullHandPose();
+        private HandPoseClassifier _fullHandPose = new HandPoseClassifier();
 
         // Update is called once per frame
         void Update()
@@ -45,12 +45,12 @@ Hand pose: {_fullHandPose.GetHandPose()}";
                     return pose == FingerPose.Extended ? "Ext" : pose == FingerPose.Curled ? "Curl" : "?";
                 }
 
-                float Colin(Finger finger) => _fullHandPose.GetFingerColinearity(finger); // short for "Colinearity"
+                float Colin(Finger finger) => _fullHandPose.GetFingerJointColinearity(finger); // short for "Colinearity"
 
                 string Ext(Finger finger) // short for "Extension"
                 {
-                    FingerExtension ext = _fullHandPose.GetFingerExtension(finger);
-                    return ext == FingerExtension.ExtendedTogether ? "Ext" : ext == FingerExtension.NotExtendedTogether ? "Not" : "?";
+                    FingerPairExtension ext = _fullHandPose.GetFingerPairExtension(finger);
+                    return ext == FingerPairExtension.ExtendedTogether ? "Ext" : ext == FingerPairExtension.NotExtendedTogether ? "Not" : "?";
                 }
 
                 float PairColin(Finger finger) => _fullHandPose.GetFingerPairColinearity(finger);
