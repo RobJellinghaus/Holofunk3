@@ -1,17 +1,15 @@
 ﻿/// Copyright by Rob Jellinghaus.  All rights reserved.
 
+using Holofunk.Core;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using UnityEngine;
 
-namespace Holofunk
+namespace Holofunk.HandPose
 {
     /// <summary>
     /// Hand pose, along with all finger poses and adjacencies.
     /// </summary>
-    /// <remarks>
-    /// Allocates two very small backing arrays.
-    /// </remarks>
     public class HandPoseClassifier
     {
         /// <summary>
@@ -127,14 +125,14 @@ namespace Holofunk
 
                 // Now the eye->knuckle colinearities.
                 float fingerEyeColinearity = CalculateFingerEyeColinearity(handJointService, gazeProvider, handedness, finger);
-                _fingerEyeColinearities[(int)finger - 1] = fingerEyeColinearity;
+                _fingerEyeColinearities[(int)finger] = fingerEyeColinearity;
 
                 if (finger < Finger.Pinky)
                 {
                     // Now the finger extensions.
                     (FingerPairExtension fingerExtension, float fingerPairColinearity) = CalculateFingerExtension(handJointService, handedness, finger);
-                    _fingerPairExtensions[(int)finger - 1] = fingerExtension;
-                    _fingerPairColinearities[(int)finger - 1] = fingerPairColinearity;
+                    _fingerPairExtensions[(int)finger] = fingerExtension;
+                    _fingerPairColinearities[(int)finger] = fingerPairColinearity;
 
                     // Now add in the distances between fingertips and knuckles, for bloom gesture detection.
                     TrackedHandJoint[] finger0Joints = finger == Finger.Thumb ? _thumbPoseJoints : _fingerPoseJoints[(int)finger - 1];
@@ -163,8 +161,8 @@ namespace Holofunk
             // Now classify overall hand pose.
             if (AllFingerPose(FingerPose.Extended)
                 && GetFingerPose(Finger.Thumb) == FingerPose.Extended
-                && AllFingerExtension(FingerPairExtension.NotExtendedTogether)
-                && GetFingerPairExtension(Finger.Thumb) == FingerPairExtension.NotExtendedTogether)
+                && NoFingerExtension(FingerPairExtension.ExtendedTogether)
+                && GetFingerPairExtension(Finger.Thumb) != FingerPairExtension.ExtendedTogether)
             {
                 _handPose = HandPose.Opened;
             }
@@ -240,6 +238,13 @@ namespace Holofunk
                     && GetFingerPairExtension(Finger.Ring) == extension;
             }
 
+            bool NoFingerExtension(FingerPairExtension extension)
+            {
+                return GetFingerPairExtension(Finger.Index) != extension
+                    && GetFingerPairExtension(Finger.Middle) != extension
+                    && GetFingerPairExtension(Finger.Ring) != extension;
+            }
+
             bool FingerEyeColinearityHigh()
             {
                 return GetFingerEyeColinearity(Finger.Index) >= HandPoseMagicNumbers.FingerEyeColinearityMinimum
@@ -294,15 +299,15 @@ namespace Holofunk
             float curledMaximum = finger == Finger.Thumb ? HandPoseMagicNumbers.ThumbLinearityCurledMaximum : HandPoseMagicNumbers.FingerLinearityCurledMaximum;
             if (colinearity >= extendedMinimum)
             {
-                return (Holofunk.FingerPose.Extended, colinearity);
+                return (FingerPose.Extended, colinearity);
             }
             else if (colinearity <= curledMaximum)
             {
-                return (Holofunk.FingerPose.Curled, colinearity);
+                return (FingerPose.Curled, colinearity);
             }
             else
             {
-                return (Holofunk.FingerPose.Unknown, colinearity);
+                return (FingerPose.Unknown, colinearity);
             }
         }
 
@@ -331,15 +336,15 @@ namespace Holofunk
 
             if (colinearity >= HandPoseMagicNumbers.FingersExtendedColinearityMinimum)
             {
-                return (Holofunk.FingerPairExtension.ExtendedTogether, colinearity);
+                return (FingerPairExtension.ExtendedTogether, colinearity);
             }
             else if (colinearity <= HandPoseMagicNumbers.FingersNotExtendedColinearityMaximum)
             {
-                return (Holofunk.FingerPairExtension.NotExtendedTogether, colinearity);
+                return (FingerPairExtension.NotExtendedTogether, colinearity);
             }
             else
             {
-                return (Holofunk.FingerPairExtension.Unknown, colinearity);
+                return (FingerPairExtension.Unknown, colinearity);
             }
         }
 
@@ -358,7 +363,7 @@ namespace Holofunk
             Handedness handedness, 
             Finger firstFinger)
         {
-            TrackedHandJoint[] fingerJoints = _fingerPoseJoints[(int)firstFinger - 1];
+            TrackedHandJoint[] fingerJoints = firstFinger == Finger.Thumb ? _thumbPoseJoints : _fingerPoseJoints[(int)firstFinger - 1];
 
             Vector3 knuckleToFingertip = JointPosition(handJointService, handedness, fingerJoints[fingerJoints.Length - 1])
                 - JointPosition(handJointService, handedness, fingerJoints[1]);
@@ -383,14 +388,14 @@ namespace Holofunk
         public FingerPairExtension GetFingerPairExtension(Finger finger)
         {
             HoloDebug.Assert(finger < Finger.Pinky);
-            return _fingerPairExtensions[(int)finger - 1];
+            return _fingerPairExtensions[(int)finger];
         }
 
         /// <returns></returns>
         public float GetFingerPairColinearity(Finger finger)
         {
             HoloDebug.Assert(finger < Finger.Pinky);
-            return _fingerPairColinearities[(int)finger - 1];
+            return _fingerPairColinearities[(int)finger];
         }
 
         public float GetFingerEyeColinearity(Finger finger) => _fingerEyeColinearities[(int)finger];

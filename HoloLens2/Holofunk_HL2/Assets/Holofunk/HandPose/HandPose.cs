@@ -1,10 +1,6 @@
 ﻿/// Copyright by Rob Jellinghaus.  All rights reserved.
 
-using Microsoft.MixedReality.Toolkit.Input;
-using Microsoft.MixedReality.Toolkit.Utilities;
-using UnityEngine;
-
-namespace Holofunk
+namespace Holofunk.HandPose
 {
     /// <summary>
     /// Which pose is each finger in?

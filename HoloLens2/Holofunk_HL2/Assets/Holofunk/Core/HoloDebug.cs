@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Holofunk
+namespace Holofunk.Core
 {
     class HoloDebugException : Exception
     {

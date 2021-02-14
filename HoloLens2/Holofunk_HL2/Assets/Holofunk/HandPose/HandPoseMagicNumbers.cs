@@ -1,6 +1,6 @@
 ﻿/// Copyright by Rob Jellinghaus.  All rights reserved.
 
-namespace Holofunk
+namespace Holofunk.HandPose
 {
     /// <summary>
     /// Constants that are tuned manually for good subjective feel of the application.
@@ -70,6 +70,6 @@ namespace Holofunk
         /// <remarks>
         /// TODO: make this be relative to some other hand measurement, rather than based on world space measurement.
         /// </remarks>
-        public static float FingertipSumAltitudeMinimum = 0.5f;
+        public static float FingertipSumAltitudeMinimum = 0.2f;
     }
 }
