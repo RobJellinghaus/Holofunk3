@@ -33,13 +33,16 @@ namespace Holofunk.HandPose
 
                 // and update the text
                 TextMesh textMesh = gameObject.transform.GetChild(0).GetComponent<TextMesh>();
+                float knuckleDist = _classifier.GetSumPairwiseKnuckleDistances();
+                float fingertipDist = _classifier.GetSumPairwiseFingertipDistances();
+                float fingertipAlt = _classifier.GetSumFingertipAltitudes();
                 textMesh.text =
 $@"Finger poses: {Pose(Finger.Thumb)}, {Pose(Finger.Index)}, {Pose(Finger.Middle)}, {Pose(Finger.Ring)}, {Pose(Finger.Pinky)}
-Finger linearities: {Colin(Finger.Thumb),0:f}, {Colin(Finger.Index),0:f}, {Colin(Finger.Middle),0:f}, {Colin(Finger.Ring),0:f}, {Colin(Finger.Pinky),0:f}
-Finger co-extensions: {Ext(Finger.Thumb)}, {Ext(Finger.Index)}, {Ext(Finger.Middle)}, {Ext(Finger.Ring)}
-Finger co-linearities: {PairColin(Finger.Thumb),0:f}, {PairColin(Finger.Index),0:f}, {PairColin(Finger.Middle),0:f}, {PairColin(Finger.Ring),0:f}
-Eye co-linearities: {EyeColin(Finger.Index),0:f}, {EyeColin(Finger.Middle),0:f}, {EyeColin(Finger.Ring),0:f}
-Fingertip / knuckle distances: {_classifier.GetSumPairwiseFingertipDistances(),0:f} / {_classifier.GetSumPairwiseKnuckleDistances():0,f} = {_classifier.GetSumPairwiseFingertipDistances()/_classifier.GetSumPairwiseKnuckleDistances(),0:f} (alt {_classifier.GetSumFingertipAltitudes(),0:f})
+Joint lin: {Colin(Finger.Thumb),0:f3}, {Colin(Finger.Index),0:f3}, {Colin(Finger.Middle),0:f3}, {Colin(Finger.Ring),0:f3}, {Colin(Finger.Pinky),0:f3}
+Finger pair co-ext: {Ext(Finger.Thumb)}, {Ext(Finger.Index)}, {Ext(Finger.Middle)}, {Ext(Finger.Ring)}
+Finger pair lin: {PairColin(Finger.Thumb),0:f3}, {PairColin(Finger.Index),0:f3}, {PairColin(Finger.Middle),0:f3}, {PairColin(Finger.Ring),0:f3}
+Eye->knuckle lin: {EyeColin(Finger.Index),0:f3}, {EyeColin(Finger.Middle),0:f3}, {EyeColin(Finger.Ring),0:f3}
+Fingertip / knuckle dists: {fingertipDist,0:f3} / {knuckleDist:0,f3} = {fingertipDist / knuckleDist,0:f3} (alt {fingertipAlt,0:f3}, ratio {fingertipAlt / knuckleDist,0:f3})
 Hand pose: {_classifier.GetHandPose()}";
 
                 string Pose(Finger finger)

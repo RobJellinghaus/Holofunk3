@@ -47,7 +47,7 @@ namespace Holofunk.HandPose
         /// <remarks>
         /// This seems high but "open" fingers still have colinearity of around 0.95 to 0.96.
         /// </remarks>
-        public static float FingersExtendedColinearityMinimum = 0.99f;
+        public static float FingersExtendedColinearityMinimum = 0.975f;
 
         /// <summary>
         /// The maximum colinearity between adjacent fingers to consider them NOT extended together.
@@ -65,11 +65,9 @@ namespace Holofunk.HandPose
         public static float FingertipSumDistanceToKnuckleSumDistanceRatioMaximum = 0.6f;
 
         /// <summary>
-        /// The minimum total summed fingertip altitude (above corresponding knuckle) to be considered a valid bloom gesture.
+        /// The minimum total summed fingertip altitude (above corresponding knuckle), as ratio over knuckle distance,
+        /// to be considered a valid bloom gesture.
         /// </summary>
-        /// <remarks>
-        /// TODO: make this be relative to some other hand measurement, rather than based on world space measurement.
-        /// </remarks>
-        public static float FingertipSumAltitudeMinimum = 0.2f;
+        public static float FingertipSumAltitudeToKnuckleSumDistanceRatioMinimum = 0.5f;
     }
 }

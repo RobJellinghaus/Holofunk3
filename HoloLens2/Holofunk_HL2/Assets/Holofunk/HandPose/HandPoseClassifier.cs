@@ -176,8 +176,7 @@ namespace Holofunk.HandPose
             else if (GetFingerPose(Finger.Index) == FingerPose.Extended
                 && GetFingerPose(Finger.Middle) == FingerPose.Extended
                 && GetFingerPose(Finger.Ring) != FingerPose.Extended
-                && GetFingerPose(Finger.Pinky) != FingerPose.Extended
-                && GetFingerPairExtension(Finger.Index) == FingerPairExtension.ExtendedTogether)
+                && GetFingerPose(Finger.Pinky) != FingerPose.Extended)
             {
                 _handPose = HandPose.PointingIndexAndMiddle;
             }
@@ -192,7 +191,8 @@ namespace Holofunk.HandPose
             // then consider it the bloom gesture.
             else if ((_sumPairwiseFingertipDistances / _sumPairwiseKnuckleDistances)
                      <= HandPoseMagicNumbers.FingertipSumDistanceToKnuckleSumDistanceRatioMaximum
-                && _sumFingerTipAltitudes >= HandPoseMagicNumbers.FingertipSumAltitudeMinimum)
+                && ((_sumFingerTipAltitudes / _sumPairwiseKnuckleDistances)
+                     >= HandPoseMagicNumbers.FingertipSumAltitudeToKnuckleSumDistanceRatioMinimum))
             {
                 _handPose = HandPose.Bloom;
             }
@@ -205,8 +205,8 @@ namespace Holofunk.HandPose
             }
             else if (AllFingerPose(FingerPose.Extended)
                 && GetFingerPose(Finger.Thumb) == FingerPose.Extended
-                && AllFingerExtension(FingerPairExtension.ExtendedTogether)
-                && GetFingerPairExtension(Finger.Thumb) == FingerPairExtension.ExtendedTogether)
+                && NoFingerExtension(FingerPairExtension.NotExtendedTogether)
+                && GetFingerPairExtension(Finger.Thumb) != FingerPairExtension.NotExtendedTogether)
             {
                 _handPose = HandPose.Flat;
             }
