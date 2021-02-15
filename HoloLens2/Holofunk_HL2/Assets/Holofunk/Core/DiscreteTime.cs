@@ -46,7 +46,7 @@ namespace Holofunk.Core
     }
 
     /// <summary>
-    /// Time parameterized on some underlying measurement.
+    /// Time parameterized on some underlying period.
     /// </summary>
     public struct Time<TTime>
     {
@@ -59,7 +59,7 @@ namespace Holofunk.Core
 
         public override string ToString()
         {
-            return "T[" + (long)this + "]";
+            return $"T[{(long)this}]";
         }
 
         public static Time<TTime> Min(Time<TTime> first, Time<TTime> second)
@@ -153,7 +153,7 @@ namespace Holofunk.Core
 
         public override string ToString()
         {
-            return "D[" + (long)this + "]";
+            return $"D[{(long)this}]";
         }
 
         public static implicit operator long(Duration<TTime> offset)
@@ -248,7 +248,6 @@ namespace Holofunk.Core
     {
         public readonly Time<TTime> InitialTime;
         public readonly Duration<TTime> Duration;
-        readonly bool m_isInitialized;
 
         public Interval(Time<TTime> initialTime, Duration<TTime> duration)
         {
@@ -256,17 +255,14 @@ namespace Holofunk.Core
 
             InitialTime = initialTime;
             Duration = duration;
-            m_isInitialized = true;
         }
 
         public override string ToString()
         {
-            return "I[" + InitialTime + ", " + Duration + "]";
+            return $"I[{InitialTime}, {Duration}]";
         }
 
         public static Interval<TTime> Empty { get { return new Interval<TTime>(0, 0); } }
-
-        public bool IsInitialized { get { return m_isInitialized; } }
 
         public bool IsEmpty
         {
@@ -291,7 +287,7 @@ namespace Holofunk.Core
             Time<TTime> intersectionEnd = Time<TTime>.Min(InitialTime + Duration, other.InitialTime + other.Duration);
 
             if (intersectionEnd < intersectionStart) {
-                return Interval<TTime>.Empty;
+                return Empty;
             }
             else {
                 return new Interval<TTime>(intersectionStart, intersectionEnd - intersectionStart);
@@ -304,13 +300,14 @@ namespace Holofunk.Core
                 return false;
             }
 
-            return InitialTime <= time
-                && (InitialTime + Duration) > time;
+            return InitialTime <= time && (InitialTime + Duration) > time;
         }
 
         public override bool Equals(object obj)
         {
-            return obj is Interval<TTime> && ((Interval<TTime>)obj).InitialTime == InitialTime && ((Interval<TTime>)obj).Duration == Duration;
+            return obj is Interval<TTime> 
+                && ((Interval<TTime>)obj).InitialTime == InitialTime 
+                && ((Interval<TTime>)obj).Duration == Duration;
         }
 
         public override int GetHashCode()
