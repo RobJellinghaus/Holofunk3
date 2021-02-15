@@ -22,8 +22,6 @@ namespace Holofunk.HandPose
         // Update is called once per frame
         void Update()
         {
-            HoloDebug.Log("HandPoseRecognizer.Update()");
-
             var handJointService = CoreServices.GetInputSystemDataProvider<IMixedRealityHandJointService>();
             var gazeProvider = CoreServices.InputSystem.EyeGazeProvider;
             Handedness handedness = GetComponent<SolverHandler>().TrackedHandness;
@@ -62,10 +60,6 @@ Hand pose: {_classifier.GetHandPose()}";
                 float PairColin(Finger finger) => _classifier.GetFingerPairColinearity(finger);
 
                 float EyeColin(Finger finger) => _classifier.GetFingerEyeColinearity(finger);
-            }
-            else
-            {
-                HoloDebug.Log($"HandPoseVisualizer.Update(): hand joint service is{(handJointService != null ? " not" : "")} null, IsHandTracked({handedness}) = {handJointService?.IsHandTracked(handedness)}");
             }
         }
     }
