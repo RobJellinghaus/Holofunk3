@@ -62,12 +62,12 @@ namespace Holofunk.HandPose
         /// <summary>
         /// For detecting the 'bloom' gesture (all fingers together, above palm).
         /// </summary>
-        public static float FingertipSumDistanceToKnuckleSumDistanceRatioMaximum = 0.6f;
+        public static float FingertipSumDistanceToKnuckleSumDistanceRatioMaximum = 0.75f;
 
         /// <summary>
         /// The minimum total summed fingertip altitude (above corresponding knuckle), as ratio over knuckle distance,
         /// to be considered a valid bloom gesture.
         /// </summary>
-        public static float FingertipSumAltitudeToKnuckleSumDistanceRatioMinimum = 0.5f;
+        public static float FingertipSumAltitudeToKnuckleSumDistanceRatioMinimum = 2f;
     }
 }

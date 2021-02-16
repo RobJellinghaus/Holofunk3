@@ -161,8 +161,7 @@ namespace Holofunk.HandPose
             // Now classify overall hand pose.
             if (AllFingerPose(FingerPose.Extended)
                 && GetFingerPose(Finger.Thumb) == FingerPose.Extended
-                && NoFingerExtension(FingerPairExtension.ExtendedTogether)
-                && GetFingerPairExtension(Finger.Thumb) != FingerPairExtension.ExtendedTogether)
+                && AnyFingerExtension(FingerPairExtension.NotExtendedTogether))
             {
                 _handPose = HandPose.Opened;
             }
@@ -231,11 +230,12 @@ namespace Holofunk.HandPose
                     && GetFingerPose(Finger.Pinky) != pose;
             }
 
-            bool AllFingerExtension(FingerPairExtension extension)
+            bool AnyFingerExtension(FingerPairExtension extension)
             {
-                return GetFingerPairExtension(Finger.Index) == extension
-                    && GetFingerPairExtension(Finger.Middle) == extension
-                    && GetFingerPairExtension(Finger.Ring) == extension;
+                return GetFingerPairExtension(Finger.Thumb) == extension
+                    || GetFingerPairExtension(Finger.Index) == extension
+                    || GetFingerPairExtension(Finger.Middle) == extension
+                    || GetFingerPairExtension(Finger.Ring) == extension;
             }
 
             bool NoFingerExtension(FingerPairExtension extension)
