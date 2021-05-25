@@ -1,6 +1,6 @@
 
 using System;
-/// Copyright by Rob Jellinghaus.  All rights reserved.
+/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
 namespace Holofunk.Core
 {
     public struct Option<T>
