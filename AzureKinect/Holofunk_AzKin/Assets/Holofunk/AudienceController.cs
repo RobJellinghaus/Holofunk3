@@ -1,8 +1,10 @@
+/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AudienceControlelr : MonoBehaviour
+public class AudienceController : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
