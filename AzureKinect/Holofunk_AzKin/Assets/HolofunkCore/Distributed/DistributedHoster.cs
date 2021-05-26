@@ -41,6 +41,7 @@ namespace Holofunk.Distributed
         {
             _workQueue = new WorkQueue();
             _distributedHost = new DistributedHost(_workQueue, DefaultListenPort, isListener: true);
+            _distributedHost.RegisterType<PlayerId>();            
         }
 
         /// <summary>

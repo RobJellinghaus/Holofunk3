@@ -40,6 +40,16 @@ namespace Distributed.State
             value = reader.GetUInt();
         }
 
+        public static bool operator ==(DistributedId left, DistributedId right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DistributedId left, DistributedId right)
+        {
+            return !(left == right);
+        }
+
         public override bool Equals(object obj)
         {
             return obj is DistributedId id &&

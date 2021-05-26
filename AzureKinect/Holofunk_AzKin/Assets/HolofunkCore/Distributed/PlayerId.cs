@@ -26,9 +26,14 @@ namespace Holofunk.Distributed
 
         public static explicit operator byte(PlayerId id) => id.value;
 
-        public static void RegisterWith(NetPacketProcessor packetProcessor)
+        public static bool operator ==(PlayerId left, PlayerId right)
         {
-            packetProcessor.RegisterNestedType<PlayerId>();
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(PlayerId left, PlayerId right)
+        {
+            return !(left == right);
         }
 
         public void Serialize(NetDataWriter writer)
@@ -39,6 +44,17 @@ namespace Holofunk.Distributed
         public void Deserialize(NetDataReader reader)
         {
             value = reader.GetByte();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is PlayerId id &&
+                   value == id.value;
+        }
+
+        public override int GetHashCode()
+        {
+            return -1584136870 + value.GetHashCode();
         }
     }
 }
