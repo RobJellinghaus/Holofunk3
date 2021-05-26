@@ -32,12 +32,12 @@ namespace Distributed.State
     /// 3) Proxies whose methods are invoked do not update any local state, but only relay command requests to
     ///    the owner; the owner is always authoritative about state.
     /// </remarks>
-    public abstract class DistributedObject : IDistributedInterface
+    public abstract class DistributedObject : IDistributedObject, IDistributedType
     {
         /// <summary>
-        /// The peer that contains this object.
+        /// The host that contains this object.
         /// </summary>
-        public DistributedHost Host { get; internal set; }
+        public DistributedHost Host { get; private set; }
 
         /// <summary>
         /// The NetPeer which owns this proxy, if this is a proxy.
@@ -56,12 +56,12 @@ namespace Distributed.State
         /// <summary>
         /// The id of this object; unique within its owning DistributedPeer.
         /// </summary>
-        public readonly int Id;
+        public int Id { get; private set; }
 
         /// <summary>
         /// The local object which implements the local behavior of the distributed object.
         /// </summary>
-        public readonly ILocalObject LocalObject;
+        public ILocalObject LocalObject { get; private set; }
 
         /// <summary>
         /// Create an owner DistributedObject.
@@ -99,11 +99,16 @@ namespace Distributed.State
         /// Detach this object from its Host; this occurs when the owner or proxy is deleted (or the proxy gets disconnected
         /// from the host).
         /// </summary>
-        internal void Detach()
+        public void OnDetach()
         {
             Contract.Requires(Host != null);
 
             Host = null;
+        }
+
+        public void OnDelete()
+        {
+            OnDetach();
         }
 
         /// <summary>
@@ -118,11 +123,12 @@ namespace Distributed.State
             Contract.Requires(Host != null);
 
             Host.Delete(this, SendDeleteMessage);
-            
-            // once we are deleted we lose our connection to our peer
-            Detach();
         }
 
+        /// <summary>
+        /// This acts as its own IDistributedType implementation.
+        /// </summary>
+        public IDistributedType DistributedType => this;
 
         /// <summary>
         /// Get an action that will send the right CreateMessage to create a proxy for this object.
@@ -133,13 +139,10 @@ namespace Distributed.State
         /// to subscription callbacks).  So we can't make a generic CreateMessage with polymorphic payload.
         /// Instead, when it's time to create a proxy, we get an Action which will send the right CreateMessage
         /// to create the right proxy.
-        /// 
-        /// In practice this is only called on the local object held by an owning object, since only owning
-        /// objects need to create proxies.
         /// </remarks>
         protected abstract void SendCreateMessage(NetPeer netPeer);
 
-        internal void SendCreateMessageInternal(NetPeer netPeer)
+        public void SendCreateMessageInternal(NetPeer netPeer)
         {
             SendCreateMessage(netPeer);
         }
@@ -149,7 +152,7 @@ namespace Distributed.State
         /// </summary>
         protected abstract void SendDeleteMessage(NetPeer netPeer, bool isRequest);
 
-        internal void SendDeleteMessageInternal(NetPeer netPeer, bool isRequest)
+        public void SendDeleteMessageInternal(NetPeer netPeer, bool isRequest)
         {
             SendDeleteMessage(netPeer, isRequest);
         }

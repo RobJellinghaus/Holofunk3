@@ -9,11 +9,11 @@ namespace Holofunk.Distributed
     /// <summary>
     /// Polls a NetManager.
     /// </summary>
-    public class PollComponent : MonoBehaviour
+    public class Poller : MonoBehaviour
     {
         public DistributedHoster distributedHoster;
 
-        public PollComponent()
+        public Poller()
         {
         }
 

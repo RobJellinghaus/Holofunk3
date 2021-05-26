@@ -17,17 +17,12 @@ namespace Distributed.State
         /// <summary>
         /// The distributed object that contains this local object.
         /// </summary>
-        DistributedObject DistributedObject { get; }
-
-        /// <summary>
-        /// ID of this local object; same as its containing distributed object's ID.
-        /// </summary>
-        int Id { get; }
+        IDistributedObject DistributedObject { get; }
 
         /// <summary>
         /// Connect this local object to its distributed object; may only be called once.
         /// </summary>
         /// <param name="distributedObject"></param>
-        void Initialize(DistributedObject distributedObject);
+        void Initialize(IDistributedObject distributedObject);
     }
 }

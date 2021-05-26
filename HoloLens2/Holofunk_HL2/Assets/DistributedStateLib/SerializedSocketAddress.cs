@@ -28,6 +28,11 @@ namespace Distributed.State
             SocketAddress = netPeer.EndPoint.Serialize();
         }
 
+        /// <summary>
+        /// Has this struct been initialized or is it the default?
+        /// </summary>
+        public bool IsInitialized => SocketAddress != null;
+
         public static bool operator ==(SerializedSocketAddress left, SerializedSocketAddress right)
         {
             return left.SocketAddress.Equals(right.SocketAddress);
@@ -46,6 +51,12 @@ namespace Distributed.State
         public static SerializedSocketAddress Deserialize(NetDataReader reader)
         {
             int socketAddressSize = reader.GetByte();
+
+            if (socketAddressSize == 0)
+            {
+                return default(SerializedSocketAddress);
+            }
+
             // first two bytes of serialized socket is the address family, which we need to make a SocketAddress
             AddressFamily socketFamily = (AddressFamily)reader.GetShort();
             SocketAddress socketAddress = new SocketAddress(socketFamily, socketAddressSize);
@@ -58,6 +69,13 @@ namespace Distributed.State
 
         public static void Serialize(NetDataWriter writer, SerializedSocketAddress socketAddress)
         {
+            // If we are not initialized then just write 0 and be done
+            if (!socketAddress.IsInitialized)
+            {
+                writer.Put((byte)0);
+                return;
+            
+            }
             // first write the size
             writer.Put((byte)socketAddress.SocketAddress.Size);
             // then the bytes

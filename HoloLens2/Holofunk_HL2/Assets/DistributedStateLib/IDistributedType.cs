@@ -12,11 +12,10 @@ namespace Distributed.State
     /// and a singleton object implementing that interface. This lets us factor out meta-operations
     /// (like create and delete) from the ordinary interface of the type.
     /// </remarks>
-    public interface IDistributedInterface
+    public interface IDistributedType
     {
-        /// <summary>
-        /// This distributed object has been deleted.
-        /// </summary>
-        void OnDelete();
+        void SendCreateMessageInternal(NetPeer netPeer);
+
+        void SendDeleteMessageInternal(NetPeer netPeer, bool isRequest);
     }
 }

@@ -1,24 +1,22 @@
 ﻿// Copyright (c) 2020 by Rob Jellinghaus.
 
+using LiteNetLib;
+
 namespace Distributed.State
 {
     /// <summary>
-    /// General interface implemented by all distributed objects.
+    /// Operations on a particular distributed type.
     /// </summary>
     /// <remarks>
-    /// Each type of distributed object implements an interface which derives from this;
-    /// that interface represents the methods that can be invoked on these objects.
-    /// Since all objects can be deleted, all such interfaces include this one's Delete method.
+    /// Each type of distributed object implements an interface which derives from this,
+    /// and a singleton object implementing that interface. This lets us factor out meta-operations
+    /// (like create and delete) from the ordinary interface of the type.
     /// </remarks>
     public interface IDistributedInterface
     {
         /// <summary>
-        /// Invoked whenever a distributed object is deleted.
+        /// This distributed object has been deleted.
         /// </summary>
-        /// <remarks>
-        /// Note that this can occur either because the owner object itself was deleted, or because
-        /// a peer disconnected and local proxies had to be deleted.
-        /// </remarks>
-        void Delete();
+        void OnDelete();
     }
 }

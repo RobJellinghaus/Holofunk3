@@ -25,14 +25,14 @@ namespace Distributed.State
             NetPeer netPeer,
             TMessage message)
             where TMessage : ReliableMessage
-            where TObject : DistributedObject<TLocalObject>, TInterface
+            where TObject : IDistributedObject, TInterface
             where TLocalObject : ILocalObject, TInterface
             where TInterface : IDistributedInterface
         {
             if (message.IsRequest)
             {
                 // ignore messages to objects that no longer exist
-                DistributedObject target;
+                IDistributedObject target;
                 if (host.Owners.TryGetValue(message.Id, out target))
                 {
                     message.Invoke((TObject)target);
@@ -42,12 +42,12 @@ namespace Distributed.State
             {
                 // this object really ought to exist, but in case it doesn't (maybe disconnection race?),
                 // ignore object targets that don't resolve.
-                DistributedObject target;
+                IDistributedObject target;
                 if (host.ProxiesForPeer(new SerializedSocketAddress(netPeer)).TryGetValue(message.Id, out target))
                 {
                     // Call straight through to the local object; don't invoke Enqueue on the proxy.
                     // (If we do, it will call back to the owner, and whammo, infinite loop!)
-                    message.Invoke(((TObject)target).TypedLocalObject);
+                    message.Invoke(((TObject)target).LocalObject);
                 }
             }
         }
@@ -66,13 +66,13 @@ namespace Distributed.State
             TMessage message)
             where TMessage : BroadcastMessage
             where TLocalObject : ILocalObject, TInterface
-            where TObject : DistributedObject<TLocalObject>, TInterface
+            where TObject : IDistributedObject, TInterface
             where TInterface : IDistributedInterface
         {
             if (message.OwnerAddress == host.SocketAddress)
             {
                 // ignore messages to objects that no longer exist
-                DistributedObject target;
+                IDistributedObject target;
                 if (host.Owners.TryGetValue(message.Id, out target))
                 {
                     // Invoke on the local object.
@@ -83,7 +83,7 @@ namespace Distributed.State
             {
                 // this object really ought to exist, but in case it doesn't (maybe disconnection race?),
                 // ignore object targets that don't resolve.
-                DistributedObject target;
+                IDistributedObject target;
                 if (host.ProxiesForPeer(message.OwnerAddress).TryGetValue(message.Id, out target))
                 {
                     // Call straight through to the local object; don't invoke Enqueue on the proxy.
