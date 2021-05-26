@@ -16,7 +16,7 @@ namespace Distributed.State
         public CreateMessage()
         { }
 
-        public CreateMessage(int id) : base(id)
+        public CreateMessage(DistributedId id) : base(id)
         { }
 
         public override void Invoke(IDistributedInterface target)

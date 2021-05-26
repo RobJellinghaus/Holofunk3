@@ -15,6 +15,12 @@ namespace Distributed.State
     public interface IDistributedInterface
     {
         /// <summary>
+        /// The ID of this object (as defined by its owning host -- objects from different hosts may have
+        /// the same DistributedId values).
+        /// </summary>
+        DistributedId Id { get; }
+
+        /// <summary>
         /// This distributed object has been deleted.
         /// </summary>
         void OnDelete();

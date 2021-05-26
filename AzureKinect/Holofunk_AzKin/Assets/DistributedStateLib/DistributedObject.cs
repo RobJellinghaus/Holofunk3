@@ -56,7 +56,7 @@ namespace Distributed.State
         /// <summary>
         /// The id of this object; unique within its owning DistributedPeer.
         /// </summary>
-        public int Id { get; private set; }
+        public DistributedId Id { get; private set; }
 
         /// <summary>
         /// The local object which implements the local behavior of the distributed object.
@@ -81,11 +81,10 @@ namespace Distributed.State
         /// <summary>
         /// Create a proxy DistributedObject.
         /// </summary>
-        protected DistributedObject(DistributedHost host, NetPeer netPeer, int id, ILocalObject localObject)
+        protected DistributedObject(DistributedHost host, NetPeer netPeer, DistributedId id, ILocalObject localObject)
         {
             Contract.Requires(host != null);
             Contract.Requires(netPeer != null);
-            Contract.Requires(id > 0);
             Contract.Requires(localObject != null);
 
             Host = host;
@@ -178,7 +177,7 @@ namespace Distributed.State
             Host.AddOwner(this);
         }
 
-        protected DistributedObject(DistributedHost peer, NetPeer owningPeer, int id, TLocalObject localObject)
+        protected DistributedObject(DistributedHost peer, NetPeer owningPeer, DistributedId id, TLocalObject localObject)
             : base(peer, owningPeer, id, localObject)
         {
             TypedLocalObject = localObject;

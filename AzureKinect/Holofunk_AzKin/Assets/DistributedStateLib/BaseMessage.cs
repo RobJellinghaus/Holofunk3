@@ -10,12 +10,12 @@ namespace Distributed.State
         /// <summary>
         /// Id of this object (in the originating peer's ID space).
         /// </summary>
-        public int Id { get; set; }
+        public DistributedId Id { get; set; }
 
         public BaseMessage()
         { }
 
-        public BaseMessage(int id)
+        public BaseMessage(DistributedId id)
         {
             Id = id;
         }

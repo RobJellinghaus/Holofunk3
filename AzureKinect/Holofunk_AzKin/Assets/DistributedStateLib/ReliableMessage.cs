@@ -18,7 +18,7 @@ namespace Distributed.State
         public ReliableMessage()
         { }
 
-        public ReliableMessage(int id, bool isRequest) : base(id)
+        public ReliableMessage(DistributedId id, bool isRequest) : base(id)
         {
             IsRequest = isRequest;
         }

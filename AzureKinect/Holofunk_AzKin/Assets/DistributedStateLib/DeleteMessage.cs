@@ -10,7 +10,7 @@ namespace Distributed.State
         public DeleteMessage()
         { }
 
-        public DeleteMessage(int id, bool isRequest) : base(id, isRequest)
+        public DeleteMessage(DistributedId id, bool isRequest) : base(id, isRequest)
         {
         }
     }

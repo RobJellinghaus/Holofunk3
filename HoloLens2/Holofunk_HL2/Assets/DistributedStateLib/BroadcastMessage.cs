@@ -16,7 +16,7 @@ namespace Distributed.State
         public BroadcastMessage()
         { }
 
-        public BroadcastMessage(int id, SerializedSocketAddress ownerAddress) : base(id)
+        public BroadcastMessage(DistributedId id, SerializedSocketAddress ownerAddress) : base(id)
         {
             OwnerAddress = ownerAddress;
         }

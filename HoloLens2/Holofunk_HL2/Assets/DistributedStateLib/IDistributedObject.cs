@@ -34,11 +34,6 @@ namespace Distributed.State
         bool IsOwner { get; }
 
         /// <summary>
-        /// The id of this object; unique within its owner.
-        /// </summary>
-        int Id { get; }
-
-        /// <summary>
         /// The local object which implements the local behavior of the distributed object.
         /// </summary>
         ILocalObject LocalObject { get; }

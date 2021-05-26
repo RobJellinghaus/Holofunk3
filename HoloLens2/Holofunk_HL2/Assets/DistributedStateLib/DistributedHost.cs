@@ -67,7 +67,7 @@ namespace Distributed.State
 
             public void OnPeerConnected(NetPeer netPeer)
             {
-                Peer.proxies.Add(new SerializedSocketAddress(netPeer), new Dictionary<int, IDistributedObject>());
+                Peer.proxies.Add(new SerializedSocketAddress(netPeer), new Dictionary<DistributedId, IDistributedObject>());
 
                 Peer.SendProxiesToPeer(netPeer);
             }
@@ -79,7 +79,7 @@ namespace Distributed.State
             public void OnPeerDisconnected(NetPeer netPeer, DisconnectInfo disconnectInfo)
             {
                 SerializedSocketAddress peerAddress = new SerializedSocketAddress(netPeer);
-                if (Peer.proxies.TryGetValue(peerAddress, out Dictionary<int, IDistributedObject> peerObjects))
+                if (Peer.proxies.TryGetValue(peerAddress, out Dictionary<DistributedId, IDistributedObject> peerObjects))
                 {
                     // delete them all
                     foreach (IDistributedObject proxy in peerObjects.Values)
@@ -118,7 +118,7 @@ namespace Distributed.State
             {
                 Host.SubscribeReusable(action);
             }
-            public void OnDelete(NetPeer netPeer, int id, bool isRequest)
+            public void OnDelete(NetPeer netPeer, DistributedId id, bool isRequest)
             {
                 Host.OnDelete(netPeer, id, isRequest);
             }
@@ -185,12 +185,12 @@ namespace Distributed.State
         /// Note that these IDs are unique only within this Peer; each Peer defines its own ID space
         /// for its owned objects.
         /// </remarks>
-        private readonly Dictionary<int, IDistributedObject> owners = new Dictionary<int, IDistributedObject>();
+        private readonly Dictionary<DistributedId, IDistributedObject> owners = new Dictionary<DistributedId, IDistributedObject>();
 
         /// <summary>
         /// The next id to assign to a new owning object.
         /// </summary>
-        private int nextOwnerId;
+        private uint nextOwnerId;
 
         /// <summary>
         /// Map from NetPeer to proxy ID to proxy instance.
@@ -199,8 +199,8 @@ namespace Distributed.State
         /// Note that each ID is unique only within that peer's collection; each peer defines its
         /// own proxies' ID space.
         /// </remarks>
-        private readonly Dictionary<SerializedSocketAddress, Dictionary<int, IDistributedObject>> proxies
-            = new Dictionary<SerializedSocketAddress, Dictionary<int, IDistributedObject>>();
+        private readonly Dictionary<SerializedSocketAddress, Dictionary<DistributedId, IDistributedObject>> proxies
+            = new Dictionary<SerializedSocketAddress, Dictionary<DistributedId, IDistributedObject>>();
 
         /// <summary>
         /// How many peer announcements has this peer received?
@@ -231,7 +231,7 @@ namespace Distributed.State
         /// <summary>
         /// Map from object IDs to owner objects. (testing only)
         /// </summary>
-        public IReadOnlyDictionary<int, IDistributedObject> Owners => owners;
+        public IReadOnlyDictionary<DistributedId, IDistributedObject> Owners => owners;
 
         /// <summary>
         /// Collection of connected peers.
@@ -241,7 +241,7 @@ namespace Distributed.State
         /// <summary>
         /// Get the proxies that are owned by this peer.
         /// </summary>
-        public IReadOnlyDictionary<int, IDistributedObject> ProxiesForPeer(SerializedSocketAddress serializedSocketAddress)
+        public IReadOnlyDictionary<DistributedId, IDistributedObject> ProxiesForPeer(SerializedSocketAddress serializedSocketAddress)
         {
             Contract.Requires(netManager.ConnectedPeerList.Any(peer =>
             {
@@ -257,7 +257,7 @@ namespace Distributed.State
 
         #endregion
 
-        #region Construction and disposal
+        #region Construction, type registration, and disposal
 
         public DistributedHost(
             IWorkQueue workQueue,
@@ -292,6 +292,7 @@ namespace Distributed.State
 
             netPacketProcessor = new NetPacketProcessor();
             SerializedSocketAddress.RegisterWith(netPacketProcessor);
+            RegisterType<DistributedId>();
             netPacketProcessor.SubscribeReusable<AnnounceMessage, IPEndPoint>(OnAnnounceReceived);
             netPacketProcessor.SubscribeReusable<AnnounceResponseMessage, IPEndPoint>(OnAnnounceResponseReceived);
 
@@ -321,6 +322,12 @@ namespace Distributed.State
             netManager.Stop(true);
         }
 
+        public void RegisterType<T>()
+            where T : struct, INetSerializable
+        {
+            netPacketProcessor.RegisterNestedType<T>();
+        }
+        
         #endregion
 
         #region Managing DistributedObjects
@@ -337,7 +344,7 @@ namespace Distributed.State
         /// This allows external code to create its own owner DistributedObjects, giving them fresh
         /// IDs at construction.
         /// </remarks>
-        internal int NextOwnerId()
+        internal DistributedId NextOwnerId()
         {
             return ++nextOwnerId;
         }
@@ -403,7 +410,7 @@ namespace Distributed.State
             netPacketProcessor.SubscribeReusable(action);
         }
 
-        private void OnDelete(NetPeer netPeer, int id, bool isRequest)
+        private void OnDelete(NetPeer netPeer, DistributedId id, bool isRequest)
         {
             SerializedSocketAddress peerAddress = new SerializedSocketAddress(netPeer);
             if (isRequest)
@@ -508,7 +515,7 @@ namespace Distributed.State
         /// </summary>
         private void SendProxiesToPeer(NetPeer netPeer)
         {
-            foreach (KeyValuePair<int, IDistributedObject> entry in owners)
+            foreach (KeyValuePair<DistributedId, IDistributedObject> entry in owners)
             {
                 entry.Value.DistributedType.SendCreateMessageInternal(netPeer);
             }
