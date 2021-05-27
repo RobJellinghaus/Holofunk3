@@ -2,6 +2,7 @@
 
 using Distributed.State;
 using LiteNetLib;
+using LiteNetLib.Utils;
 using UnityEngine;
 
 namespace Holofunk.Distributed
@@ -41,7 +42,8 @@ namespace Holofunk.Distributed
         {
             _workQueue = new WorkQueue();
             _distributedHost = new DistributedHost(_workQueue, DefaultListenPort, isListener: true);
-            _distributedHost.RegisterType<PlayerId>();            
+            _distributedHost.RegisterType<PlayerId>();
+            _distributedHost.RegisterType(WriteVector3, ReadVector3);
         }
 
         /// <summary>
@@ -58,6 +60,18 @@ namespace Holofunk.Distributed
         public void OnDestroy()
         {
             _distributedHost.Dispose();
+        }
+
+        private static void WriteVector3(NetDataWriter writer, Vector3 value)
+        {
+            writer.Put(value[0]);
+            writer.Put(value[1]);
+            writer.Put(value[2]);
+        }
+
+        private static Vector3 ReadVector3(NetDataReader reader)
+        {
+            return new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
         }
     }
 }

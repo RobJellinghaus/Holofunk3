@@ -1,10 +1,11 @@
 /// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
 
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class WatcherController : MonoBehaviour
+/// <summary>
+/// Singleton component which manages the overall lifecycle and tracking state of a Viewpoint.
+/// </summary>
+public class ViewpointController : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
