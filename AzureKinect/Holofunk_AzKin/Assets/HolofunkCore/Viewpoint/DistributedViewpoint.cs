@@ -2,12 +2,14 @@
 
 using Distributed.State;
 using Holofunk.Distributed;
+using LiteNetLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Holofunk.Viewpoint.ViewpointMessages;
 
 namespace Holofunk.Viewpoint
 {
@@ -18,16 +20,15 @@ namespace Holofunk.Viewpoint
     /// Each Azure Kinect version of Holofunk connected to the current network will host its own DistributedViewpoint,
     /// which it uses to disseminate state about what it views.
     /// </remarks>
-    public class DistributedViewpoint : MonoBehaviour, IDistributedViewpoint
+    public class DistributedViewpoint : DistributedComponent, IDistributedViewpoint
     {
-        private LocalViewpoint GetLocalObject() => gameObject.GetComponent<LocalViewpoint>();
+        protected override ILocalObject GetLocalObject() => GetLocalViewpoint();
+        private LocalViewpoint GetLocalViewpoint() => gameObject.GetComponent<LocalViewpoint>();
 
         /// <summary>
         /// Get the count of currently known Players.
         /// </summary>
-        public int PlayerCount => GetLocalObject().PlayerCount;
-
-        public DistributedId Id => throw new NotImplementedException();
+        public int PlayerCount => GetLocalViewpoint().PlayerCount;
 
         /// <summary>
         /// Get the player with a given index.
@@ -37,7 +38,7 @@ namespace Holofunk.Viewpoint
         /// Note that the index of the player here has nothing to do with the PlayerId field of the player;
         /// this index is semantically meaningless and only used for iterating over currently known players.
         /// </remarks>
-        public Player GetPlayer(int index) => GetLocalObject().GetPlayer(index);
+        public Player GetPlayer(int index) => GetLocalViewpoint().GetPlayer(index);
 
         /// <summary>
         /// Update the given player.
@@ -50,12 +51,31 @@ namespace Holofunk.Viewpoint
         [ReliableMethod]
         public void UpdatePlayer(Player playerToUpdate)
         {
-
+            RouteReliableMessage(isRequest => new UpdatePlayer(Id, isRequest, playerToUpdate));
+        }
+        public override void Delete()
+        {
+            // No-op; Viewpoints are never deleted, they just leave the system
         }
 
-        public void OnDelete()
+        public override void OnDelete()
         {
-            throw new NotImplementedException();
+            // No-op; Viewpoints are never deleted, only detached
+        }
+
+        public override void OnDetach()
+        {
+            // TODO: figure out what cleanup should happen here
+        }
+
+        protected override void SendCreateMessage(NetPeer netPeer)
+        {
+            Host.SendReliableMessage(new Create(Id, GetLocalViewpoint().PlayersAsArray), netPeer);
+        }
+
+        protected override void SendDeleteMessage(NetPeer netPeer, bool isRequest)
+        {
+            // don't do it!
         }
     }
 }

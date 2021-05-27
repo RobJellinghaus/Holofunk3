@@ -12,8 +12,8 @@ namespace Holofunk.Distributed
     /// </summary>
     public class DistributedHoster : MonoBehaviour
     {
-        private IWorkQueue _workQueue;
-        private DistributedHost _distributedHost;
+        private IWorkQueue workQueue;
+        private DistributedHost distributedHost;
 
         /// <summary>
         /// Random port that happened to be, not only open, but with no other UDP or TCP ports in the 9??? range
@@ -31,6 +31,8 @@ namespace Holofunk.Distributed
         {
         }
 
+        public DistributedHost DistributedHost => distributedHost;
+
         /// <summary>
         /// Create the singleton DistributedHost for this app.
         /// </summary>
@@ -40,10 +42,10 @@ namespace Holofunk.Distributed
         /// </remarks>
         public void Start()
         {
-            _workQueue = new WorkQueue();
-            _distributedHost = new DistributedHost(_workQueue, DefaultListenPort, isListener: true);
-            _distributedHost.RegisterType<PlayerId>();
-            _distributedHost.RegisterType(WriteVector3, ReadVector3);
+            workQueue = new WorkQueue();
+            distributedHost = new DistributedHost(workQueue, DefaultListenPort, isListener: true);
+            distributedHost.RegisterType<PlayerId>();
+            distributedHost.RegisterType(WriteVector3, ReadVector3);
         }
 
         /// <summary>
@@ -52,14 +54,14 @@ namespace Holofunk.Distributed
         public void PollEvents()
         {
             // Poll work queue both before and after distributed host does its thing.
-            _workQueue.PollEvents();
-            _distributedHost.PollEvents();
-            _workQueue.PollEvents();
+            workQueue.PollEvents();
+            distributedHost.PollEvents();
+            workQueue.PollEvents();
         }
 
         public void OnDestroy()
         {
-            _distributedHost.Dispose();
+            distributedHost.Dispose();
         }
 
         private static void WriteVector3(NetDataWriter writer, Vector3 value)

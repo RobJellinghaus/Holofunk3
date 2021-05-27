@@ -8,16 +8,24 @@ namespace Distributed.State
     /// A distributed object.
     /// </summary>
     /// <remarks>
-    /// Each type of distributed object implements an interface which derives from this;
-    /// that interface represents the methods that can be invoked on these objects.
-    /// Since all objects can be deleted, all such interfaces include this one's Delete method.
+    /// Each implementation of an owner or proxy implements this interface.
     /// </remarks>
     public interface IDistributedObject : IDistributedInterface
     {
         /// <summary>
-        /// The host that contains this object.
+        /// The host that contains this representation of this object.
         /// </summary>
+        /// <remarks>
+        /// The Host is a singleton which tracks all the locally known owners and proxies in a
+        /// single DistributedState session.
+        /// </remarks>
         DistributedHost Host { get; }
+
+        /// <summary>
+        /// The ID of this object (as defined by its owning host -- objects from different hosts may have
+        /// the same DistributedId values).
+        /// </summary>
+        DistributedId Id { get; }
 
         /// <summary>
         /// The NetPeer which owns this proxy, if this is a proxy.
@@ -55,6 +63,9 @@ namespace Distributed.State
         /// </remarks>
         void OnDetach();
 
+        /// <summary>
+        /// Get access to the operations needed for creating and deleting objects of this type.
+        /// </summary>
         IDistributedType DistributedType { get; }
     }
 }

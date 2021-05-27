@@ -18,7 +18,7 @@ namespace Holofunk.Viewpoint
     /// This keeps the local list of all players for this distributed viewpoint object on this host,
     /// whether this host is the owning host or not.
     /// </remarks>
-    public class LocalViewpoint : MonoBehaviour, IDistributedViewpoint
+    public class LocalViewpoint : MonoBehaviour, IDistributedViewpoint, ILocalObject
     {
         /// <summary>
         /// We keep the players list completely unsorted for now.
@@ -30,7 +30,17 @@ namespace Holofunk.Viewpoint
         /// </summary>
         public int PlayerCount => players.Count;
 
-        public DistributedId Id => throw new NotImplementedException();
+        public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedViewpoint>();
+
+        internal void Initialize(Player[] playerArray)
+        {
+            players.AddRange(playerArray);
+        }
+
+        /// <summary>
+        /// Internal method for use by Create message.
+        /// </summary>
+        internal Player[] PlayersAsArray => players.ToArray();
 
         /// <summary>
         /// Get the player with a given index.

@@ -17,12 +17,9 @@ namespace Distributed.State
         /// <summary>
         /// The distributed object that contains this local object.
         /// </summary>
+        /// <remarks>
+        /// How this is connected/initialized is implementation-specific.
+        /// </remarks>
         IDistributedObject DistributedObject { get; }
-
-        /// <summary>
-        /// Connect this local object to its distributed object; may only be called once.
-        /// </summary>
-        /// <param name="distributedObject"></param>
-        void Initialize(IDistributedObject distributedObject);
     }
 }
