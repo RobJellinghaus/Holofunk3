@@ -18,8 +18,15 @@ namespace Distributed.State
 
         public DistributedId(uint value)
         {
+            if (value == 0)
+            {
+                throw new ArgumentException("DistributedId value 0 is not valid (reserved for default/uninitialized)");
+            }
+
             this.value = value;
         }
+
+        public bool IsInitialized => value > 0;
 
         public static implicit operator DistributedId(uint value) => new DistributedId((byte)value);
 

@@ -8,13 +8,13 @@ using System.Net.Sockets;
 namespace Holofunk.Distributed
 {
     /// <summary>
-    /// The identifier of a player from an Audience point of view.
+    /// The identifier of a performer.
     /// </summary>
-    public struct PlayerId : INetSerializable
+    public struct PerformerId : INetSerializable
     {
         private byte value;
 
-        public PlayerId(byte value)
+        public PerformerId(byte value)
         {
             // ID 0 is not valid, reserved for uninitialized value
             Contract.Requires(value >= 1);
@@ -25,16 +25,16 @@ namespace Holofunk.Distributed
 
         public bool IsInitialized => value > 0;
 
-        public static implicit operator PlayerId(int value) => new PlayerId((byte)value);
+        public static implicit operator PerformerId(int value) => new PerformerId((byte)value);
 
-        public static explicit operator byte(PlayerId id) => id.value;
+        public static explicit operator byte(PerformerId id) => id.value;
 
-        public static bool operator ==(PlayerId left, PlayerId right)
+        public static bool operator ==(PerformerId left, PerformerId right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(PlayerId left, PlayerId right)
+        public static bool operator !=(PerformerId left, PerformerId right)
         {
             return !(left == right);
         }
@@ -51,7 +51,7 @@ namespace Holofunk.Distributed
 
         public override bool Equals(object obj)
         {
-            return obj is PlayerId id &&
+            return obj is PerformerId id &&
                    value == id.value;
         }
 

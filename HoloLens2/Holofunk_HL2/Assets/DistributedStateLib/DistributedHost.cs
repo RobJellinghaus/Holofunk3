@@ -327,7 +327,12 @@ namespace Distributed.State
         {
             netPacketProcessor.RegisterNestedType<T>();
         }
-        
+
+        public void RegisterType<T>(Action<NetDataWriter, T> writerFunc, Func<NetDataReader, T> readerFunc)
+        {
+            netPacketProcessor.RegisterNestedType(writerFunc, readerFunc);
+        }
+
         #endregion
 
         #region Managing DistributedObjects
