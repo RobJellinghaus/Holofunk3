@@ -45,6 +45,12 @@ namespace Holofunk.Distributed
         /// <summary>
         /// Find the parent GameObject for new object instances of the given type.
         /// </summary>
+        /// <remarks>
+        /// Under the DistributedObjectInstances top-level object (which must exist), this method creates
+        /// a child container named after the host endpoint, and then a grandchild container named after the
+        /// object's type. Net effect should be a Unity hierarchy that nicely shows what objects came from
+        /// where.
+        /// </remarks>
         public static GameObject FindContainer(DistributedType type, NetPeer netPeer)
         {
             Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
