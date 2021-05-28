@@ -24,6 +24,8 @@ namespace Holofunk.Distributed
         /// </summary>
         public static ushort DefaultReliablePort = 30304;
 
+        public static DistributedHoster Instance { get; private set; }
+
         public static DistributedHost Host { get; private set; }
 
         private IWorkQueue workQueue;
@@ -46,6 +48,7 @@ namespace Holofunk.Distributed
             Host = new DistributedHost(workQueue, DefaultListenPort, isListener: true);
             Host.RegisterType<PlayerId>();
             Host.RegisterType(WriteVector3, ReadVector3);
+            Instance = this;
         }
 
         /// <summary>
