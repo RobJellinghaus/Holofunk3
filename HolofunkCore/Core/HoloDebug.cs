@@ -16,5 +16,14 @@ namespace Holofunk.Core
         {
             UnityEngine.Debug.Log(message);
         }
+
+        public static void Assert(bool condition, string message = "")
+        {
+            if (!condition)
+            {
+                Log("Assertion violated");
+                throw new HoloDebugException(message);
+            }
+        }
     }
 }
