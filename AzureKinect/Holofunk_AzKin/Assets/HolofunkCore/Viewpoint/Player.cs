@@ -17,9 +17,11 @@ namespace Holofunk.Viewpoint
     public struct Player
     {
         /// <summary>
-        /// Player identifier from the Viewpoint (0 through N)
+        /// Player identifier from the Viewpoint (0 through N).
         /// </summary>
         public PlayerId PlayerId { get; set; }
+
+        public UserId UserId { get; set; }
 
         /// <summary>
         /// Is this player currently tracked?
@@ -43,16 +45,25 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// The position of the head, as seen from the viewpoint, in viewpoint coordinates.
         /// </summary>
+        /// <remarks>
+        /// If this joint is not currently tracked, all values will be float.NaN.
+        /// </remarks>
         public Vector3 HeadPosition { get; set; }
 
         /// <summary>
         /// The position of the left hand, as seen from the viewpoint, in viewpoint coordinates.
         /// </summary>
+        /// <remarks>
+        /// If this joint is not currently tracked, all values will be float.NaN.
+        /// </remarks>
         public Vector3 LeftHandPosition { get; set; }
 
         /// <summary>
         /// The position of the right hand, as seen from the viewpoint, in viewpoint coordinates.
         /// </summary>
+        /// <remarks>
+        /// If this joint is not currently tracked, all values will be float.NaN.
+        /// </remarks>
         public Vector3 RightHandPosition { get; set; }
     }
 }

@@ -1,14 +1,7 @@
 ﻿/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
-using Holofunk.Distributed;
 using LiteNetLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
 using static Holofunk.Viewpoint.ViewpointMessages;
 
 namespace Holofunk.Viewpoint
@@ -24,7 +17,7 @@ namespace Holofunk.Viewpoint
     {
         #region MonoBehaviours
 
-        public virtual void Start()
+        public void Start()
         {
             // If we have no ID yet, then we are an owning object that has not yet gotten an initial ID.
             // So, initialize ourselves as an owner.

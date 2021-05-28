@@ -8,33 +8,27 @@ using System.Net.Sockets;
 namespace Holofunk.Distributed
 {
     /// <summary>
-    /// The identifier of a player in a Viewpoint.
+    /// The identifier of a user from the Kinect's point of view.
     /// </summary>
-    public struct PlayerId : INetSerializable
+    public struct UserId : INetSerializable
     {
-        private byte value;
+        private ulong value;
 
-        public PlayerId(byte value)
+        public UserId(ulong value)
         {
-            // ID 0 is not valid, reserved for uninitialized value
-            Contract.Requires(value >= 1);
-            Contract.Requires(value <= byte.MaxValue);
-
             this.value = value;
         }
 
-        public bool IsInitialized => value > 0;
+        public static implicit operator UserId(ulong value) => new UserId(value);
 
-        public static implicit operator PlayerId(byte value) => new PlayerId(value);
+        public static explicit operator ulong(UserId id) => id.value;
 
-        public static explicit operator byte(PlayerId id) => id.value;
-
-        public static bool operator ==(PlayerId left, PlayerId right)
+        public static bool operator ==(UserId left, UserId right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(PlayerId left, PlayerId right)
+        public static bool operator !=(UserId left, UserId right)
         {
             return !(left == right);
         }
@@ -46,12 +40,12 @@ namespace Holofunk.Distributed
 
         public void Deserialize(NetDataReader reader)
         {
-            value = reader.GetByte();
+            value = reader.GetULong();
         }
 
         public override bool Equals(object obj)
         {
-            return obj is PlayerId id &&
+            return obj is UserId id &&
                    value == id.value;
         }
 

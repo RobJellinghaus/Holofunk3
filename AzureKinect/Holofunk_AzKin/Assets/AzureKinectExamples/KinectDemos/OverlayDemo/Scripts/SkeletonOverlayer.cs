@@ -213,7 +213,7 @@ namespace com.rfilkov.components
         }
 
         // returns body joint position
-        private Vector3 GetJointPosition(ulong userId, int joint)
+        public Vector3 GetJointPosition(ulong userId, int joint)
         {
             Vector3 posJoint = Vector3.zero;
 
