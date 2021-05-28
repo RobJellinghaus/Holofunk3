@@ -11,8 +11,6 @@ namespace Holofunk.Distributed
     /// </summary>
     public class Poller : MonoBehaviour
     {
-        public DistributedHoster distributedHoster;
-
         public Poller()
         {
         }
@@ -20,12 +18,24 @@ namespace Holofunk.Distributed
         /// <summary>
         /// Poll All The Things
         /// </summary>
-        void Update()
+        public void Update()
         {
-            if (distributedHoster != null)
+            if (DistributedHoster.Instance != null)
             {
                 // Poll the work queue both before and after the distributed host does its thing.
-                distributedHoster.PollEvents();
+                DistributedHoster.Instance.PollEvents();
+            }
+        }
+
+        /// <summary>
+        /// Poll All The Things, Later
+        /// </summary>
+        public void LateUpdate()
+        {
+            if (DistributedHoster.Instance != null)
+            {
+                // Poll the work queue both before and after the distributed host does its thing.
+                DistributedHoster.Instance.PollEvents();
             }
         }
     }
