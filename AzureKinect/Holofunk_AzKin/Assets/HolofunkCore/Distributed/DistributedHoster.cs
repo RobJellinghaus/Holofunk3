@@ -12,9 +12,6 @@ namespace Holofunk.Distributed
     /// </summary>
     public class DistributedHoster : MonoBehaviour
     {
-        private IWorkQueue workQueue;
-        private DistributedHost distributedHost;
-
         /// <summary>
         /// Random port that happened to be, not only open, but with no other UDP or TCP ports in the 9??? range
         /// on my local Windows laptop.
@@ -27,25 +24,28 @@ namespace Holofunk.Distributed
         /// </summary>
         public static ushort DefaultReliablePort = 30304;
 
+        public static DistributedHost Host { get; private set; }
+
+        private IWorkQueue workQueue;
+
         public DistributedHoster()
         {
         }
-
-        public DistributedHost DistributedHost => distributedHost;
 
         /// <summary>
         /// Create the singleton DistributedHost for this app.
         /// </summary>
         /// <remarks>
-        /// This component should be in a GameObject at the very top of the scene, so this Start() method will run before all others.
-        /// (Or at least before any PollComponents that use it.)
+        /// This should be the only Awake() method in Holofunk, at least if we want to rely on this for ensuring the
+        /// DistributedHost is created first. Otherwise we may need to use some other mechanism, or use on-demand
+        /// Host initialization, or something.
         /// </remarks>
-        public void Start()
+        public void Awake()
         {
             workQueue = new WorkQueue();
-            distributedHost = new DistributedHost(workQueue, DefaultListenPort, isListener: true);
-            distributedHost.RegisterType<PlayerId>();
-            distributedHost.RegisterType(WriteVector3, ReadVector3);
+            Host = new DistributedHost(workQueue, DefaultListenPort, isListener: true);
+            Host.RegisterType<PlayerId>();
+            Host.RegisterType(WriteVector3, ReadVector3);
         }
 
         /// <summary>
@@ -55,13 +55,14 @@ namespace Holofunk.Distributed
         {
             // Poll work queue both before and after distributed host does its thing.
             workQueue.PollEvents();
-            distributedHost.PollEvents();
+            Host.PollEvents();
             workQueue.PollEvents();
         }
 
         public void OnDestroy()
         {
-            distributedHost.Dispose();
+            Host.Dispose();
+            Host = null;
         }
 
         private static void WriteVector3(NetDataWriter writer, Vector3 value)

@@ -22,7 +22,24 @@ namespace Holofunk.Viewpoint
     /// </remarks>
     public class DistributedViewpoint : DistributedComponent, IDistributedViewpoint
     {
-        protected override ILocalObject GetLocalObject() => GetLocalViewpoint();
+        #region MonoBehaviours
+
+        public virtual void Start()
+        {
+            // If we have no ID yet, then we are an owning object that has not yet gotten an initial ID.
+            // So, initialize ourselves as an owner.
+            if (!Id.IsInitialized)
+            {
+                InitializeOwner();
+            }
+        }
+
+        #endregion
+
+        #region IDistributedViewpoint
+
+        public override ILocalObject LocalObject => GetLocalViewpoint();
+
         private LocalViewpoint GetLocalViewpoint() => gameObject.GetComponent<LocalViewpoint>();
 
         /// <summary>
@@ -53,6 +70,11 @@ namespace Holofunk.Viewpoint
         {
             RouteReliableMessage(isRequest => new UpdatePlayer(Id, isRequest, playerToUpdate));
         }
+
+        #endregion
+
+        #region Standard meta-operations
+
         public override void Delete()
         {
             // No-op; Viewpoints are never deleted, they just leave the system
@@ -77,5 +99,7 @@ namespace Holofunk.Viewpoint
         {
             // don't do it!
         }
+
+        #endregion
     }
 }

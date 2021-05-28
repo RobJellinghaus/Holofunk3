@@ -24,7 +24,7 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// We always expect the DistributedHoster GameObject to be the very first child of the root GameObject.
         /// </summary>
-        public DistributedHost Host => gameObject.transform.root.GetChild(0).GetComponent<DistributedHoster>().DistributedHost;
+        public DistributedHost Host => DistributedHoster.Host;
 
         public DistributedId Id { get; private set; }
 
@@ -32,7 +32,7 @@ namespace Holofunk.Viewpoint
 
         public bool IsOwner => OwningPeer == null;
 
-        public ILocalObject LocalObject => GetLocalObject();
+        public abstract ILocalObject LocalObject { get; }
 
         public abstract void Delete();
 
@@ -40,9 +40,29 @@ namespace Holofunk.Viewpoint
 
         public abstract void OnDetach();
 
-        protected abstract ILocalObject GetLocalObject();
+        /// <summary>
+        /// This is an owner Component; initialize it as such.
+        /// </summary>
+        public void InitializeOwner()
+        {
+            // make sure object hasn't been initialized yet
+            Contract.Requires(OwningPeer == null);
+            Contract.Requires(!Id.IsInitialized);
 
-        public void Initialize(NetPeer owningPeer, DistributedId id)
+            DistributedHost host = Host;
+            Id = host.NextOwnerId();
+            // OwningPeer remains, and will forever be, null.
+
+            // Add this object as a known owner in the current distributed session.
+            // This operation triggers proxy creation on other hosts.
+            // RISKY OPERATION if InitializeOwner() is called during component construction.
+            // In current model, this doesn't happen since Unity instantiates all Components,
+            // and InitializeOwner() only gets called from Start() after construction is complete.
+            host.AddOwner(this);
+
+        }
+
+        public void InitializeProxy(NetPeer owningPeer, DistributedId id)
         {
             // make sure args are valid
             Contract.Requires(owningPeer != null);

@@ -54,7 +54,7 @@ namespace Holofunk.Viewpoint
                 DistributedViewpoint distributed = clone.GetComponent<DistributedViewpoint>();
 
                 local.Initialize(createMessage.Players);
-                distributed.Initialize(netPeer, createMessage.Id);
+                distributed.InitializeProxy(netPeer, createMessage.Id);
 
                 proxyCapability.AddProxy(netPeer, distributed);
             });
