@@ -57,6 +57,7 @@ namespace Holofunk.Distributed
             Host.RegisterType<PerformerId>();
             Host.RegisterType<UserId>();
             Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetVector3);
+            Host.RegisterWith(ViewpointMessages.Register);
             Instance = this;
 
             // let the announcements begin!

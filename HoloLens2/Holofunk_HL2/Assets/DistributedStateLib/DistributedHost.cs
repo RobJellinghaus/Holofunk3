@@ -530,9 +530,11 @@ namespace Distributed.State
         public void SendToProxies<T>(T message)
             where T : class, new()
         {
+            netDataWriter.Reset();
+            netPacketProcessor.Write(netDataWriter, message);
             foreach (NetPeer netPeer in NetPeers)
             {
-                SendReliableMessage(message, netPeer);
+                netPeer.Send(netDataWriter, DeliveryMethod.ReliableOrdered);
             }
         }
 
