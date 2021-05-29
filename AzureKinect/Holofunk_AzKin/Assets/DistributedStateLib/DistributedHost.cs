@@ -289,7 +289,7 @@ namespace Distributed.State
             }
 
             netPacketProcessor = new NetPacketProcessor();
-            SerializedSocketAddress.RegisterWith(netPacketProcessor);
+            RegisterType<SerializedSocketAddress>();
             RegisterType<DistributedId>();
             netPacketProcessor.SubscribeReusable<AnnounceMessage, IPEndPoint>(OnAnnounceReceived);
             netPacketProcessor.SubscribeReusable<AnnounceResponseMessage, IPEndPoint>(OnAnnounceResponseReceived);
