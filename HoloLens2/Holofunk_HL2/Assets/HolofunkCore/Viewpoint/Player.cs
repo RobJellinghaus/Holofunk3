@@ -2,6 +2,7 @@
 
 using Distributed.State;
 using Holofunk.Distributed;
+using LiteNetLib.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace Holofunk.Viewpoint
     /// <summary>
     /// Serialized state of a player (e.g. a recognized/tracked individual) as seen from a viewpoint.
     /// </summary>
-    public struct Player
+    public struct Player : INetSerializable
     {
         /// <summary>
         /// Player identifier from the Viewpoint (0 through N).
@@ -65,5 +66,29 @@ namespace Holofunk.Viewpoint
         /// If this joint is not currently tracked, all values will be float.NaN.
         /// </remarks>
         public Vector3 RightHandPosition { get; set; }
+
+        public void Deserialize(NetDataReader reader)
+        {
+            PlayerId.Deserialize(reader);
+            UserId.Deserialize(reader);
+            Tracked = reader.GetBool();
+            PerformerHostAddress.Deserialize(reader);
+            PerformerId.Deserialize(reader);
+            HeadPosition = reader.GetVector3();
+            LeftHandPosition = reader.GetVector3();
+            RightHandPosition = reader.GetVector3();
+        }
+
+        public void Serialize(NetDataWriter writer)
+        {
+            PlayerId.Serialize(writer);
+            UserId.Serialize(writer);
+            writer.Put(Tracked);
+            PerformerHostAddress.Serialize(writer);
+            PerformerId.Serialize(writer);
+            writer.Put(HeadPosition);
+            writer.Put(LeftHandPosition);
+            writer.Put(RightHandPosition);
+        }
     }
 }
