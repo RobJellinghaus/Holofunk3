@@ -585,7 +585,7 @@ namespace Distributed.State
 
         private string ConnectionsStatusString()
         {
-            return $"ConnectedPeerList: [{AsString<NetPeer>(netManager?.ConnectedPeerList, np => np.EndPoint.ToString())}], AnnouncedEndpoints: [{AsString<IPEndPoint>(this.AnnouncedEndPoints, ep => ep.ToString()}]";
+            return $"ConnectedPeerList: [{AsString<NetPeer>(netManager?.ConnectedPeerList, np => np.EndPoint.ToString())}], AnnouncedEndpoints: [{AsString<IPEndPoint>(this.AnnouncedEndPoints, ep => ep.ToString())}]";
         }
 
         #endregion
