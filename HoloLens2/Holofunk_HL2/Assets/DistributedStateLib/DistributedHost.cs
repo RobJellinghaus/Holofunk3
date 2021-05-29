@@ -602,8 +602,8 @@ namespace Distributed.State
                 }
 
                 // So, connect away.
-                NetPeer peer = netManager.Connect(endpoint, RequestKey);
-                AddPeer(peer);
+                NetPeer newPeer = netManager.Connect(endpoint, RequestKey);
+                AddPeer(newPeer);
             }
         }
 
