@@ -1,6 +1,7 @@
 ﻿/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
+using Holofunk.Core;
 using LiteNetLib;
 using static Holofunk.Viewpoint.ViewpointMessages;
 
@@ -85,6 +86,7 @@ namespace Holofunk.Viewpoint
 
         protected override void SendCreateMessage(NetPeer netPeer)
         {
+            HoloDebug.Log($"Sending ViewpointMessages.Create for id {Id} to peer {netPeer.EndPoint}");
             Host.SendReliableMessage(new Create(Id, GetLocalViewpoint().PlayersAsArray), netPeer);
         }
 
