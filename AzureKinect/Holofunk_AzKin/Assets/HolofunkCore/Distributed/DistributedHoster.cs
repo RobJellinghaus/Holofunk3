@@ -1,6 +1,7 @@
 ﻿/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
+using Holofunk.Viewpoint;
 using LiteNetLib;
 using LiteNetLib.Utils;
 using UnityEngine;
@@ -51,8 +52,11 @@ namespace Holofunk.Distributed
         {
             workQueue = new WorkQueue();
             Host = new DistributedHost(workQueue, DefaultListenPort, isListener: true);
+            Host.RegisterType<Player>();
             Host.RegisterType<PlayerId>();
-            Host.RegisterType(WriteVector3, ReadVector3);
+            Host.RegisterType<PerformerId>();
+            Host.RegisterType<UserId>();
+            Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetVector3);
             Instance = this;
 
             // let the announcements begin!
@@ -74,18 +78,6 @@ namespace Holofunk.Distributed
         {
             Host.Dispose();
             Host = null;
-        }
-
-        private static void WriteVector3(NetDataWriter writer, Vector3 value)
-        {
-            writer.Put(value[0]);
-            writer.Put(value[1]);
-            writer.Put(value[2]);
-        }
-
-        private static Vector3 ReadVector3(NetDataReader reader)
-        {
-            return new Vector3(reader.GetFloat(), reader.GetFloat(), reader.GetFloat());
         }
     }
 }

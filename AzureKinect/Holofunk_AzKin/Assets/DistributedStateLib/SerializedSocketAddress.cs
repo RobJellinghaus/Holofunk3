@@ -11,7 +11,7 @@ namespace Distributed.State
     /// <remarks>
     /// Might as well bite the bullet and handle the full port/IPV4/IPV6 enchilada.
     /// </remarks>
-    public struct SerializedSocketAddress
+    public struct SerializedSocketAddress : INetSerializable
     {
         public SocketAddress SocketAddress { get; set; }
 
@@ -43,45 +43,43 @@ namespace Distributed.State
             return !(left.SocketAddress == right.SocketAddress);
         }
 
-        public static void RegisterWith(NetPacketProcessor packetProcessor)
-        {
-            packetProcessor.RegisterNestedType(Serialize, Deserialize);
-        }
-
-        public static SerializedSocketAddress Deserialize(NetDataReader reader)
+        public void Deserialize(NetDataReader reader)
         {
             int socketAddressSize = reader.GetByte();
 
             if (socketAddressSize == 0)
             {
-                return default(SerializedSocketAddress);
+                SocketAddress = default(SocketAddress);
             }
-
-            // first two bytes of serialized socket is the address family, which we need to make a SocketAddress
-            AddressFamily socketFamily = (AddressFamily)reader.GetShort();
-            SocketAddress socketAddress = new SocketAddress(socketFamily, socketAddressSize);
-            for (int i = 0; i < socketAddressSize - 2; i++)
+            else
             {
-                socketAddress[i + 2] = reader.GetByte();
+
+                // first two bytes of serialized socket is the address family, which we need to make a SocketAddress
+                AddressFamily socketFamily = (AddressFamily)reader.GetShort();
+                SocketAddress socketAddress = new SocketAddress(socketFamily, socketAddressSize);
+                for (int i = 0; i < socketAddressSize - 2; i++)
+                {
+                    socketAddress[i + 2] = reader.GetByte();
+                }
+                SocketAddress = socketAddress;
             }
-            return new SerializedSocketAddress(socketAddress);
         }
 
-        public static void Serialize(NetDataWriter writer, SerializedSocketAddress socketAddress)
+        public void Serialize(NetDataWriter writer)
         {
             // If we are not initialized then just write 0 and be done
-            if (!socketAddress.IsInitialized)
+            if (!IsInitialized)
             {
                 writer.Put((byte)0);
                 return;
             
             }
             // first write the size
-            writer.Put((byte)socketAddress.SocketAddress.Size);
+            writer.Put((byte)SocketAddress.Size);
             // then the bytes
-            for (int i = 0; i < socketAddress.SocketAddress.Size; i++)
+            for (int i = 0; i < SocketAddress.Size; i++)
             {
-                writer.Put(socketAddress.SocketAddress[i]);
+                writer.Put(SocketAddress[i]);
             }
         }
 
