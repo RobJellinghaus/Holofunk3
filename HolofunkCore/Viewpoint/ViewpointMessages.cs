@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2021 by Rob Jellinghaus.
 
 using Distributed.State;
+using Holofunk.Core;
 using Holofunk.Distributed;
 using LiteNetLib;
 using System;
@@ -48,6 +49,10 @@ namespace Holofunk.Viewpoint
                 GameObject prototype = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Viewpoint);
                 GameObject parent = DistributedObjectFactory.FindContainer(DistributedObjectFactory.DistributedType.Viewpoint, netPeer);
                 GameObject clone = UnityEngine.Object.Instantiate(prototype, parent.transform);
+
+                clone.name = $"{createMessage.Id}";
+
+                HoloDebug.Log($"Received ViewpointMessages.Create for id {createMessage.Id} from peer {netPeer.EndPoint}");
 
                 // wire the local and distributed things together
                 LocalViewpoint local = clone.GetComponent<LocalViewpoint>();
