@@ -35,10 +35,10 @@ namespace Distributed.State
         /// </summary>
         private class Listener : INetEventListener
         {
-            readonly DistributedHost Peer;
-            internal Listener(DistributedHost peer)
+            readonly DistributedHost Host;
+            internal Listener(DistributedHost host)
             {
-                Peer = peer;
+                Host = host;
             }
             public void OnConnectionRequest(ConnectionRequest request)
             {
@@ -57,19 +57,17 @@ namespace Distributed.State
 
             public void OnNetworkReceive(NetPeer netPeer, NetPacketReader reader, DeliveryMethod deliveryMethod)
             {
-                Peer.netPacketProcessor.ReadAllPackets(reader, netPeer);
+                Host.netPacketProcessor.ReadAllPackets(reader, netPeer);
             }
 
             public void OnNetworkReceiveUnconnected(IPEndPoint remoteEndPoint, NetPacketReader reader, UnconnectedMessageType messageType)
             {
-                Peer.netPacketProcessor.ReadAllPackets(reader, remoteEndPoint);
+                Host.netPacketProcessor.ReadAllPackets(reader, remoteEndPoint);
             }
 
             public void OnPeerConnected(NetPeer netPeer)
             {
-                Peer.proxies.Add(new SerializedSocketAddress(netPeer), new Dictionary<DistributedId, IDistributedObject>());
-
-                Peer.SendProxiesToPeer(netPeer);
+                Host.AddPeer(netPeer);
             }
 
             /// <summary>
@@ -79,7 +77,7 @@ namespace Distributed.State
             public void OnPeerDisconnected(NetPeer netPeer, DisconnectInfo disconnectInfo)
             {
                 SerializedSocketAddress peerAddress = new SerializedSocketAddress(netPeer);
-                if (Peer.proxies.TryGetValue(peerAddress, out Dictionary<DistributedId, IDistributedObject> peerObjects))
+                if (Host.proxies.TryGetValue(peerAddress, out Dictionary<DistributedId, IDistributedObject> peerObjects))
                 {
                     // delete them all
                     foreach (IDistributedObject proxy in peerObjects.Values)
@@ -90,7 +88,7 @@ namespace Distributed.State
                     }
 
                     // and drop the whole collection of proxies
-                    Peer.proxies.Remove(peerAddress);
+                    Host.proxies.Remove(peerAddress);
                 }
             }
         }
@@ -527,7 +525,7 @@ namespace Distributed.State
         }
 
         /// <summary>
-        /// Send create messages for all our owned objects to this peer.
+        /// Send this message to all proxies.
         /// </summary>
         public void SendToProxies<T>(T message)
             where T : class, new()
@@ -536,6 +534,13 @@ namespace Distributed.State
             {
                 SendReliableMessage(message, netPeer);
             }
+        }
+
+        private void AddPeer(NetPeer netPeer)
+        {
+            proxies.Add(new SerializedSocketAddress(netPeer), new Dictionary<DistributedId, IDistributedObject>());
+
+            SendProxiesToPeer(netPeer);
         }
 
         #endregion
@@ -550,8 +555,6 @@ namespace Distributed.State
             // heed only ipv4 for now... TBD what to do about this
             if (endpoint.AddressFamily == AddressFamily.InterNetwork)
             {
-                PeerAnnounceCount++;
-
                 // is this actually our own announcement!?
                 SerializedSocketAddress incomingAddress = new SerializedSocketAddress(endpoint.Serialize());
                 if (incomingAddress == this.SocketAddress)
@@ -559,6 +562,8 @@ namespace Distributed.State
                     // ignore this, we're talking to ourselves
                     return;
                 }
+
+                PeerAnnounceCount++;
 
                 // do we know this peer already?
                 // (could happen in race scenario)
@@ -597,7 +602,8 @@ namespace Distributed.State
                 }
 
                 // So, connect away.
-                netManager.Connect(endpoint, RequestKey);
+                NetPeer peer = netManager.Connect(endpoint, RequestKey);
+                AddPeer(peer);
             }
         }
 
