@@ -79,12 +79,10 @@ namespace Distributed.State
                 SerializedSocketAddress peerAddress = new SerializedSocketAddress(netPeer);
                 if (Host.proxies.TryGetValue(peerAddress, out Dictionary<DistributedId, IDistributedObject> peerObjects))
                 {
-                    // delete them all
+                    // detach them all
                     foreach (IDistributedObject proxy in peerObjects.Values)
                     {
-                        // Delete the local object only; calling Delete() on the proxy itself would result
-                        // in a delete request to the owning peer, which just became inaccessible!
-                        proxy.LocalObject.OnDelete();
+                        proxy.OnDetach();
                     }
 
                     // and drop the whole collection of proxies
