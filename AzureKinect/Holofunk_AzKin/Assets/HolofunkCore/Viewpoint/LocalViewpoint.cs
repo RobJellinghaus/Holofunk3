@@ -52,10 +52,10 @@ namespace Holofunk.Viewpoint
         /// </remarks>
         public Player GetPlayer(int index)
         {
-            Contract.Requires(index >= 1);
-            Contract.Requires(index <= PlayerCount);
+            Contract.Requires(index >= 0);
+            Contract.Requires(index < PlayerCount);
 
-            return players[index - 1];
+            return players[index];
         }
 
         public void OnDelete()

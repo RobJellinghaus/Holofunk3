@@ -43,6 +43,29 @@ namespace Holofunk.Distributed
         }
 
         /// <summary>
+        /// Find the first parent GameObject for new object instances of the given type.
+        /// </summary>
+        /// <remarks>
+        /// This just assumes the first endpoint we find is the one we want.
+        /// </remarks>
+        public static GameObject FindFirstContainer(DistributedType type)
+        {
+            Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
+            Contract.Requires(instanceContainer != null);
+
+            if (instanceContainer.childCount == 0)
+            {
+                return null;
+            }
+
+            Transform hostContainer = instanceContainer.GetChild(0);
+
+            Transform typeContainer = hostContainer.Find(type.ToString());
+
+            return typeContainer?.gameObject;
+        }
+
+        /// <summary>
         /// Find the parent GameObject for new object instances of the given type.
         /// </summary>
         /// <remarks>
