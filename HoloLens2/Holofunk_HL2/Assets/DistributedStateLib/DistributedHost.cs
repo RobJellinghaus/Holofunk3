@@ -141,7 +141,7 @@ namespace Distributed.State
         /// <summary>
         /// Delay between announce messages.
         /// </summary>
-        public static int AnnounceDelayMsec = 100;
+        public static int AnnounceDelayMsec = 1000;
 
         /// <summary>
         /// The broadcast port for announcing new peers and disseminating information.
@@ -617,11 +617,19 @@ namespace Distributed.State
                     return;
                 }
 
+                // did we already respond to this peer?
+                if (AnnouncedEndPoints.Contains(endpoint))
+                {
+                    return;
+                }
+
                 // did this peer know us already? (typical scenario given re-announcements)
                 if (message.KnownPeers.Contains(SocketAddress))
                 {
                     return;
                 }
+
+                logger?.WriteNet(NetLogLevel.Trace, $"DistributedHost.OnAnnounceReceived({endpoint}) -- responding. {ConnectionsStatusString()}]");
 
                 // send announce response
                 AnnounceResponseMessage response = new AnnounceResponseMessage { };
@@ -654,6 +662,8 @@ namespace Distributed.State
                 }
 
                 AnnouncedEndPoints.Add(endpoint);
+
+                logger?.WriteNet(NetLogLevel.Info, $"DistributedHost.OnAnnounceResponseReceived({endpoint}) -- sending connect request");
 
                 // So, connect away. (Note this could still race -- Connect is thread-safe but the
                 // AddPeer method is not. TODO: look at fixing this.)

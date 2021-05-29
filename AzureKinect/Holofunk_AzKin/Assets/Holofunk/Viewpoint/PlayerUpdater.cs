@@ -65,7 +65,10 @@ namespace Holofunk.Viewpoint
                     };
                 }
 
-                GetComponent<DistributedViewpoint>().UpdatePlayer(updatedPlayer);
+                // We currently use the prototype Viewpoint as the owned instance for this app.
+                // TODO: is this simplest/best?
+                GameObject viewpointPrototype = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Viewpoint);
+                viewpointPrototype.GetComponent<DistributedViewpoint>().UpdatePlayer(updatedPlayer);
             }
         }
 

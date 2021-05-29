@@ -13,13 +13,16 @@ namespace Distributed.State
     class WorkQueue : IWorkQueue
     {
         /// <summary>
-        /// The list of actions to run.
+        /// The list of actions to run and timestamps to run them at.
         /// </summary>
-        private readonly List<Action> actions;
+        /// <remarks>
+        /// The long quantities are milliseconds.
+        /// </remarks>
+        private readonly List<(long, Action)> actions;
 
         public WorkQueue()
         {
-            actions = new List<Action>();
+            actions = new List<(long, Action)>();
         }
 
         /// <summary>
@@ -33,10 +36,22 @@ namespace Distributed.State
         /// <remarks>
         /// For testing purposes it is easier to just force the queued work deterministically.
         /// </remarks>
-        public void RunLater(Action action, int delayMsec)
+        public void RunLater(Action action, int delayMsec = 0)
         {
-            actions.Add(action);
+            // 0 means "ASAP"
+            long targetTimeMsec = delayMsec == 0 ? 0 : (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) + delayMsec;
+            for (int i = 0; i < actions.Count; i++)
+            {
+                if (actions[i].Item1 > delayMsec)
+                {
+                    actions.Insert(i, (targetTimeMsec, action));
+                    return;
+                }
+            }
+            actions.Add((targetTimeMsec, action));
         }
+
+        private List<(long, Action)> temporaryQueue = new List<(long, Action)>();
 
         /// <summary>
         /// Execute the queued work.
@@ -47,13 +62,34 @@ namespace Distributed.State
         /// </remarks>
         public void PollEvents()
         {
-            // allocate copy so that if any actions queue more work, it gets queued after all current work
-            // TODO: pool these copies
-            Action[] actionsCopy = actions.ToArray();
-            actions.Clear();
-            foreach (Action action in actionsCopy)
+            long currentTimeInMsec = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            temporaryQueue.Clear();
+
+            // copy all the actions that can run now to temporaryQueue
+            for (int i = 0; i < actions.Count; i++)
             {
-                action();
+                if (actions[i].Item1 <= currentTimeInMsec)
+                {
+                    // we can run this
+                    temporaryQueue.Add(actions[i]);
+                }
+                else
+                {
+                    // here's where we stop
+                    actions.RemoveRange(0, i);
+                    break;
+                }
+            }
+            foreach (var action in temporaryQueue)
+            {
+                if (action.Item1 <= currentTimeInMsec)
+                {
+                    action.Item2();
+                }
+                else
+                {
+                    break;
+                }
             }
         }
     }
