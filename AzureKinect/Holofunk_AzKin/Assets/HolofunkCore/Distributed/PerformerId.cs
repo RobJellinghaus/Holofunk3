@@ -29,6 +29,11 @@ namespace Holofunk.Distributed
 
         public static explicit operator byte(PerformerId id) => id.value;
 
+        public override string ToString()
+        {
+            return $"#{value}";
+        }
+
         public static bool operator ==(PerformerId left, PerformerId right)
         {
             return left.Equals(right);

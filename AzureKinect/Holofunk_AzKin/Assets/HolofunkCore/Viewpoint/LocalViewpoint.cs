@@ -60,7 +60,7 @@ namespace Holofunk.Viewpoint
 
         public void OnDelete()
         {
-            throw new NotImplementedException();
+            // Go gently
         }
 
         /// <summary>
