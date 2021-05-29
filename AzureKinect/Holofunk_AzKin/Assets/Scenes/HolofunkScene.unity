@@ -1040,6 +1040,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c04ce262dd99144f837e034393a6074, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isHostingAudio: 1
 --- !u!4 &1297014216
 Transform:
   m_ObjectHideFlags: 0

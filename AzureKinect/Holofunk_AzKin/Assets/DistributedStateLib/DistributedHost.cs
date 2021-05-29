@@ -464,12 +464,12 @@ namespace Distributed.State
         /// After constructing a Peer, generally one calls Announce() just once
         /// to start the perpetual cycle of announcements that each Peer makes.
         /// </remarks>
-        public void Announce()
+        public void Announce(bool isHostingAudio)
         {
             AnnounceMessage message = new AnnounceMessage
             {
                 AnnouncerSocketAddress = SocketAddress,
-                AnnouncerIsHostingAudio = false,
+                AnnouncerIsHostingAudio = isHostingAudio,
                 KnownPeers = netManager
                     .ConnectedPeerList
                     .Select(peer => new SerializedSocketAddress(peer.EndPoint.Serialize()))
@@ -479,7 +479,7 @@ namespace Distributed.State
             SendBroadcastMessage(message);
 
             // schedule next announcement
-            workQueue.RunLater(Announce, AnnounceDelayMsec);
+            workQueue.RunLater(() => Announce(isHostingAudio), AnnounceDelayMsec);
         }
 
         /// <summary>
@@ -551,6 +551,14 @@ namespace Distributed.State
             if (endpoint.AddressFamily == AddressFamily.InterNetwork)
             {
                 PeerAnnounceCount++;
+
+                // is this actually our own announcement!?
+                SerializedSocketAddress incomingAddress = new SerializedSocketAddress(endpoint.Serialize());
+                if (incomingAddress == this.SocketAddress)
+                {
+                    // ignore this, we're talking to ourselves
+                    return;
+                }
 
                 // do we know this peer already?
                 // (could happen in race scenario)

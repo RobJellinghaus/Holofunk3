@@ -30,6 +30,11 @@ namespace Holofunk.Distributed
 
         private IWorkQueue workQueue;
 
+        /// <summary>
+        /// is this application hosting audio?
+        /// </summary>
+        public bool isHostingAudio = false;
+
         public DistributedHoster()
         {
         }
@@ -49,6 +54,9 @@ namespace Holofunk.Distributed
             Host.RegisterType<PlayerId>();
             Host.RegisterType(WriteVector3, ReadVector3);
             Instance = this;
+
+            // let the announcements begin!
+            Host.Announce(isHostingAudio);
         }
 
         /// <summary>
