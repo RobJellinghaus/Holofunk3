@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2020 by Rob Jellinghaus.
+using LiteNetLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Distributed.State
 {
@@ -20,9 +22,12 @@ namespace Distributed.State
         /// </remarks>
         private readonly List<(long, Action)> actions;
 
-        public WorkQueue()
+        private readonly INetLogger logger;
+
+        public WorkQueue(INetLogger logger = null)
         {
             actions = new List<(long, Action)>();
+            this.logger = logger;
         }
 
         /// <summary>
@@ -39,16 +44,33 @@ namespace Distributed.State
         public void RunLater(Action action, int delayMsec = 0)
         {
             // 0 means "ASAP"
-            long targetTimeMsec = delayMsec == 0 ? 0 : (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) + delayMsec;
+            long targetTimeMsec = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) + delayMsec;
+
+            logger?.WriteNet(NetLogLevel.Trace, $"Calling RunLater, delayMsec {delayMsec}, targetTimeMsec {targetTimeMsec}, times [{string.Join(", ", actions.Select(t => t.Item1.ToString()))}]");
+
             for (int i = 0; i < actions.Count; i++)
             {
-                if (actions[i].Item1 > delayMsec)
+                if (actions[i].Item1 >= targetTimeMsec)
                 {
                     actions.Insert(i, (targetTimeMsec, action));
+
+                    CheckOrder(actions);
+
                     return;
                 }
             }
+
             actions.Add((targetTimeMsec, action));
+
+            CheckOrder(actions);
+        }
+
+        private void CheckOrder(List<(long, Action)> list)
+        {
+            for (int i = 1; i < list.Count; i++)
+            {
+                Contract.Requires(list[i - 1].Item1 <= list[i].Item1);
+            }
         }
 
         private List<(long, Action)> temporaryQueue = new List<(long, Action)>();
@@ -70,27 +92,26 @@ namespace Distributed.State
             {
                 if (actions[i].Item1 <= currentTimeInMsec)
                 {
-                    // we can run this
+                    // we can run this now
                     temporaryQueue.Add(actions[i]);
                 }
                 else
                 {
-                    // here's where we stop
-                    actions.RemoveRange(0, i);
                     break;
                 }
             }
+
+            actions.RemoveRange(0, temporaryQueue.Count);
+
+            CheckOrder(actions);
+            CheckOrder(temporaryQueue);
+
             foreach (var action in temporaryQueue)
             {
-                if (action.Item1 <= currentTimeInMsec)
-                {
-                    action.Item2();
-                }
-                else
-                {
-                    break;
-                }
+                action.Item2();
             }
+
+            logger?.WriteNet(NetLogLevel.Trace, $"WorkQueue.PollEvents(): at end: actions.Count {actions.Count}");
         }
     }
 }

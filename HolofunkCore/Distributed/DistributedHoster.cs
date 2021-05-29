@@ -51,7 +51,7 @@ namespace Holofunk.Distributed
         /// </remarks>
         public void Awake()
         {
-            workQueue = new WorkQueue();
+            workQueue = new WorkQueue(HoloDebug.Instance);
             Host = new DistributedHost(workQueue, DefaultListenPort, isListener: true, logger: HoloDebug.Instance);
             Host.RegisterType<Player>();
             Host.RegisterType<PlayerId>();

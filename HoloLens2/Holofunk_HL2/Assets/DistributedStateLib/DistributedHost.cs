@@ -141,7 +141,7 @@ namespace Distributed.State
         /// <summary>
         /// Delay between announce messages.
         /// </summary>
-        public static int AnnounceDelayMsec = 1000;
+        public static int AnnounceDelayMsec = 2000;
 
         /// <summary>
         /// The broadcast port for announcing new peers and disseminating information.
@@ -482,6 +482,8 @@ namespace Distributed.State
         /// </remarks>
         public void Announce(bool isHostingAudio = false)
         {
+            logger?.WriteNet(NetLogLevel.Trace, $"DistributedHost.Announce()");
+
             AnnounceMessage message = new AnnounceMessage
             {
                 AnnouncerSocketAddress = SocketAddress,

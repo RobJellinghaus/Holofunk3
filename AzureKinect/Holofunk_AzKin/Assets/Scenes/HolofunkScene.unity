@@ -666,8 +666,6 @@ GameObject:
   m_Component:
   - component: {fileID: 764715393}
   - component: {fileID: 764715392}
-  - component: {fileID: 764715395}
-  - component: {fileID: 764715394}
   - component: {fileID: 764715396}
   m_Layer: 0
   m_Name: Player 0
@@ -708,30 +706,6 @@ Transform:
   m_Father: {fileID: 162061334}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &764715394
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 764715391}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b34efb224febac4ab1e71e752a239a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &764715395
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 764715391}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c66fd7041b517434380087a4a391e76a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &764715396
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1400,8 +1374,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1612466418}
   - component: {fileID: 1612466417}
-  - component: {fileID: 1612466420}
-  - component: {fileID: 1612466419}
   - component: {fileID: 1612466421}
   m_Layer: 0
   m_Name: Player 1
@@ -1442,30 +1414,6 @@ Transform:
   m_Father: {fileID: 162061334}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1612466419
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1612466416}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b34efb224febac4ab1e71e752a239a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1612466420
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1612466416}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c66fd7041b517434380087a4a391e76a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1612466421
 MonoBehaviour:
   m_ObjectHideFlags: 0
