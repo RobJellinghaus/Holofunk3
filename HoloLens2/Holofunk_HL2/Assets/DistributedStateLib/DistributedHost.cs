@@ -186,6 +186,11 @@ namespace Distributed.State
         private readonly Dictionary<DistributedId, IDistributedObject> owners = new Dictionary<DistributedId, IDistributedObject>();
 
         /// <summary>
+        /// The LiteNetLib Logger to use.
+        /// </summary>
+        private readonly INetLogger logger;
+
+        /// <summary>
         /// The next id to assign to a new owning object.
         /// </summary>
         private uint nextOwnerId;
@@ -237,6 +242,15 @@ namespace Distributed.State
         public IEnumerable<NetPeer> NetPeers => netManager.ConnectedPeerList;
 
         /// <summary>
+        /// Endpoints that have responded to an announcement, to prevent repeated connect requests.
+        /// </summary>
+        /// <remarks>
+        /// Once endpoints are connected, they are removed from this list (so if a disconnection happens,
+        /// they can be re-announced and re-responded to).
+        /// </remarks>
+        internal List<IPEndPoint> AnnouncedEndPoints = new List<IPEndPoint>();
+
+        /// <summary>
         /// Get the proxies that are owned by this peer.
         /// </summary>
         public IReadOnlyDictionary<DistributedId, IDistributedObject> ProxiesForPeer(SerializedSocketAddress serializedSocketAddress)
@@ -261,12 +275,14 @@ namespace Distributed.State
             IWorkQueue workQueue,
             ushort listenPort,
             bool isListener = true,
-            int disconnectTimeout = -1)
+            int disconnectTimeout = -1,
+            INetLogger logger = null)
         {
             Contract.Requires(listenPort != 0);
 
             ListenPort = listenPort;
             this.workQueue = workQueue;
+            this.logger = logger;
 
             // determine our IP
             // hat tip https://stackoverflow.com/questions/6803073/get-local-ip-address
@@ -542,9 +558,34 @@ namespace Distributed.State
 
         private void AddPeer(NetPeer netPeer)
         {
+            logger?.WriteNet(NetLogLevel.Trace, $"DistributedHost.AddPeer({netPeer.EndPoint}) -- {ConnectionsStatusString()}]");
+
+            // we expect them to be in the connected peer list now
+            Contract.Requires(netManager.ConnectedPeerList.Contains(netPeer));
+
+            // Remove them from the list of announced endpoints (don't be too picky about whether they were in it or not)
+            AnnouncedEndPoints.Remove(netPeer.EndPoint);
+
             proxies.Add(new SerializedSocketAddress(netPeer), new Dictionary<DistributedId, IDistributedObject>());
 
             SendProxiesToPeer(netPeer);
+        }
+
+        private static string AsString<T>(IEnumerable<T> enumerable, Func<T, string> toStringFunc)
+        {
+            if (enumerable == null)
+            {
+                return "-null-";
+            }
+            else
+            {
+                return string.Join(", ", enumerable.Select(t => toStringFunc(t)));
+            }
+        }
+
+        private string ConnectionsStatusString()
+        {
+            return $"ConnectedPeerList: [{AsString<NetPeer>(netManager?.ConnectedPeerList, np => np.EndPoint.ToString())}], AnnouncedEndpoints: [{AsString<IPEndPoint>(this.AnnouncedEndPoints, ep => ep.ToString()}]";
         }
 
         #endregion
@@ -598,6 +639,8 @@ namespace Distributed.State
             {
                 PeerAnnounceResponseCount++;
 
+                logger?.WriteNet(NetLogLevel.Trace, $"DistributedHost.OnAnnounceResponseReceived({endpoint}) -- {ConnectionsStatusString()}");
+
                 // we shouldn't know this peer yet, let's check.
                 if (netManager.ConnectedPeerList.Any(peer => peer.EndPoint.Equals(endpoint)))
                 {
@@ -605,13 +648,17 @@ namespace Distributed.State
                     return;
                 }
 
+                if (AnnouncedEndPoints.Contains(endpoint))
+                {
+                    return;
+                }
+
+                AnnouncedEndPoints.Add(endpoint);
+
                 // So, connect away. (Note this could still race -- Connect is thread-safe but the
                 // AddPeer method is not. TODO: look at fixing this.)
-                NetPeer newPeer = netManager.Connect(endpoint, RequestKey);
-
-                // NO DON'T ADD THE PEER NOW.
-                // Let the callback do it???
-                // AddPeer(newPeer);
+                // Deliberately ignore the netPeer return value; we let the OnPeerConnected event carry the ball.
+                netManager.Connect(endpoint, RequestKey);
             }
         }
 

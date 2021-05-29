@@ -32,6 +32,11 @@ namespace Distributed.State
 
         public static explicit operator uint(DistributedId id) => id.value;
 
+        public override string ToString()
+        {
+            return $"#{value}";
+        }
+
         public static void RegisterWith(NetPacketProcessor packetProcessor)
         {
             packetProcessor.RegisterNestedType<DistributedId>();

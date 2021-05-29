@@ -1,6 +1,7 @@
 ﻿/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
+using Holofunk.Core;
 using Holofunk.Viewpoint;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -51,7 +52,7 @@ namespace Holofunk.Distributed
         public void Awake()
         {
             workQueue = new WorkQueue();
-            Host = new DistributedHost(workQueue, DefaultListenPort, isListener: true);
+            Host = new DistributedHost(workQueue, DefaultListenPort, isListener: true, logger: HoloDebug.Instance);
             Host.RegisterType<Player>();
             Host.RegisterType<PlayerId>();
             Host.RegisterType<PerformerId>();
