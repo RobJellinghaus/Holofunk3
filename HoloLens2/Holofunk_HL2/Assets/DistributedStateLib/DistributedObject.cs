@@ -165,8 +165,8 @@ namespace Distributed.State
         /// </summary>
         public readonly TLocalObject TypedLocalObject;
 
-        protected DistributedObject(DistributedHost peer, TLocalObject localObject)
-            : base(peer, localObject)
+        protected DistributedObject(DistributedHost host, TLocalObject localObject)
+            : base(host, localObject)
         {
             TypedLocalObject = localObject;
 

@@ -360,6 +360,7 @@ namespace Distributed.State
             owners.Add(distributedObject.Id, distributedObject);
             
             // and tell all the peers
+            // TODO: invert this so we create the message, write it to NetDataWriter, and then just blast it to all peers
             foreach (NetPeer netPeer in netManager.ConnectedPeerList)
             {
                 distributedObject.DistributedType.SendCreateMessageInternal(netPeer);
@@ -378,6 +379,7 @@ namespace Distributed.State
             if (distributedObject.IsOwner)
             {
                 owners.Remove(distributedObject.Id);
+                // TODO: invert this so we create the message once and blast it to all peers
                 foreach (NetPeer netPeer in NetPeers)
                 {
                     sendDeleteMessage(netPeer, false);
@@ -462,7 +464,7 @@ namespace Distributed.State
         /// After constructing a Peer, generally one calls Announce() just once
         /// to start the perpetual cycle of announcements that each Peer makes.
         /// </remarks>
-        public void Announce(bool isHostingAudio)
+        public void Announce(bool isHostingAudio = false)
         {
             AnnounceMessage message = new AnnounceMessage
             {
