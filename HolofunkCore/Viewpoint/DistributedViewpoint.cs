@@ -79,11 +79,6 @@ namespace Holofunk.Viewpoint
             // No-op; Viewpoints are never deleted, only detached
         }
 
-        public override void OnDetach()
-        {
-            // TODO: figure out what cleanup should happen here
-        }
-
         protected override void SendCreateMessage(NetPeer netPeer)
         {
             HoloDebug.Log($"Sending ViewpointMessages.Create for id {Id} to peer {netPeer.EndPoint}");

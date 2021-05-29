@@ -4,10 +4,6 @@ using Distributed.State;
 using Holofunk.Distributed;
 using LiteNetLib;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Holofunk.Viewpoint
@@ -38,7 +34,12 @@ namespace Holofunk.Viewpoint
 
         public abstract void OnDelete();
 
-        public abstract void OnDetach();
+        public virtual void OnDetach()
+        {
+            // Blow ourselves up.
+            // The assumption is that the entire game object and all components are appropriately destroyable.            
+            Destroy(gameObject);
+        }
 
         /// <summary>
         /// This is an owner Component; initialize it as such.
