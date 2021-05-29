@@ -604,7 +604,10 @@ namespace Distributed.State
                 // So, connect away. (Note this could still race -- Connect is thread-safe but the
                 // AddPeer method is not. TODO: look at fixing this.)
                 NetPeer newPeer = netManager.Connect(endpoint, RequestKey);
-                AddPeer(newPeer);
+
+                // NO DON'T ADD THE PEER NOW.
+                // Let the callback do it???
+                // AddPeer(newPeer);
             }
         }
 
