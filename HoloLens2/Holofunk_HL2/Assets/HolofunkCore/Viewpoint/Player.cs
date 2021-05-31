@@ -17,9 +17,14 @@ namespace Holofunk.Viewpoint
     /// </summary>
     public struct Player : INetSerializable
     {
+        public bool IsInitialized => PlayerId.IsInitialized;
+
         /// <summary>
-        /// Player identifier from the Viewpoint (0 through N).
+        /// Player identifier from the Viewpoint (1 through N).
         /// </summary>
+        /// <remarks>
+        /// This is 1-based so as to allow using default(PlayerId) as a sentinel for uninitialized.
+        /// </remarks>
         public PlayerId PlayerId { get; set; }
 
         public UserId UserId { get; set; }
