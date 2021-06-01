@@ -10,7 +10,7 @@ namespace Holofunk.Distributed
     /// <summary>
     /// The 1-based identifier of a player in a Viewpoint.
     /// </summary>
-    public struct PlayerId : INetSerializable
+    public struct PlayerId
     {
         private byte value;
 
@@ -29,40 +29,18 @@ namespace Holofunk.Distributed
 
         public static explicit operator byte(PlayerId id) => id.value;
 
-        public override string ToString()
-        {
-            return $"#{value}";
-        }
+        public override string ToString() => $"#{value}";
 
-        public static bool operator ==(PlayerId left, PlayerId right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(PlayerId left, PlayerId right) => left.Equals(right);
 
-        public static bool operator !=(PlayerId left, PlayerId right)
-        {
-            return !(left == right);
-        }
+        public static bool operator !=(PlayerId left, PlayerId right) => !(left == right);
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(value);
-        }
+        public static void Serialize(NetDataWriter writer, PlayerId playerId) => writer.Put(playerId.value);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            value = reader.GetByte();
-        }
+        public static PlayerId Deserialize(NetDataReader reader) => new PlayerId(reader.GetByte());
 
-        public override bool Equals(object obj)
-        {
-            return obj is PlayerId id &&
-                   value == id.value;
-        }
+        public override bool Equals(object obj) => obj is PlayerId id && value == id.value;
 
-        public override int GetHashCode()
-        {
-            return -1584136870 + value.GetHashCode();
-        }
+        public override int GetHashCode() =>  -1584136870 + value.GetHashCode();
     }
 }

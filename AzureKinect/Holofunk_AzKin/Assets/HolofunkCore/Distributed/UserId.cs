@@ -10,7 +10,7 @@ namespace Holofunk.Distributed
     /// <summary>
     /// The identifier of a user from the Kinect's point of view.
     /// </summary>
-    public struct UserId : INetSerializable
+    public struct UserId
     {
         private ulong value;
 
@@ -23,35 +23,16 @@ namespace Holofunk.Distributed
 
         public static explicit operator ulong(UserId id) => id.value;
 
-        public static bool operator ==(UserId left, UserId right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(UserId left, UserId right) => left.Equals(right);
 
-        public static bool operator !=(UserId left, UserId right)
-        {
-            return !(left == right);
-        }
+        public static bool operator !=(UserId left, UserId right) => !(left == right);
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(value);
-        }
+        public static void Serialize(NetDataWriter writer, UserId id) => writer.Put(id.value);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            value = reader.GetULong();
-        }
+        public static UserId Deserialize(NetDataReader reader) => new UserId(reader.GetULong());
 
-        public override bool Equals(object obj)
-        {
-            return obj is UserId id &&
-                   value == id.value;
-        }
+        public override bool Equals(object obj) => obj is UserId id && value == id.value;
 
-        public override int GetHashCode()
-        {
-            return -1584136870 + value.GetHashCode();
-        }
+        public override int GetHashCode() => -1584136870 + value.GetHashCode();
     }
 }

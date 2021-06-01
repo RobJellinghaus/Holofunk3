@@ -10,7 +10,7 @@ namespace Holofunk.Distributed
     /// <summary>
     /// The identifier of a performer.
     /// </summary>
-    public struct PerformerId : INetSerializable
+    public struct PerformerId
     {
         private byte value;
 
@@ -29,40 +29,18 @@ namespace Holofunk.Distributed
 
         public static explicit operator byte(PerformerId id) => id.value;
 
-        public override string ToString()
-        {
-            return $"#{value}";
-        }
+        public override string ToString() => $"#{value}";
 
-        public static bool operator ==(PerformerId left, PerformerId right)
-        {
-            return left.Equals(right);
-        }
+        public static bool operator ==(PerformerId left, PerformerId right) => left.Equals(right);
 
-        public static bool operator !=(PerformerId left, PerformerId right)
-        {
-            return !(left == right);
-        }
+        public static bool operator !=(PerformerId left, PerformerId right) => !(left == right);
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put(value);
-        }
+        public static void Serialize(NetDataWriter writer, PerformerId id) => writer.Put(id.value);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            value = reader.GetByte();
-        }
+        public static PerformerId Deserialize(NetDataReader reader) => new PerformerId(reader.GetByte());
 
-        public override bool Equals(object obj)
-        {
-            return obj is PerformerId id &&
-                   value == id.value;
-        }
+        public override bool Equals(object obj) => obj is PerformerId id && value == id.value;
 
-        public override int GetHashCode()
-        {
-            return -1584136870 + value.GetHashCode();
-        }
+        public override int GetHashCode() =>  -1584136870 + value.GetHashCode();
     }
 }
