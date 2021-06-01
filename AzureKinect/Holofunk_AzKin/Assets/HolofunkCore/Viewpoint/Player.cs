@@ -69,11 +69,11 @@ namespace Holofunk.Viewpoint
 
         public void Deserialize(NetDataReader reader)
         {
-            PlayerId.Deserialize(reader);
-            UserId.Deserialize(reader);
+            PlayerId = PlayerId.Deserialize(reader);
+            UserId = UserId.Deserialize(reader);
             Tracked = reader.GetBool();
             PerformerHostAddress.Deserialize(reader);
-            PerformerId.Deserialize(reader);
+            PerformerId = PerformerId.Deserialize(reader);
             HeadPosition = reader.GetVector3();
             LeftHandPosition = reader.GetVector3();
             RightHandPosition = reader.GetVector3();
@@ -81,11 +81,11 @@ namespace Holofunk.Viewpoint
 
         public void Serialize(NetDataWriter writer)
         {
-            PlayerId.Serialize(writer);
-            UserId.Serialize(writer);
+            PlayerId.Serialize(writer, PlayerId);
+            UserId.Serialize(writer, UserId);
             writer.Put(Tracked);
             PerformerHostAddress.Serialize(writer);
-            PerformerId.Serialize(writer);
+            PerformerId.Serialize(writer, PerformerId);
             writer.Put(HeadPosition);
             writer.Put(LeftHandPosition);
             writer.Put(RightHandPosition);
