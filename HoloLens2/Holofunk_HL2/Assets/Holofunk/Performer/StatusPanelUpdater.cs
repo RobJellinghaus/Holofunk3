@@ -119,7 +119,7 @@ handPose {handPose}";
             Vector3 ViewpointHandPosition(GameObject ic, Handedness h)
             {
                 Player player0 = GetPlayer0(ic);
-                if (!player0.IsInitialized)
+                if (!player0.PlayerId.IsInitialized)
                 {
                     return new Vector3(float.NaN, float.NaN, float.NaN);
                 }
@@ -129,7 +129,7 @@ handPose {handPose}";
             Vector3 ViewpointHeadPosition(GameObject ic)
             {
                 Player player0 = GetPlayer0(ic);
-                if (!player0.IsInitialized)
+                if (!player0.PlayerId.IsInitialized)
                 {
                     return new Vector3(float.NaN, float.NaN, float.NaN);
                 }
