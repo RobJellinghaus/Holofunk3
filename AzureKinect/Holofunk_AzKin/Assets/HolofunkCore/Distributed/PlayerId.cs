@@ -8,7 +8,7 @@ using System.Net.Sockets;
 namespace Holofunk.Distributed
 {
     /// <summary>
-    /// The identifier of a player in a Viewpoint.
+    /// The 1-based identifier of a player in a Viewpoint.
     /// </summary>
     public struct PlayerId : INetSerializable
     {

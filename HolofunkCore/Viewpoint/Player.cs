@@ -18,7 +18,7 @@ namespace Holofunk.Viewpoint
     public struct Player : INetSerializable
     {
         /// <summary>
-        /// Player identifier from the Viewpoint (0 through N).
+        /// Player identifier from the Viewpoint.
         /// </summary>
         public PlayerId PlayerId { get; set; }
 

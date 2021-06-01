@@ -38,7 +38,7 @@ namespace Holofunk.Viewpoint
                 {
                     updatedPlayer = new Player()
                     {
-                        PlayerId = (PlayerId)playerIndex,
+                        PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         Tracked = false,
                         UserId = default(UserId),
                         PerformerId = default(PerformerId),
@@ -55,8 +55,8 @@ namespace Holofunk.Viewpoint
                     updatedPlayer = new Player()
                     {
                         Tracked = true,
-                        PlayerId = (PlayerId)playerIndex,
-                        UserId = (UserId)userId,
+                        PlayerId = new PlayerId((byte)(playerIndex + 1)),
+                        UserId = userId,
                         PerformerId = default(PerformerId),
                         PerformerHostAddress = default(SerializedSocketAddress),
                         HeadPosition = GetJointWorldSpacePosition(userId, KinectInterop.JointType.Head),
