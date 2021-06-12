@@ -35,13 +35,10 @@ namespace Holofunk.Viewpoint
         /// <remarks>
         /// This is the key means by which the viewpoint arbitrates which other coordinate space
         /// it believes this player is hosted in.
+        /// 
+        /// Right now we support only one performer per remote host address.
         /// </remarks>
         public SerializedSocketAddress PerformerHostAddress { get; set; }
-
-        /// <summary>
-        /// The ID of the performer on that host that we think is this player.
-        /// </summary>
-        public PerformerId PerformerId { get; set; }
 
         /// <summary>
         /// The position of the head, as seen from the viewpoint, in viewpoint coordinates.
@@ -73,7 +70,6 @@ namespace Holofunk.Viewpoint
             UserId = UserId.Deserialize(reader);
             Tracked = reader.GetBool();
             PerformerHostAddress.Deserialize(reader);
-            PerformerId = PerformerId.Deserialize(reader);
             HeadPosition = reader.GetVector3();
             LeftHandPosition = reader.GetVector3();
             RightHandPosition = reader.GetVector3();
@@ -85,7 +81,6 @@ namespace Holofunk.Viewpoint
             UserId.Serialize(writer, UserId);
             writer.Put(Tracked);
             PerformerHostAddress.Serialize(writer);
-            PerformerId.Serialize(writer, PerformerId);
             writer.Put(HeadPosition);
             writer.Put(LeftHandPosition);
             writer.Put(RightHandPosition);

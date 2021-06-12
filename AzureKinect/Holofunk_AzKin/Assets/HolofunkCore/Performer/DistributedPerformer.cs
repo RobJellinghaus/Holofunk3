@@ -4,18 +4,17 @@ using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
 using LiteNetLib;
-using static Holofunk.Viewpoint.ViewpointMessages;
+using static Holofunk.Performer.PerformerMessages;
 
-namespace Holofunk.Viewpoint
+namespace Holofunk.Performer
 {
     /// <summary>
     /// The distributed interface of a viewpoint in the current system.
     /// </summary>
     /// <remarks>
-    /// Each Azure Kinect version of Holofunk connected to the current network will host its own DistributedViewpoint,
-    /// which it uses to disseminate state about what it views.
+    /// Each HoloLens 2 host in a Holofunk system 
     /// </remarks>
-    public class DistributedViewpoint : DistributedComponent, IDistributedViewpoint
+    public class DistributedPerformer : DistributedComponent, IDistributedPerformer
     {
         #region MonoBehaviours
 
@@ -33,24 +32,14 @@ namespace Holofunk.Viewpoint
 
         #region IDistributedViewpoint
 
-        public override ILocalObject LocalObject => GetLocalViewpoint();
+        public override ILocalObject LocalObject => GetLocalPerformer();
 
-        private LocalViewpoint GetLocalViewpoint() => gameObject.GetComponent<LocalViewpoint>();
-
-        /// <summary>
-        /// Get the count of currently known Players.
-        /// </summary>
-        public int PlayerCount => GetLocalViewpoint().PlayerCount;
+        private LocalPerformer GetLocalPerformer() => gameObject.GetComponent<LocalPerformer>();
 
         /// <summary>
-        /// Get the player with a given index.
+        /// Get the performer.
         /// </summary>
-        /// <param name="index">Zero-based index of player to retrieve.</param>
-        /// <remarks>
-        /// Note that the index of the player here has nothing to do with the PlayerId field of the player;
-        /// this index is semantically meaningless and only used for iterating over currently known players.
-        /// </remarks>
-        public Player GetPlayer(int index) => GetLocalViewpoint().GetPlayer(index);
+        public Performer GetPerformer() => GetLocalPerformer().GetPerformer();
 
         /// <summary>
         /// Update the given player.
@@ -61,9 +50,9 @@ namespace Holofunk.Viewpoint
         /// nulled out.
         /// </remarks>
         [ReliableMethod]
-        public void UpdatePlayer(Player playerToUpdate)
+        public void UpdatePerformer(Performer performer)
         {
-            RouteReliableMessage(isRequest => new UpdatePlayer(Id, isRequest, playerToUpdate));
+            RouteReliableMessage(isRequest => new UpdatePerformer(Id, isRequest, performer));
         }
 
         #endregion
@@ -82,8 +71,8 @@ namespace Holofunk.Viewpoint
 
         protected override void SendCreateMessage(NetPeer netPeer)
         {
-            HoloDebug.Log($"Sending ViewpointMessages.Create for id {Id} to peer {netPeer.EndPoint}");
-            Host.SendReliableMessage(new Create(Id, GetLocalViewpoint().PlayersAsArray), netPeer);
+            HoloDebug.Log($"Sending PerformerMessages.Create for id {Id} to peer {netPeer.EndPoint}");
+            Host.SendReliableMessage(new Create(Id, GetPerformer()), netPeer);
         }
 
         protected override void SendDeleteMessage(NetPeer netPeer, bool isRequest)

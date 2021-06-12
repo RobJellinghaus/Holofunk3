@@ -6,7 +6,7 @@ using LiteNetLib;
 using System;
 using UnityEngine;
 
-namespace Holofunk.Viewpoint
+namespace Holofunk.Distributed
 {
     /// <summary>
     /// Base component class implementing IDistributedObject.

@@ -9,21 +9,28 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Holofunk.Viewpoint
+namespace Holofunk.Performer
 {
     /// <summary>
-    /// The distributed interface of a viewpoint.
+    /// The local implementation of a Viewpoint object.
     /// </summary>
     /// <remarks>
-    /// Each Azure Kinect version of Holofunk in the current system will host its own DistributedViewpoint,
-    /// which it uses to disseminate state about what it views.
+    /// This keeps the local list of all players for this distributed viewpoint object on this host,
+    /// whether this host is the owning host or not.
     /// </remarks>
-    public interface IDistributedViewpoint : IDistributedInterface
+    public class LocalPerformer : MonoBehaviour, IDistributedPerformer, ILocalObject
     {
         /// <summary>
-        /// Get the count of currently known Players.
+        /// We keep the players list completely unsorted for now.
         /// </summary>
-        int PlayerCount { get; }
+        private Performer performer;
+
+        public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedPerformer>();
+
+        internal void Initialize(Performer performer)
+        {
+            this.performer = performer;
+        }
 
         /// <summary>
         /// Get the player with a given index.
@@ -33,7 +40,12 @@ namespace Holofunk.Viewpoint
         /// Note that the index of the player here has nothing to do with the PlayerId field of the player;
         /// this index is semantically meaningless and only used for iterating over currently known players.
         /// </remarks>
-        Player GetPlayer(int index);
+        public Performer GetPerformer() => performer;
+
+        public void OnDelete()
+        {
+            // Go gently
+        }
 
         /// <summary>
         /// Update the given player.
@@ -41,8 +53,11 @@ namespace Holofunk.Viewpoint
         /// <param name="playerToUpdate">The player to update.</param>
         /// <remarks>
         /// There is no way to delete a player, but a player object can be marked untracked and have its fields
-        /// nulled out.
+        /// nulled out (except for player ID).
         /// </remarks>
-        void UpdatePlayer(Player playerToUpdate);
+        public void UpdatePerformer(Performer performer)
+        {
+            this.performer = performer;
+        }
     }
 }

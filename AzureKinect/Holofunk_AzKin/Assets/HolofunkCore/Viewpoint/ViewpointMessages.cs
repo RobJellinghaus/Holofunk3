@@ -4,11 +4,6 @@ using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
 using LiteNetLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Holofunk.Viewpoint
