@@ -1,56 +1,9 @@
-﻿/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
-
+﻿
+using Holofunk.Core;
+using LiteNetLib.Utils;
+/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
 namespace Holofunk.HandPose
 {
-    /// <summary>
-    /// Which pose is each finger in?
-    /// </summary>
-    /// <remarks>
-    /// Curled is as in making a fist; Extended is straight out; Unknown is anything in between.
-    /// </remarks>
-    public enum FingerPose
-    {
-        /// <summary>
-        /// We don't know what pose this finger is in.
-        /// </summary>,
-        Unknown,
-        
-        /// <summary>
-        /// We are pretty sure this finger is curled up (as when making a fist).
-        /// </summary>
-        Curled,
-
-        /// <summary>
-        /// We are pretty sure this finger is extended more or less straight out.
-        /// </summary>
-        Extended
-    }
-
-    /// <summary>
-    /// For each pair of fingers, how extended and adjacent are they?
-    /// </summary>
-    /// <remarks>
-    /// This is calculated by determining how colinear the fingers are; if two adjacent fingers
-    /// are highly colinear, they're guaranteed to be pointing in the same direction, hence together.
-    /// </remarks>
-    public enum FingerPairExtension
-    {
-        /// <summary>
-        /// We don't know how close this pair of fingers are.
-        /// </summary>
-        Unknown,
-
-        /// <summary>
-        /// We are pretty confident these two fingers are extended side by side.
-        /// </summary>
-        ExtendedTogether,
-
-        /// <summary>
-        /// We are pretty confident these two fingers are NOT extended side by side.
-        /// </summary>
-        NotExtendedTogether
-    }
-
     /// <summary>
     /// What overall shape do we think the hand is in?
     /// </summary>
@@ -58,7 +11,7 @@ namespace Holofunk.HandPose
     /// This list of poses is heavily informed by what is easy to recognize with some trivial linear
     /// algebra, intersecting with what the HL2 can reliably detect.
     /// </remarks>
-    public enum HandPose
+    public enum HandPoseValue
     {
         /// <summary>
         /// No particular idea what shape the hand is in.
@@ -122,15 +75,37 @@ namespace Holofunk.HandPose
     }
 
     /// <summary>
-    /// Which finger is which?
+    /// Serializable wrapper around HandPoseValue.
     /// </summary>
-    public enum Finger
+    public struct HandPose
     {
-        Thumb,
-        Index,
-        Middle,
-        Ring,
-        Pinky,
-        Max = Pinky
+        private byte value;
+
+        public HandPose(HandPoseValue value)
+        {
+            // ID 0 is not valid, reserved for uninitialized value
+            Contract.Requires(value >= HandPoseValue.Unknown);
+            Contract.Requires(value <= HandPoseValue.ThumbsUp);
+
+            this.value = (byte)value;
+        }
+
+        public bool IsInitialized => value > (byte)HandPoseValue.Unknown;
+
+        public static implicit operator HandPoseValue(HandPose pose) => (HandPoseValue)pose.value;
+
+        public override string ToString() => $"#{(HandPoseValue)value}";
+
+        public static bool operator ==(HandPose left, HandPose right) => left.Equals(right);
+
+        public static bool operator !=(HandPose left, HandPose right) => !(left == right);
+
+        public static void Serialize(NetDataWriter writer, HandPose pose) => writer.Put(pose.value);
+
+        public static HandPose Deserialize(NetDataReader reader) => new HandPose((HandPoseValue)reader.GetByte());
+
+        public override bool Equals(object obj) => obj is HandPose id && value == id.value;
+
+        public override int GetHashCode() => -1584136870 + value.GetHashCode();
     }
 }

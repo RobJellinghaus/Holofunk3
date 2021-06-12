@@ -55,7 +55,6 @@ namespace Holofunk.Distributed
             Host = new DistributedHost(workQueue, DefaultListenPort, isListener: true, logger: HoloDebug.Instance);
             Host.RegisterType<Player>();
             Host.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
-            Host.RegisterType(PerformerId.Serialize, PerformerId.Deserialize);
             Host.RegisterType(UserId.Serialize, UserId.Deserialize);
             Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetVector3);
             Host.RegisterWith(ViewpointMessages.Register);

@@ -12,10 +12,10 @@ using UnityEngine;
 namespace Holofunk.Viewpoint
 {
     /// <summary>
-    /// The distributed interface of a viewpoint in the current system.
+    /// The distributed interface of a viewpoint.
     /// </summary>
     /// <remarks>
-    /// Each Azure Kinect version of Holofunk connected to the current network will host its own DistributedViewpoint,
+    /// Each Azure Kinect version of Holofunk in the current system will host its own DistributedViewpoint,
     /// which it uses to disseminate state about what it views.
     /// </remarks>
     public interface IDistributedViewpoint : IDistributedInterface

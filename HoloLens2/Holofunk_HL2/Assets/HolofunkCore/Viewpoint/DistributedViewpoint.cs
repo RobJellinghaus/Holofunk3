@@ -2,6 +2,7 @@
 
 using Distributed.State;
 using Holofunk.Core;
+using Holofunk.Distributed;
 using LiteNetLib;
 using static Holofunk.Viewpoint.ViewpointMessages;
 
