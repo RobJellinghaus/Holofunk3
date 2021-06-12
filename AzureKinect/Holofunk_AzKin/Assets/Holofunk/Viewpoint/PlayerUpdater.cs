@@ -19,18 +19,34 @@ namespace Holofunk.Viewpoint
     /// DistributedViewpoint.
     /// </summary>
     /// <remarks>
-    /// We do not want this to be done by the DistributedViewpoint object's own Update method, since
-    /// this should only happen on the AzureKinect instance that owns the Viewpoint.
+    /// This component is instantiated per Player that the local Viewpoint tracks.
     /// </remarks>
     public class PlayerUpdater : MonoBehaviour
     {
+        public int PlayerIndex => GetComponent<SkeletonOverlayer>().playerIndex;
+
+        private SerializedSocketAddress performerHostAddress;
+
+        /// <summary>
+        /// Set the host address for this player, once we think we know what it is.
+        /// </summary>
+        /// <remarks>
+        /// Setting this to default(SerializedSocketAddress) is also supported, and is the correct
+        /// thing to do if we lose tracking of a player, or connection to a performer.
+        /// </remarks>
+        /// <param name="performerHostAddress"></param>
+        public void SetPerformerHostAddress(SerializedSocketAddress performerHostAddress)
+        {
+            this.performerHostAddress = performerHostAddress;
+        }
+
         public void Update()
         {
             KinectManager kinectManager = KinectManager.Instance;
 
             if (kinectManager != null && kinectManager.IsInitialized())
             {
-                int playerIndex = GetComponent<SkeletonOverlayer>().playerIndex;
+                int playerIndex = PlayerIndex;
                 bool tracked = kinectManager.IsUserDetected(playerIndex);
                 Player updatedPlayer;
 
@@ -41,7 +57,6 @@ namespace Holofunk.Viewpoint
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         Tracked = false,
                         UserId = default(UserId),
-                        PerformerId = default(PerformerId),
                         PerformerHostAddress = default(SerializedSocketAddress),
                         HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
@@ -57,8 +72,7 @@ namespace Holofunk.Viewpoint
                         Tracked = true,
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         UserId = userId,
-                        PerformerId = default(PerformerId),
-                        PerformerHostAddress = default(SerializedSocketAddress),
+                        PerformerHostAddress = performerHostAddress,
                         HeadPosition = GetJointWorldSpacePosition(userId, KinectInterop.JointType.Head),
                         LeftHandPosition = GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft),
                         RightHandPosition = GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight)
@@ -66,7 +80,6 @@ namespace Holofunk.Viewpoint
                 }
 
                 // We currently use the prototype Viewpoint as the owned instance for this app.
-                // TODO: is this simplest/best?
                 GameObject viewpointPrototype = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Viewpoint);
                 viewpointPrototype.GetComponent<DistributedViewpoint>().UpdatePlayer(updatedPlayer);
             }
