@@ -3,6 +3,7 @@
 using com.rfilkov.components;
 using com.rfilkov.kinect;
 using Distributed.State;
+using Holofunk.Core;
 using Holofunk.Distributed;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,10 @@ namespace Holofunk.Viewpoint
         public int PlayerIndex => GetComponent<SkeletonOverlayer>().playerIndex;
 
         private SerializedSocketAddress performerHostAddress;
+
+        private const int 
+
+        private Vector3Averager leftHandAverager = new Vector3Averager()
 
         /// <summary>
         /// Set the host address for this player, once we think we know what it is.

@@ -1,7 +1,8 @@
-﻿
+﻿/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
+
 using Holofunk.Core;
 using LiteNetLib.Utils;
-/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
+
 namespace Holofunk.HandPose
 {
     /// <summary>
@@ -72,6 +73,11 @@ namespace Holofunk.HandPose
         /// Thumbs up!
         /// </summary>
         ThumbsUp,
+
+        /// <summary>
+        /// Maximum value.
+        /// </summary>
+        Max = ThumbsUp
     }
 
     /// <summary>

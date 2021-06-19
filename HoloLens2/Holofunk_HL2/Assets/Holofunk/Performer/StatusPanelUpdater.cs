@@ -2,15 +2,15 @@
 
 using Holofunk.Core;
 using Holofunk.Distributed;
+using Holofunk.HandPose;
 using Holofunk.Viewpoint;
 using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
-using Microsoft.MixedReality.Toolkit.Utilities.Solvers;
 using System;
 using UnityEngine;
 
-namespace Holofunk.HandPose
+namespace Holofunk.Performer
 {
     /// <summary>
     /// This behavior expects to inhabit a "FloatingTextPanel" GameObject.
@@ -30,7 +30,7 @@ namespace Holofunk.HandPose
             GameObject instanceContainer = DistributedObjectFactory.FindFirstContainer(
                 DistributedObjectFactory.DistributedType.Viewpoint);
 
-            (Vector3 localHandPos, HandPose handPose) = LocalHandPosition(handJointService, gazeProvider, Handedness.Right);
+            (Vector3 localHandPos, HandPoseValue handPoseValue) = LocalHandPosition(handJointService, gazeProvider, Handedness.Right);
             Vector3 viewpointHandPos = ViewpointHandPosition(instanceContainer, Handedness.Right);
 
             Vector3 localHeadPos = LocalHeadPosition(gazeProvider);
@@ -63,7 +63,7 @@ localHeadPos {localHeadPos} | viewpointHeadPos {viewpointHeadPos}
 localVHHD {localVerticalHeadHandDistance:f4} | viewpointVHHD {viewpointVerticalHeadHandDistance:f4} | delta {Math.Abs(localVerticalHeadHandDistance - viewpointVerticalHeadHandDistance):f4}
 localLHHD {localLinearHeadHandDistance:f4} | viewpointLHHD {viewpointLinearHeadHandDistance:f4} | delta {Math.Abs(localLinearHeadHandDistance - viewpointLinearHeadHandDistance):f4}
 
-handPose {handPose}";
+handPose {handPoseValue}";
 
             textMesh.text = statusMessage;
             HoloDebug.Log(statusMessage);
@@ -73,7 +73,7 @@ handPose {handPose}";
                 return float.IsNaN(vector.x) && float.IsNaN(vector.y) && float.IsNaN(vector.z);
             }
 
-            (Vector3, HandPose) LocalHandPosition(
+            (Vector3, HandPoseValue) LocalHandPosition(
                 IMixedRealityHandJointService hjs,
                 IMixedRealityEyeGazeProvider gp,
                 Handedness h)
@@ -87,7 +87,7 @@ handPose {handPose}";
                 }
                 else
                 {
-                    return (new Vector3(float.NaN, float.NaN, float.NaN), HandPose.Unknown);
+                    return (new Vector3(float.NaN, float.NaN, float.NaN), HandPoseValue.Unknown);
                 }
             }
 

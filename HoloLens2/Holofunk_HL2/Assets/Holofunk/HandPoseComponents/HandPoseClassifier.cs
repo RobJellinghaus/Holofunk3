@@ -90,7 +90,7 @@ namespace Holofunk.HandPose
         /// <summary>
         /// The overall hand pose.
         /// </summary>
-        HandPose _handPose;
+        HandPoseValue _handPose;
 
         /// <summary>
         /// Construct a new hand pose instance.
@@ -163,28 +163,28 @@ namespace Holofunk.HandPose
                 && GetFingerPose(Finger.Thumb) == FingerPose.Extended
                 && AnyFingerExtension(FingerPairExtension.NotExtendedTogether))
             {
-                _handPose = HandPose.Opened;
+                _handPose = HandPoseValue.Opened;
             }
             else if (GetFingerPose(Finger.Index) == FingerPose.Extended
                     && GetFingerPose(Finger.Middle) != FingerPose.Extended
                     && GetFingerPose(Finger.Ring) != FingerPose.Extended
                     && GetFingerPose(Finger.Pinky) != FingerPose.Extended)
             {
-                _handPose = HandPose.PointingIndex;
+                _handPose = HandPoseValue.PointingIndex;
             }
             else if (GetFingerPose(Finger.Index) == FingerPose.Extended
                 && GetFingerPose(Finger.Middle) == FingerPose.Extended
                 && GetFingerPose(Finger.Ring) != FingerPose.Extended
                 && GetFingerPose(Finger.Pinky) != FingerPose.Extended)
             {
-                _handPose = HandPose.PointingIndexAndMiddle;
+                _handPose = HandPoseValue.PointingIndexAndMiddle;
             }
             else if (GetFingerPose(Finger.Index) != FingerPose.Extended
                 && GetFingerPose(Finger.Middle) == FingerPose.Extended
                 && GetFingerPose(Finger.Ring) != FingerPose.Extended
                 && GetFingerPose(Finger.Pinky) != FingerPose.Extended)
             {
-                _handPose = HandPose.PointingMiddle;
+                _handPose = HandPoseValue.PointingMiddle;
             }
             // If all fingertips are close together and all are above their respective knuckles,
             // then consider it the bloom gesture.
@@ -193,25 +193,25 @@ namespace Holofunk.HandPose
                 && ((_sumFingerTipAltitudes / _sumPairwiseKnuckleDistances)
                      >= HandPoseMagicNumbers.FingertipSumAltitudeToKnuckleSumDistanceRatioMinimum))
             {
-                _handPose = HandPose.Bloom;
+                _handPose = HandPoseValue.Bloom;
             }
             // If all fingers are curled, or the thumb is curled and all the other fingers are aligned with the eye,
             // then consider the hand to be closed.
             else if (NoFingerPose(FingerPose.Extended)
                 || (GetFingerPose(Finger.Thumb) != FingerPose.Extended && FingerEyeColinearityHigh()))
             {
-                _handPose = HandPose.Closed;
+                _handPose = HandPoseValue.Closed;
             }
             else if (AllFingerPose(FingerPose.Extended)
                 && GetFingerPose(Finger.Thumb) == FingerPose.Extended
                 && NoFingerExtension(FingerPairExtension.NotExtendedTogether)
                 && GetFingerPairExtension(Finger.Thumb) != FingerPairExtension.NotExtendedTogether)
             {
-                _handPose = HandPose.Flat;
+                _handPose = HandPoseValue.Flat;
             }
             else
             {
-                _handPose = HandPose.Unknown;
+                _handPose = HandPoseValue.Unknown;
             }
 
             bool AllFingerPose(FingerPose pose)
@@ -406,6 +406,6 @@ namespace Holofunk.HandPose
 
         public float GetSumFingertipAltitudes() => _sumFingerTipAltitudes;
 
-        public HandPose GetHandPose() => _handPose;
+        public HandPoseValue GetHandPose() => _handPose;
     }
 }
