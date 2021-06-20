@@ -20,15 +20,13 @@ namespace Holofunk.Performer
     {
         private HandPoseClassifier _classifier = new HandPoseClassifier();
 
-        private const int PositionAverageFrameCount = 10;
-
-        private Vector3Averager _leftHandPosAverager = new Vector3Averager(PositionAverageFrameCount);
-        private Vector3Averager _rightHandPosAverager = new Vector3Averager(PositionAverageFrameCount);
-        private Vector3Averager _headPosAverager = new Vector3Averager(PositionAverageFrameCount);
+        private Vector3Averager _leftHandPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager _rightHandPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager _headPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private TopCounter<HandPoseValue> _leftHandPoseCounter = new TopCounter<HandPoseValue>(
-            PositionAverageFrameCount, (int)HandPoseValue.Max, v => (int)v, i => (HandPoseValue)i);
+            MagicNumbers.FramesToAverageWhenSmoothing, (int)HandPoseValue.Max, v => (int)v, i => (HandPoseValue)i);
         private TopCounter<HandPoseValue> _rightHandPoseCounter = new TopCounter<HandPoseValue>(
-            PositionAverageFrameCount, (int)HandPoseValue.Max, v => (int)v, i => (HandPoseValue)i);
+            MagicNumbers.FramesToAverageWhenSmoothing, (int)HandPoseValue.Max, v => (int)v, i => (HandPoseValue)i);
 
         public Vector3 AverageLeftHandPos => _leftHandPosAverager.Average;
         public Vector3 AverageRightHandPos => _rightHandPosAverager.Average;

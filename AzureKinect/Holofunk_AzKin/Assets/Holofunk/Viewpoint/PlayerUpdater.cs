@@ -28,9 +28,10 @@ namespace Holofunk.Viewpoint
 
         private SerializedSocketAddress performerHostAddress;
 
-        private const int 
-
-        private Vector3Averager leftHandAverager = new Vector3Averager()
+        private Vector3Averager headAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager averageEyesAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager leftHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager rightHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
 
         /// <summary>
         /// Set the host address for this player, once we think we know what it is.
@@ -64,6 +65,7 @@ namespace Holofunk.Viewpoint
                         UserId = default(UserId),
                         PerformerHostAddress = default(SerializedSocketAddress),
                         HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                        AverageEyesPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN)
                     };
@@ -72,15 +74,28 @@ namespace Holofunk.Viewpoint
                 {
                     ulong userId = kinectManager.GetUserIdByIndex(playerIndex);
 
+                    headAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.Head));
+
+                    Vector3 averageEyePosition = 
+                        (GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeLeft)
+                         + GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeRight))
+                        / 2;
+                    averageEyesAverager.Update(averageEyePosition);
+
+                    leftHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft));
+                    rightHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight));
+
+
                     updatedPlayer = new Player()
                     {
                         Tracked = true,
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         UserId = userId,
                         PerformerHostAddress = performerHostAddress,
-                        HeadPosition = GetJointWorldSpacePosition(userId, KinectInterop.JointType.Head),
-                        LeftHandPosition = GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft),
-                        RightHandPosition = GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight)
+                        HeadPosition = headAverager.Average,
+                        AverageEyesPosition = averageEyesAverager.Average,
+                        LeftHandPosition = leftHandAverager.Average,
+                        RightHandPosition = rightHandAverager.Average
                     };
                 }
 
@@ -94,8 +109,8 @@ namespace Holofunk.Viewpoint
         {
             KinectManager kinectManager = KinectManager.Instance;
 
-            Contract.Requires(kinectManager != null);
-            Contract.Requires(kinectManager.IsInitialized());
+            Core.Contract.Requires(kinectManager != null);
+            Core.Contract.Requires(kinectManager.IsInitialized());
 
             bool tracked = KinectManager.Instance.IsJointTracked(userId, joint);
             if (!tracked)

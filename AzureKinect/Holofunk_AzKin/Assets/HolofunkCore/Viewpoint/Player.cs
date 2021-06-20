@@ -49,6 +49,14 @@ namespace Holofunk.Viewpoint
         public Vector3 HeadPosition { get; set; }
 
         /// <summary>
+        /// The average of the position of the two eyes.
+        /// </summary>
+        /// <remarks>
+        /// It seems likely this will align better with the eye gaze origin as known to the HoloLens.
+        /// </remarks>
+        public Vector3 AverageEyesPosition { get; set; }
+
+        /// <summary>
         /// The position of the left hand, as seen from the viewpoint, in viewpoint coordinates.
         /// </summary>
         /// <remarks>
@@ -71,6 +79,7 @@ namespace Holofunk.Viewpoint
             Tracked = reader.GetBool();
             PerformerHostAddress.Deserialize(reader);
             HeadPosition = reader.GetVector3();
+            AverageEyesPosition = reader.GetVector3();
             LeftHandPosition = reader.GetVector3();
             RightHandPosition = reader.GetVector3();
         }
@@ -82,6 +91,7 @@ namespace Holofunk.Viewpoint
             writer.Put(Tracked);
             PerformerHostAddress.Serialize(writer);
             writer.Put(HeadPosition);
+            writer.Put(AverageEyesPosition);
             writer.Put(LeftHandPosition);
             writer.Put(RightHandPosition);
         }
