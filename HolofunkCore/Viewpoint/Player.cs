@@ -72,6 +72,11 @@ namespace Holofunk.Viewpoint
         /// </remarks>
         public Vector3 RightHandPosition { get; set; }
 
+        /// <summary>
+        /// The position of the viewpoint, in viewpoint coordinates.
+        /// </summary>
+        public Vector3 ViewpointPosition { get; set; }
+
         public void Deserialize(NetDataReader reader)
         {
             PlayerId = PlayerId.Deserialize(reader);
@@ -82,6 +87,7 @@ namespace Holofunk.Viewpoint
             AverageEyesPosition = reader.GetVector3();
             LeftHandPosition = reader.GetVector3();
             RightHandPosition = reader.GetVector3();
+            ViewpointPosition = reader.GetVector3();
         }
 
         public void Serialize(NetDataWriter writer)
@@ -94,6 +100,7 @@ namespace Holofunk.Viewpoint
             writer.Put(AverageEyesPosition);
             writer.Put(LeftHandPosition);
             writer.Put(RightHandPosition);
+            writer.Put(ViewpointPosition);
         }
     }
 }

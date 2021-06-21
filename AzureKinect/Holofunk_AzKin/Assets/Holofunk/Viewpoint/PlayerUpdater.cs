@@ -67,7 +67,8 @@ namespace Holofunk.Viewpoint
                         HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         AverageEyesPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                        RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN)
+                        RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                        ViewpointPosition = new Vector3(float.NaN, float.NaN, float.NaN)
                     };
                 }
                 else
@@ -78,13 +79,12 @@ namespace Holofunk.Viewpoint
 
                     Vector3 averageEyePosition = 
                         (GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeLeft)
-                         + GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeRight))
+                         + GetJointWorldSpacePosition(userId, KinectIntero2p.JointType.EyeRight))
                         / 2;
                     averageEyesAverager.Update(averageEyePosition);
 
                     leftHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft));
                     rightHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight));
-
 
                     updatedPlayer = new Player()
                     {
@@ -95,13 +95,16 @@ namespace Holofunk.Viewpoint
                         HeadPosition = headAverager.Average,
                         AverageEyesPosition = averageEyesAverager.Average,
                         LeftHandPosition = leftHandAverager.Average,
-                        RightHandPosition = rightHandAverager.Average
+                        RightHandPosition = rightHandAverager.Average,
+                        // hardcoded only one sensor right now
+                        ViewpointPosition = kinectManager.GetSensorTransform(0).position
                     };
                 }
 
                 // We currently use the prototype Viewpoint as the owned instance for this app.
                 GameObject viewpointPrototype = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Viewpoint);
-                viewpointPrototype.GetComponent<DistributedViewpoint>().UpdatePlayer(updatedPlayer);
+                DistributedViewpoint distributedViewpoint = viewpointPrototype.GetComponent<DistributedViewpoint>();
+                distributedViewpoint.UpdatePlayer(updatedPlayer);
             }
         }
 

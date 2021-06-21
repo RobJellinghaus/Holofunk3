@@ -30,38 +30,43 @@ namespace Holofunk.Performer
             GameObject instanceContainer = DistributedObjectFactory.FindFirstContainer(
                 DistributedObjectFactory.DistributedType.Viewpoint);
 
-            (Vector3 localHandPos, HandPoseValue handPoseValue) = LocalHandPosition(handJointService, gazeProvider, Handedness.Right);
+            // we know we have a Performer
+            GameObject performerContainer = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Performer);
+            LocalPerformer localPerformer = performerContainer.GetComponent<LocalPerformer>();
+
+            Vector3 localHandPos = localPerformer.GetPerformer().RightHandPosition;
             Vector3 viewpointHandPos = ViewpointHandPosition(instanceContainer, Handedness.Right);
 
-            Vector3 localHeadPos = LocalHeadPosition(gazeProvider);
+            HandPoseValue handPoseValue = localPerformer.GetPerformer().RightHandPose;
+
+            Vector3 localHeadPos = localPerformer.GetPerformer().HeadPosition;
             Vector3 viewpointHeadPos = ViewpointHeadPosition(instanceContainer);
+            Vector3 viewpointAverageEyesPos = ViewpointAverageEyesPosition(instanceContainer);
 
-            float localVerticalHeadHandDistance = float.NaN;
-            float localLinearHeadHandDistance = float.NaN;
-            Vector3 localHeadHandVector = Vector3.zero;
-            if (!IsNaN(localHandPos) && !IsNaN(localHeadPos))
-            {
-                localVerticalHeadHandDistance = Math.Abs(localHandPos.y - localHeadPos.y);
-                localLinearHeadHandDistance = Vector3.Distance(localHandPos, localHeadPos);
-                localHeadHandVector = localHandPos - localHeadPos;
-            }
+            float localVerticalHeadDistance = Math.Abs(localHandPos.y - localHeadPos.y);
+            float localLinearHeadDistance = Vector3.Distance(localHandPos, localHeadPos);
 
-            float viewpointVerticalHeadHandDistance = float.NaN;
-            float viewpointLinearHeadHandDistance = float.NaN;
-            Vector3 viewpointHeadHandVector = Vector3.zero;
-            if (!IsNaN(viewpointHandPos) && !IsNaN(viewpointHeadPos))
-            {
-                viewpointVerticalHeadHandDistance = Math.Abs(viewpointHandPos.y - viewpointHeadPos.y);
-                viewpointLinearHeadHandDistance = Vector3.Distance(viewpointHandPos, viewpointHeadPos);
-                viewpointHeadHandVector = viewpointHandPos - viewpointHeadPos;
-            }
+            float viewpointVerticalHeadDistance = Math.Abs(viewpointHandPos.y - viewpointHeadPos.y);
+            float viewpointLinearHeadDistance = Vector3.Distance(viewpointHandPos, viewpointHeadPos);
+
+            float localVerticalEyesDistance = Math.Abs(localHandPos.y - localHeadPos.y);
+            float localLinearEyesDistance = Vector3.Distance(localHandPos, localHeadPos);
+
+            float viewpointVerticalEyesDistance = Math.Abs(viewpointHandPos.y - viewpointHeadPos.y);
+            float viewpointLinearEyesDistance = Vector3.Distance(viewpointHandPos, viewpointHeadPos);
 
             string statusMessage = 
 $@"localHandPos {localHandPos} | viewpointHandPos {viewpointHandPos}
 localHeadPos {localHeadPos} | viewpointHeadPos {viewpointHeadPos}
+localHeadPos {localHeadPos} | viewpointAverageEyesPos {viewpointAverageEyesPos}
 
-localVHHD {localVerticalHeadHandDistance:f4} | viewpointVHHD {viewpointVerticalHeadHandDistance:f4} | delta {Math.Abs(localVerticalHeadHandDistance - viewpointVerticalHeadHandDistance):f4}
-localLHHD {localLinearHeadHandDistance:f4} | viewpointLHHD {viewpointLinearHeadHandDistance:f4} | delta {Math.Abs(localLinearHeadHandDistance - viewpointLinearHeadHandDistance):f4}
+Head:
+localvertdist {localVerticalHeadDistance:f4} | viewpointvertdist {viewpointVerticalHeadDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalHeadDistance):f4}
+localdist {localLinearHeadDistance:f4} | viewpointdist {viewpointLinearHeadDistance:f4} | delta {Math.Abs(localLinearHeadDistance - viewpointLinearHeadDistance):f4}
+
+Eyes:
+localvertdist {localVerticalEyesDistance:f4} | viewpointvertdist {viewpointVerticalEyesDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalEyesDistance):f4}
+localdist {localLinearEyesDistance:f4} | viewpointdist {viewpointLinearEyesDistance:f4} | delta {Math.Abs(localLinearEyesDistance - viewpointLinearEyesDistance):f4}
 
 handPose {handPoseValue}";
 
@@ -71,24 +76,6 @@ handPose {handPoseValue}";
             bool IsNaN(Vector3 vector)
             {
                 return float.IsNaN(vector.x) && float.IsNaN(vector.y) && float.IsNaN(vector.z);
-            }
-
-            (Vector3, HandPoseValue) LocalHandPosition(
-                IMixedRealityHandJointService hjs,
-                IMixedRealityEyeGazeProvider gp,
-                Handedness h)
-            {
-                if (hjs.IsHandTracked(h))
-                {
-                    
-                    Vector3 position = handJointService.RequestJointTransform(TrackedHandJoint.Palm, h).position;
-                    _classifier.Recalculate(handJointService, gazeProvider, h);
-                    return (position, _classifier.GetHandPose());
-                }
-                else
-                {
-                    return (new Vector3(float.NaN, float.NaN, float.NaN), HandPoseValue.Unknown);
-                }
             }
 
             Vector3 LocalHeadPosition(IMixedRealityEyeGazeProvider gp)
@@ -134,6 +121,16 @@ handPose {handPoseValue}";
                     return new Vector3(float.NaN, float.NaN, float.NaN);
                 }
                 return player0.HeadPosition;
+            }
+
+            Vector3 ViewpointAverageEyesPosition(GameObject ic)
+            {
+                Player player0 = GetPlayer0(ic);
+                if (!player0.PlayerId.IsInitialized)
+                {
+                    return new Vector3(float.NaN, float.NaN, float.NaN);
+                }
+                return player0.AverageEyesPosition;
             }
         }
     }
