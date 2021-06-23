@@ -49,29 +49,26 @@ namespace Holofunk.Performer
             float viewpointVerticalHeadDistance = Math.Abs(viewpointHandPos.y - viewpointHeadPos.y);
             float viewpointLinearHeadDistance = Vector3.Distance(viewpointHandPos, viewpointHeadPos);
 
-            float localVerticalEyesDistance = Math.Abs(localHandPos.y - localHeadPos.y);
-            float localLinearEyesDistance = Vector3.Distance(localHandPos, localHeadPos);
-
-            float viewpointVerticalEyesDistance = Math.Abs(viewpointHandPos.y - viewpointHeadPos.y);
-            float viewpointLinearEyesDistance = Vector3.Distance(viewpointHandPos, viewpointHeadPos);
+            float viewpointVerticalEyesDistance = Math.Abs(viewpointHandPos.y - viewpointAverageEyesPos.y);
+            float viewpointLinearEyesDistance = Vector3.Distance(viewpointHandPos, viewpointAverageEyesPos);
 
             string statusMessage = 
 $@"localHandPos {localHandPos} | viewpointHandPos {viewpointHandPos}
 localHeadPos {localHeadPos} | viewpointHeadPos {viewpointHeadPos}
 localHeadPos {localHeadPos} | viewpointAverageEyesPos {viewpointAverageEyesPos}
 
-Head:
+Local:
 localvertdist {localVerticalHeadDistance:f4} | viewpointvertdist {viewpointVerticalHeadDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalHeadDistance):f4}
 localdist {localLinearHeadDistance:f4} | viewpointdist {viewpointLinearHeadDistance:f4} | delta {Math.Abs(localLinearHeadDistance - viewpointLinearHeadDistance):f4}
 
 Eyes:
-localvertdist {localVerticalEyesDistance:f4} | viewpointvertdist {viewpointVerticalEyesDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalEyesDistance):f4}
-localdist {localLinearEyesDistance:f4} | viewpointdist {viewpointLinearEyesDistance:f4} | delta {Math.Abs(localLinearEyesDistance - viewpointLinearEyesDistance):f4}
+localvertdist {localVerticalHeadDistance:f4} | viewpointeyesvertdist {viewpointVerticalEyesDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalEyesDistance):f4}
+localdist {localLinearHeadDistance:f4} | viewpointeyesdist {viewpointLinearEyesDistance:f4} | delta {Math.Abs(localLinearHeadDistance - viewpointLinearEyesDistance):f4}
 
 handPose {handPoseValue}";
 
             textMesh.text = statusMessage;
-            HoloDebug.Log(statusMessage);
+            //HoloDebug.Log(statusMessage);
 
             bool IsNaN(Vector3 vector)
             {
