@@ -39,7 +39,7 @@ namespace Holofunk.Performer
             var gazeProvider = CoreServices.InputSystem.EyeGazeProvider;
 
             // do we currently have a Performer?
-            GameObject instanceContainer = DistributedObjectFactory.FindFirstContainer(
+            GameObject instanceContainer = DistributedObjectFactory.FindPrototype(
                 DistributedObjectFactory.DistributedType.Performer);
 
             (Vector3 localLeftHandPos, HandPoseValue leftHandPoseValue) = LocalHandPosition(Handedness.Left);
