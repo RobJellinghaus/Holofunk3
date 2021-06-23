@@ -79,7 +79,7 @@ namespace Holofunk.Viewpoint
 
                     Vector3 averageEyePosition = 
                         (GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeLeft)
-                         + GetJointWorldSpacePosition(userId, KinectIntero2p.JointType.EyeRight))
+                         + GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeRight))
                         / 2;
                     averageEyesAverager.Update(averageEyePosition);
 
