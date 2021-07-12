@@ -22,6 +22,12 @@ namespace Holofunk.Viewpoint
         /// </summary>
         public PlayerId PlayerId { get; set; }
 
+        /// <summary>
+        /// The Kinect user ID.
+        /// </summary>
+        /// <remarks>
+        /// This is not really tracked properly yet. TODO: track userid properly.
+        /// </remarks>
         public UserId UserId { get; set; }
 
         /// <summary>
@@ -41,6 +47,11 @@ namespace Holofunk.Viewpoint
         public SerializedSocketAddress PerformerHostAddress { get; set; }
 
         /// <summary>
+        /// The sensor (viewpoint) position, in viewpoint coordinates.
+        /// </summary>
+        public Vector3 SensorPosition { get; set; }
+
+        /// <summary>
         /// The position of the head, as seen from the viewpoint, in viewpoint coordinates.
         /// </summary>
         /// <remarks>
@@ -55,6 +66,11 @@ namespace Holofunk.Viewpoint
         /// It seems likely this will align better with the eye gaze origin as known to the HoloLens.
         /// </remarks>
         public Vector3 AverageEyesPosition { get; set; }
+
+        /// <summary>
+        /// The average forward direction of the eye vectors.
+        /// </summary>
+        public Vector3 AverageEyesForwardDirection { get; set; }
 
         /// <summary>
         /// The position of the left hand, as seen from the viewpoint, in viewpoint coordinates.
@@ -85,6 +101,7 @@ namespace Holofunk.Viewpoint
             PerformerHostAddress.Deserialize(reader);
             HeadPosition = reader.GetVector3();
             AverageEyesPosition = reader.GetVector3();
+            AverageEyesForwardDirection = reader.GetVector3();
             LeftHandPosition = reader.GetVector3();
             RightHandPosition = reader.GetVector3();
             ViewpointPosition = reader.GetVector3();
@@ -98,6 +115,7 @@ namespace Holofunk.Viewpoint
             PerformerHostAddress.Serialize(writer);
             writer.Put(HeadPosition);
             writer.Put(AverageEyesPosition);
+            writer.Put(AverageEyesForwardDirection);
             writer.Put(LeftHandPosition);
             writer.Put(RightHandPosition);
             writer.Put(ViewpointPosition);

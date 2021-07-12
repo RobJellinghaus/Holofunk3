@@ -5,13 +5,7 @@ using com.rfilkov.kinect;
 using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using Windows.Kinect;
 
 namespace Holofunk.Viewpoint
 {
@@ -29,7 +23,8 @@ namespace Holofunk.Viewpoint
         private SerializedSocketAddress performerHostAddress;
 
         private Vector3Averager headAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
-        private Vector3Averager averageEyesAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager averageEyesPositionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager averageEyesForwardDirectionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager leftHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager rightHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
 
@@ -40,7 +35,6 @@ namespace Holofunk.Viewpoint
         /// Setting this to default(SerializedSocketAddress) is also supported, and is the correct
         /// thing to do if we lose tracking of a player, or connection to a performer.
         /// </remarks>
-        /// <param name="performerHostAddress"></param>
         public void SetPerformerHostAddress(SerializedSocketAddress performerHostAddress)
         {
             this.performerHostAddress = performerHostAddress;
@@ -64,8 +58,10 @@ namespace Holofunk.Viewpoint
                         Tracked = false,
                         UserId = default(UserId),
                         PerformerHostAddress = default(SerializedSocketAddress),
+                        SensorPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         AverageEyesPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                        AverageEyesForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         ViewpointPosition = new Vector3(float.NaN, float.NaN, float.NaN)
@@ -81,7 +77,13 @@ namespace Holofunk.Viewpoint
                         (GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeLeft)
                          + GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeRight))
                         / 2;
-                    averageEyesAverager.Update(averageEyePosition);
+                    averageEyesPositionAverager.Update(averageEyePosition);
+
+                    Vector3 averageEyeForwardDirection =
+                        (GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.EyeLeft)
+                         + GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.EyeRight))
+                         / 2;
+                    averageEyesForwardDirectionAverager.Update(averageEyeForwardDirection);
 
                     leftHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft));
                     rightHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight));
@@ -92,8 +94,10 @@ namespace Holofunk.Viewpoint
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         UserId = userId,
                         PerformerHostAddress = performerHostAddress,
+                        SensorPosition = kinectManager.GetSensorData(0).sensorPosePosition,
                         HeadPosition = headAverager.Average,
-                        AverageEyesPosition = averageEyesAverager.Average,
+                        AverageEyesPosition = averageEyesPositionAverager.Average,
+                        AverageEyesForwardDirection = averageEyesForwardDirectionAverager.Average,
                         LeftHandPosition = leftHandAverager.Average,
                         RightHandPosition = rightHandAverager.Average,
                         // hardcoded only one sensor right now
@@ -102,8 +106,7 @@ namespace Holofunk.Viewpoint
                 }
 
                 // We currently use the prototype Viewpoint as the owned instance for this app.
-                GameObject viewpointPrototype = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Viewpoint);
-                DistributedViewpoint distributedViewpoint = viewpointPrototype.GetComponent<DistributedViewpoint>();
+                DistributedViewpoint distributedViewpoint = Viewpoint.TheInstance;
                 distributedViewpoint.UpdatePlayer(updatedPlayer);
             }
         }
@@ -127,12 +130,39 @@ namespace Holofunk.Viewpoint
                 Vector3 posJoint = skeletonOverlayer.GetJointPosition(userId, (int)joint);
                 //Debug.Log("U " + userId + " " + (KinectInterop.JointType)joint + " - pos: " + posJoint);
 
+                /* there is never a sensor transform in current scene, so is this even a thing? let's assume not
                 if (skeletonOverlayer.sensorTransform)
                 {
                     posJoint = skeletonOverlayer.sensorTransform.TransformPoint(posJoint);
                 }
+                */
 
                 return posJoint;
+            }
+        }
+
+
+        private Vector3 GetJointWorldSpaceForwardDirection(ulong userId, KinectInterop.JointType joint)
+        {
+            KinectManager kinectManager = KinectManager.Instance;
+
+            Core.Contract.Requires(kinectManager != null);
+            Core.Contract.Requires(kinectManager.IsInitialized());
+
+            bool tracked = KinectManager.Instance.IsJointTracked(userId, joint);
+            if (!tracked)
+            {
+                return new Vector3 { x = float.NaN, y = float.NaN, z = float.NaN };
+            }
+            else
+            {
+                // TODO: to flip or not to flip?
+                Quaternion jointOrientation = kinectManager.GetJointOrientation(userId, joint, flip: false);
+                
+                // multiply orientation by a normalized forward Z vector
+                Vector3 jointForwardDirection = jointOrientation * new Vector3(0, 0, 1);
+
+                return jointForwardDirection;
             }
         }
     }
