@@ -22,26 +22,28 @@ namespace Holofunk.Performer
         // Update is called once per frame
         public void Update()
         {
-            var handJointService = CoreServices.GetInputSystemDataProvider<IMixedRealityHandJointService>();
-            var gazeProvider = CoreServices.InputSystem.EyeGazeProvider;
             TextMesh textMesh = gameObject.transform.GetChild(0).GetComponent<TextMesh>();
 
             // do we currently have a Viewpoint?
             GameObject instanceContainer = DistributedObjectFactory.FindFirstContainer(
                 DistributedObjectFactory.DistributedType.Viewpoint);
+            Player player = GetPlayer0(instanceContainer);
 
             // we know we have a Performer
             GameObject performerContainer = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Performer);
             LocalPerformer localPerformer = performerContainer.GetComponent<LocalPerformer>();
 
+            Vector3 viewpointSensorPos = player.ViewpointPosition;
+
             Vector3 localHandPos = localPerformer.GetPerformer().RightHandPosition;
-            Vector3 viewpointHandPos = ViewpointHandPosition(instanceContainer, Handedness.Right);
+            Vector3 viewpointHandPos = player.RightHandPosition;
 
             HandPoseValue handPoseValue = localPerformer.GetPerformer().RightHandPose;
 
             Vector3 localHeadPos = localPerformer.GetPerformer().HeadPosition;
-            Vector3 viewpointHeadPos = ViewpointHeadPosition(instanceContainer);
-            Vector3 viewpointAverageEyesPos = ViewpointAverageEyesPosition(instanceContainer);
+            Vector3 viewpointHeadPos = player.HeadPosition;
+            Vector3 viewpointAverageEyesPos = player.AverageEyesPosition;
+            Vector3 viewpointAverageEyesForwardDir = player.AverageEyesForwardDirection;
 
             float localVerticalHeadDistance = Math.Abs(localHandPos.y - localHeadPos.y);
             float localLinearHeadDistance = Vector3.Distance(localHandPos, localHeadPos);
@@ -52,10 +54,16 @@ namespace Holofunk.Performer
             float viewpointVerticalEyesDistance = Math.Abs(viewpointHandPos.y - viewpointAverageEyesPos.y);
             float viewpointLinearEyesDistance = Vector3.Distance(viewpointHandPos, viewpointAverageEyesPos);
 
+            Vector3 eyesToViewpointVector = (viewpointAverageEyesPos - viewpointSensorPos).normalized;
+
             string statusMessage = 
-$@"localHandPos {localHandPos} | viewpointHandPos {viewpointHandPos}
+$@"
+viewpointSensorPos {viewpointSensorPos} 
+localHandPos {localHandPos} | viewpointHandPos {viewpointHandPos}
 localHeadPos {localHeadPos} | viewpointHeadPos {viewpointHeadPos}
 localHeadPos {localHeadPos} | viewpointAverageEyesPos {viewpointAverageEyesPos}
+
+viewpointAverageEyes-> {viewpointAverageEyesForwardDir} | viewpointeyes->sensor {eyesToViewpointVector} | delta {(viewpointAverageEyesForwardDir - eyesToViewpointVector).magnitude:f4} 
 
 Local:
 localvertdist {localVerticalHeadDistance:f4} | viewpointvertdist {viewpointVerticalHeadDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalHeadDistance):f4}
@@ -98,36 +106,6 @@ handPose {handPoseValue}";
                 }
 
                 return default(Player);
-            }
-
-            Vector3 ViewpointHandPosition(GameObject ic, Handedness h)
-            {
-                Player player0 = GetPlayer0(ic);
-                if (!player0.PlayerId.IsInitialized)
-                {
-                    return new Vector3(float.NaN, float.NaN, float.NaN);
-                }
-                return h == Handedness.Left ? player0.LeftHandPosition : player0.RightHandPosition;
-            }
-
-            Vector3 ViewpointHeadPosition(GameObject ic)
-            {
-                Player player0 = GetPlayer0(ic);
-                if (!player0.PlayerId.IsInitialized)
-                {
-                    return new Vector3(float.NaN, float.NaN, float.NaN);
-                }
-                return player0.HeadPosition;
-            }
-
-            Vector3 ViewpointAverageEyesPosition(GameObject ic)
-            {
-                Player player0 = GetPlayer0(ic);
-                if (!player0.PlayerId.IsInitialized)
-                {
-                    return new Vector3(float.NaN, float.NaN, float.NaN);
-                }
-                return player0.AverageEyesPosition;
             }
         }
     }
