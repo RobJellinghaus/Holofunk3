@@ -35,7 +35,9 @@ namespace Distributed.State
 
         public static bool operator ==(SerializedSocketAddress left, SerializedSocketAddress right)
         {
-            return left.SocketAddress.Equals(right.SocketAddress);
+            return (!left.IsInitialized)
+                ? !right.IsInitialized
+                : left.SocketAddress.Equals(right.SocketAddress);
         }
 
         public static bool operator !=(SerializedSocketAddress left, SerializedSocketAddress right)

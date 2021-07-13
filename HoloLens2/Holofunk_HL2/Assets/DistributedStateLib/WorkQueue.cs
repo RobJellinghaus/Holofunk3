@@ -46,7 +46,7 @@ namespace Distributed.State
             // 0 means "ASAP"
             long targetTimeMsec = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) + delayMsec;
 
-            logger?.WriteNet(NetLogLevel.Trace, $"Calling RunLater, delayMsec {delayMsec}, targetTimeMsec {targetTimeMsec}, times [{string.Join(", ", actions.Select(t => t.Item1.ToString()))}]");
+            //logger?.WriteNet(NetLogLevel.Trace, $"Calling RunLater, delayMsec {delayMsec}, targetTimeMsec {targetTimeMsec}, times [{string.Join(", ", actions.Select(t => t.Item1.ToString()))}]");
 
             for (int i = 0; i < actions.Count; i++)
             {
@@ -111,7 +111,7 @@ namespace Distributed.State
                 action.Item2();
             }
 
-            logger?.WriteNet(NetLogLevel.Trace, $"WorkQueue.PollEvents(): at end: actions.Count {actions.Count}");
+            //logger?.WriteNet(NetLogLevel.Trace, $"WorkQueue.PollEvents(): at end: actions.Count {actions.Count}");
         }
     }
 }
