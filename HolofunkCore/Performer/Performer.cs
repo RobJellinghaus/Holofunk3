@@ -9,6 +9,9 @@ namespace Holofunk.Performer
     /// <summary>
     /// Serialized state of a performer (e.g. a person wearing a HoloLens 2).
     /// </summary>
+    /// <remarks>
+    /// If a joint is not currently tracked, all values for that joint will be zero.
+    /// </remarks>
     public struct Performer : INetSerializable
     {
         /// <summary>
@@ -19,17 +22,11 @@ namespace Holofunk.Performer
         /// <summary>
         /// The position of the left hand, as tracked by the performer's device, in performer coordinates.
         /// </summary>
-        /// <remarks>
-        /// If this joint is not currently tracked, all values will be float.NaN.
-        /// </remarks>
         public Vector3 LeftHandPosition { get; set; }
 
         /// <summary>
         /// The position of the right hand, as tracked by the performer's device, in performer coordinates.
         /// </summary>
-        /// <remarks>
-        /// If this joint is not currently tracked, all values will be float.NaN.
-        /// </remarks>
         public Vector3 RightHandPosition { get; set; }
 
         /// <summary>

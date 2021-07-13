@@ -22,7 +22,8 @@ namespace Holofunk.Viewpoint
 
         private SerializedSocketAddress performerHostAddress;
 
-        private Vector3Averager headAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager headPositionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager headForwardDirectionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager averageEyesPositionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager averageEyesForwardDirectionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager leftHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
@@ -60,6 +61,7 @@ namespace Holofunk.Viewpoint
                         PerformerHostAddress = default(SerializedSocketAddress),
                         SensorPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                        HeadForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         AverageEyesPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         AverageEyesForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
@@ -71,7 +73,10 @@ namespace Holofunk.Viewpoint
                 {
                     ulong userId = kinectManager.GetUserIdByIndex(playerIndex);
 
-                    headAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.Head));
+                    headPositionAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.Head));
+
+                    Vector3 headForwardDirection = GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.Head);
+                    headForwardDirectionAverager.Update(headForwardDirection);
 
                     Vector3 averageEyePosition = 
                         (GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeLeft)
@@ -95,7 +100,8 @@ namespace Holofunk.Viewpoint
                         UserId = userId,
                         PerformerHostAddress = performerHostAddress,
                         SensorPosition = kinectManager.GetSensorData(0).sensorPosePosition,
-                        HeadPosition = headAverager.Average,
+                        HeadPosition = headPositionAverager.Average,
+                        HeadForwardDirection = headForwardDirectionAverager.Average,
                         AverageEyesPosition = averageEyesPositionAverager.Average,
                         AverageEyesForwardDirection = averageEyesForwardDirectionAverager.Average,
                         LeftHandPosition = leftHandAverager.Average,
@@ -121,7 +127,7 @@ namespace Holofunk.Viewpoint
             bool tracked = KinectManager.Instance.IsJointTracked(userId, joint);
             if (!tracked)
             {
-                return new Vector3 { x = float.NaN, y = float.NaN, z = float.NaN };
+                return Vector3.zero;
             }
             else
             {
@@ -152,7 +158,7 @@ namespace Holofunk.Viewpoint
             bool tracked = KinectManager.Instance.IsJointTracked(userId, joint);
             if (!tracked)
             {
-                return new Vector3 { x = float.NaN, y = float.NaN, z = float.NaN };
+                return Vector3.zero;
             }
             else
             {

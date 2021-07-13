@@ -15,6 +15,9 @@ namespace Holofunk.Viewpoint
     /// <summary>
     /// Serialized state of a player (e.g. a recognized/tracked individual) as seen from a viewpoint.
     /// </summary>
+    /// <remarks>
+    /// If a joint is not currently tracked, all values for that joint will be zero.
+    /// </remarks>
     public struct Player : INetSerializable
     {
         /// <summary>
@@ -54,10 +57,12 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// The position of the head, as seen from the viewpoint, in viewpoint coordinates.
         /// </summary>
-        /// <remarks>
-        /// If this joint is not currently tracked, all values will be float.NaN.
-        /// </remarks>
         public Vector3 HeadPosition { get; set; }
+
+        /// <summary>
+        /// The forward direction of the head, as seen from the viewpoint, in viewpoint coordinates.
+        /// </summary>
+        public Vector3 HeadForwardDirection { get; set; }
 
         /// <summary>
         /// The average of the position of the two eyes.
@@ -75,17 +80,11 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// The position of the left hand, as seen from the viewpoint, in viewpoint coordinates.
         /// </summary>
-        /// <remarks>
-        /// If this joint is not currently tracked, all values will be float.NaN.
-        /// </remarks>
         public Vector3 LeftHandPosition { get; set; }
 
         /// <summary>
         /// The position of the right hand, as seen from the viewpoint, in viewpoint coordinates.
         /// </summary>
-        /// <remarks>
-        /// If this joint is not currently tracked, all values will be float.NaN.
-        /// </remarks>
         public Vector3 RightHandPosition { get; set; }
 
         /// <summary>
@@ -100,6 +99,7 @@ namespace Holofunk.Viewpoint
             Tracked = reader.GetBool();
             PerformerHostAddress.Deserialize(reader);
             HeadPosition = reader.GetVector3();
+            HeadForwardDirection = reader.GetVector3();
             AverageEyesPosition = reader.GetVector3();
             AverageEyesForwardDirection = reader.GetVector3();
             LeftHandPosition = reader.GetVector3();
@@ -114,6 +114,7 @@ namespace Holofunk.Viewpoint
             writer.Put(Tracked);
             PerformerHostAddress.Serialize(writer);
             writer.Put(HeadPosition);
+            writer.Put(HeadForwardDirection);
             writer.Put(AverageEyesPosition);
             writer.Put(AverageEyesForwardDirection);
             writer.Put(LeftHandPosition);
