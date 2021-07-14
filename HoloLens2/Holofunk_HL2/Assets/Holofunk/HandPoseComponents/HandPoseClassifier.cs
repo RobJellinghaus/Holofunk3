@@ -5,7 +5,7 @@ using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using UnityEngine;
 
-namespace Holofunk.HandPose
+namespace Holofunk.Hand
 {
     /// <summary>
     /// Hand pose, along with all finger poses and adjacencies.

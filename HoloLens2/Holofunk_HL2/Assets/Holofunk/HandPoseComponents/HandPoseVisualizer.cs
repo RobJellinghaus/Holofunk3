@@ -7,7 +7,7 @@ using Microsoft.MixedReality.Toolkit.Utilities;
 using Microsoft.MixedReality.Toolkit.Utilities.Solvers;
 using UnityEngine;
 
-namespace Holofunk.HandPose
+namespace Holofunk.Hand
 {
     /// <summary>
     /// This behavior expects to inhabit a "FloatingHandTextPanel" GameObject, with a peer

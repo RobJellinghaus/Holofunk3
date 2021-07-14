@@ -2,7 +2,7 @@
 
 using Holofunk.Core;
 using Holofunk.Distributed;
-using Holofunk.HandPose;
+using Holofunk.Hand;
 using Holofunk.Viewpoint;
 using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
@@ -10,7 +10,7 @@ using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
 using UnityEngine;
 
-namespace Holofunk.Performer
+namespace Holofunk.Perform
 {
     /// <summary>
     /// This behavior updates the prototype Performer instance, to propagate this
@@ -58,9 +58,9 @@ namespace Holofunk.Performer
                 LeftHandPosition = AverageLeftHandPos,
                 RightHandPosition = AverageRightHandPos,
                 HeadPosition = AverageHeadPos,
-                LeftHandPose = new HandPose.HandPose(
+                LeftHandPose = new HandPose(
                     _leftHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown)),
-                RightHandPose = new HandPose.HandPose(
+                RightHandPose = new HandPose(
                     _rightHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown))
             };
 

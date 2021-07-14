@@ -2,7 +2,7 @@
 
 using Holofunk.Core;
 using Holofunk.Distributed;
-using Holofunk.HandPose;
+using Holofunk.Hand;
 using Holofunk.Viewpoint;
 using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
@@ -10,7 +10,7 @@ using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
 using UnityEngine;
 
-namespace Holofunk.Performer
+namespace Holofunk.Perform
 {
     /// <summary>
     /// This behavior expects to inhabit a "FloatingTextPanel" GameObject.
