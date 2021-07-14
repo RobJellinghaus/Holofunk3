@@ -1322,7 +1322,7 @@ namespace com.rfilkov.kinect
             {JointType.AnkleRight, JointType.FootRight},
             {JointType.FootRight, JointType.FootRight},
 
-            {JointType.Nose, JointType.Nose},
+            {JointType.Nose, JointType.Head},
             {JointType.EyeLeft, JointType.EarLeft},
             {JointType.EarLeft, JointType.EarLeft},
             {JointType.EyeRight, JointType.EarRight},
