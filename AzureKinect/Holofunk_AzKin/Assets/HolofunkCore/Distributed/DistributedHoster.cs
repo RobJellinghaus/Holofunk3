@@ -2,7 +2,7 @@
 
 using Distributed.State;
 using Holofunk.Core;
-using Holofunk.Performer;
+using Holofunk.Perform;
 using Holofunk.Viewpoint;
 using LiteNetLib;
 using LiteNetLib.Utils;
@@ -55,7 +55,7 @@ namespace Holofunk.Distributed
             workQueue = new WorkQueue(HoloDebug.Instance);
             Host = new DistributedHost(workQueue, DefaultListenPort, isListener: true, logger: HoloDebug.Instance);
             Host.RegisterType<Player>();
-            Host.RegisterType<Performer.Performer>();
+            Host.RegisterType<Perform.Performer>();
             Host.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
             Host.RegisterType(UserId.Serialize, UserId.Deserialize);
             Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetVector3);
