@@ -34,7 +34,8 @@ namespace Holofunk.Viewpoint
         public static int GetPerformerCount()
         {
             GameObject performerContainer = DistributedObjectFactory.FindFirstContainer(DistributedObjectFactory.DistributedType.Performer);
-            return performerContainer.transform.childCount;
+            // if no container, then ain't no performers
+            return performerContainer?.transform.childCount ?? 0;
         }
 
         public static DistributedPerformer GetPerformer(int performerIndex)

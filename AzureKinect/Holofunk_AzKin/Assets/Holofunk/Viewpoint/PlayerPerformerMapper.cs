@@ -136,8 +136,7 @@ namespace Holofunk.Viewpoint
 
                                     Vector3 viewpointHandPosition = kinectManager.GetJointPosition((ulong)player.UserId, whichHand);
 
-                                    Vector3 viewpointHeadToHand = viewpointHeadPosition - viewpointHandPosition;
-                                    // TODO: finish this
+                                    HoloDebug.Log($"I see player at address {player.PerformerHostAddress}!!!");
                                 }
                             }
                         }
