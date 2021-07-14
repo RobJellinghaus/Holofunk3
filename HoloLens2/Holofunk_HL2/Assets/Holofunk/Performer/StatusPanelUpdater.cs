@@ -42,6 +42,7 @@ namespace Holofunk.Performer
 
             Vector3 localHeadPos = localPerformer.GetPerformer().HeadPosition;
             Vector3 viewpointHeadPos = player.HeadPosition;
+            Vector3 viewpointHeadForwardDir = player.HeadForwardDirection;
             Vector3 viewpointAverageEyesPos = player.AverageEyesPosition;
             Vector3 viewpointAverageEyesForwardDir = player.AverageEyesForwardDirection;
 
@@ -55,6 +56,7 @@ namespace Holofunk.Performer
             float viewpointLinearEyesDistance = Vector3.Distance(viewpointHandPos, viewpointAverageEyesPos);
 
             Vector3 eyesToViewpointVector = (viewpointAverageEyesPos - viewpointSensorPos).normalized;
+            Vector3 headToViewpointVector = (viewpointHeadPos - viewpointSensorPos).normalized;
 
             string statusMessage = 
 $@"
@@ -63,30 +65,21 @@ localHandPos {localHandPos} | viewpointHandPos {viewpointHandPos}
 localHeadPos {localHeadPos} | viewpointHeadPos {viewpointHeadPos}
 localHeadPos {localHeadPos} | viewpointAverageEyesPos {viewpointAverageEyesPos}
 
-viewpointAverageEyes-> {viewpointAverageEyesForwardDir} | viewpointeyes->sensor {eyesToViewpointVector} | delta {(viewpointAverageEyesForwardDir - eyesToViewpointVector).magnitude:f4} 
+eyesorientation-> {viewpointAverageEyesForwardDir} | eyestosensor-> {eyesToViewpointVector} | collin {Vector3.Dot(viewpointAverageEyesForwardDir, eyesToViewpointVector):f4} 
+viewpointHead-> {viewpointHeadForwardDir} | headtosensor-> {headToViewpointVector} | collin {Vector3.Dot(viewpointHeadForwardDir, headToViewpointVector):f4} 
 
-Local:
+Head:
 localvertdist {localVerticalHeadDistance:f4} | viewpointvertdist {viewpointVerticalHeadDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalHeadDistance):f4}
 localdist {localLinearHeadDistance:f4} | viewpointdist {viewpointLinearHeadDistance:f4} | delta {Math.Abs(localLinearHeadDistance - viewpointLinearHeadDistance):f4}
 
 Eyes:
-localvertdist {localVerticalHeadDistance:f4} | viewpointeyesvertdist {viewpointVerticalEyesDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalEyesDistance):f4}
+localvertdist {localVerticalHeadDistance:f4} | viewpointvertdist {viewpointVerticalEyesDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalEyesDistance):f4}
 localdist {localLinearHeadDistance:f4} | viewpointeyesdist {viewpointLinearEyesDistance:f4} | delta {Math.Abs(localLinearHeadDistance - viewpointLinearEyesDistance):f4}
 
 handPose {handPoseValue}";
 
             textMesh.text = statusMessage;
             //HoloDebug.Log(statusMessage);
-
-            bool IsNaN(Vector3 vector)
-            {
-                return float.IsNaN(vector.x) && float.IsNaN(vector.y) && float.IsNaN(vector.z);
-            }
-
-            Vector3 LocalHeadPosition(IMixedRealityEyeGazeProvider gp)
-            {
-                return gp.GazeOrigin;
-            }
 
             // Get the first Player in the first Viewpoint in the first currently connected peer.
             Player GetPlayer0(GameObject ic)
