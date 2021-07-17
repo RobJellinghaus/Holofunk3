@@ -2,6 +2,7 @@
 
 using LiteNetLib;
 using System;
+using System.Collections.Generic;
 
 namespace Distributed.State
 {
@@ -42,8 +43,9 @@ namespace Distributed.State
             {
                 // this object really ought to exist, but in case it doesn't (maybe disconnection race?),
                 // ignore object targets that don't resolve.
+                IReadOnlyDictionary<DistributedId, IDistributedObject> proxies = host.ProxiesForPeer(new SerializedSocketAddress(netPeer));
                 IDistributedObject target;
-                if (host.ProxiesForPeer(new SerializedSocketAddress(netPeer)).TryGetValue(message.Id, out target))
+                if (proxies != null && proxies.TryGetValue(message.Id, out target))
                 {
                     // Call straight through to the local object; don't invoke Enqueue on the proxy.
                     // (If we do, it will call back to the owner, and whammo, infinite loop!)
@@ -83,8 +85,9 @@ namespace Distributed.State
             {
                 // this object really ought to exist, but in case it doesn't (maybe disconnection race?),
                 // ignore object targets that don't resolve.
+                IReadOnlyDictionary<DistributedId, IDistributedObject> proxies = host.ProxiesForPeer(message.OwnerAddress);
                 IDistributedObject target;
-                if (host.ProxiesForPeer(message.OwnerAddress).TryGetValue(message.Id, out target))
+                if (proxies != null && proxies.TryGetValue(message.Id, out target))
                 {
                     // Call straight through to the local object; don't invoke Enqueue on the proxy.
                     // (If we do, it will call back to the owner, and whammo, infinite loop!)

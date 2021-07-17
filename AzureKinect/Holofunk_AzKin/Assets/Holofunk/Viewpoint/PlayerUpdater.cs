@@ -62,9 +62,9 @@ namespace Holofunk.Viewpoint
                 {
                     ulong userId = kinectManager.GetUserIdByIndex(playerIndex);
 
-                    headPositionAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.Nose));
+                    headPositionAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.Head));
 
-                    Vector3 headForwardDirection = GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.Nose);
+                    Vector3 headForwardDirection = GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.Head);
                     headForwardDirectionAverager.Update(headForwardDirection);
 
                     Vector3 averageEyePosition = 

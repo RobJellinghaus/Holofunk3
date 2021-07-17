@@ -439,10 +439,11 @@ namespace com.rfilkov.kinect
             sensorData.sensorCaps = sensorCaps;
 
             // flip color & depth image vertically
-            sensorData.colorImageScale = new Vector3(-1f, -1f, 1f);
-            sensorData.depthImageScale = new Vector3(-1f, -1f, 1f);
-            sensorData.infraredImageScale = new Vector3(-1f, -1f, 1f);
-            sensorData.sensorSpaceScale = new Vector3(-1f, -1f, 1f);
+            bool isFlipped = false; // HOLOFUNK: originally true
+            sensorData.colorImageScale = new Vector3(isFlipped ? -1f : 1f, -1f, 1f);
+            sensorData.depthImageScale = new Vector3(isFlipped ? -1f : 1f, -1f, 1f);
+            sensorData.infraredImageScale = new Vector3(isFlipped ? -1f : 1f, -1f, 1f);
+            sensorData.sensorSpaceScale = new Vector3(isFlipped ? -1f : 1f, -1f, 1f);
             sensorData.unitToMeterFactor = 0.001f;
 
             // depth camera offset & matrix z-flip

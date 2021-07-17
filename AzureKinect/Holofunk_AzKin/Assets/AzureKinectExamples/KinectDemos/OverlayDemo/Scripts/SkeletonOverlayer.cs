@@ -70,8 +70,8 @@ namespace com.rfilkov.components
                 lines = new LineRenderer[jointsCount];
             }
 
-            // always mirrored
-            initialRotation = Quaternion.Euler(new Vector3(0f, 180f, 0f));
+            // always mirrored OR NOT
+            initialRotation = Quaternion.Euler(new Vector3(0f, /*180f*/0f, 0f));
 
             //if (!foregroundCamera)
             //{

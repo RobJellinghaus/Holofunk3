@@ -94,8 +94,9 @@ namespace Holofunk.Viewpoint
                         Vector3 viewpointHeadPosition = player.HeadPosition;
                         Vector3 viewpointHeadForwardDirection = player.HeadForwardDirection;
                         Vector3 viewpointSensorPosition = player.SensorPosition;
+                        Vector3 viewpointSensorForwardDirection = player.SensorForwardDirection;
 
-                        Vector3 headToViewpointVector = (viewpointHeadPosition - viewpointSensorPosition).normalized;
+                        Vector3 headToViewpointVector = (viewpointSensorPosition - viewpointHeadPosition).normalized;
                         float gazeViewpointAlignment = Vector3.Dot(headToViewpointVector, viewpointHeadForwardDirection);
 
                         if (gazeViewpointAlignment > MagicNumbers.MinimumGazeViewpointAlignment)
@@ -184,8 +185,9 @@ namespace Holofunk.Viewpoint
                                         player.PerformerToViewpointTransform = finalMatrix;
 
                                         HoloDebug.Log($@"Recognized new player!
-viewpointHeadForwardDirection {viewpointHeadForwardDirection}, viewpointSensorPosition {viewpointSensorPosition}
-viewpointHeadPosition {viewpointHeadPosition}, viewpointHandPosition {viewpointHandPosition}, viewpointHeadToHandVector {viewpointHeadToHandVector}, length {viewpointHeadToHandVector.magnitude}
+viewpointSensorPosition {viewpointSensorPosition}, viewpointSensorForwardDirection {viewpointSensorForwardDirection}
+viewpointHeadPosition {viewpointHeadPosition}, viewpointHeadForwardDirection {viewpointHeadForwardDirection}
+viewpointHandPosition {viewpointHandPosition}, viewpointHeadToHandVector {viewpointHeadToHandVector}, length {viewpointHeadToHandVector.magnitude}
 performerHeadPosition {performerHeadPosition}, performerHandPosition {performerHandPosition}, performerHeadToHandVector {performerHeadToHandVector}, length {performerHeadToHandVector.magnitude}
 performerToHeadRelativeTranslation {performerToHeadRelativeTranslation}
 performerAngleDeg {performerAngleDeg}, viewpointAngleDeg {viewpointAngleDeg}, rotationEulerAngles {rotationEulerAngles}
