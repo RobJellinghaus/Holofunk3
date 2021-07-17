@@ -36,6 +36,12 @@ namespace Holofunk.Viewpoint
         Player GetPlayer(int index);
 
         /// <summary>
+        /// Try to get the player with this ID.
+        /// </summary>
+        /// <param name="playerId">The player ID to look for.</param>
+        bool TryGetPlayer(PlayerId playerId, out Player player);
+
+        /// <summary>
         /// Update the given player.
         /// </summary>
         /// <param name="playerToUpdate">The player to update.</param>

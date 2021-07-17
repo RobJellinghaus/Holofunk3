@@ -20,26 +20,12 @@ namespace Holofunk.Viewpoint
     {
         public int PlayerIndex => GetComponent<SkeletonOverlayer>().playerIndex;
 
-        private SerializedSocketAddress performerHostAddress;
-
         private Vector3Averager headPositionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager headForwardDirectionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager averageEyesPositionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager averageEyesForwardDirectionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager leftHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager rightHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
-
-        /// <summary>
-        /// Set the host address for this player, once we think we know what it is.
-        /// </summary>
-        /// <remarks>
-        /// Setting this to default(SerializedSocketAddress) is also supported, and is the correct
-        /// thing to do if we lose tracking of a player, or connection to a performer.
-        /// </remarks>
-        public void SetPerformerHostAddress(SerializedSocketAddress performerHostAddress)
-        {
-            this.performerHostAddress = performerHostAddress;
-        }
 
         public void Update()
         {
@@ -49,24 +35,27 @@ namespace Holofunk.Viewpoint
             {
                 int playerIndex = PlayerIndex;
                 bool tracked = kinectManager.IsUserDetected(playerIndex);
-                Player updatedPlayer;
+                DistributedViewpoint distributedViewpoint = Viewpoint.TheInstance;
+                Player currentPlayer;
+                distributedViewpoint.TryGetPlayer(new PlayerId((byte)(playerIndex + 1)), out currentPlayer);
 
                 if (!tracked)
                 {
-                    updatedPlayer = new Player()
+                    currentPlayer = new Player()
                     {
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         Tracked = false,
                         UserId = default(UserId),
                         PerformerHostAddress = default(SerializedSocketAddress),
                         SensorPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                        SensorForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         HeadForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         AverageEyesPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         AverageEyesForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                        ViewpointPosition = new Vector3(float.NaN, float.NaN, float.NaN)
+                        PerformerToViewpointTransform = Matrix4x4.zero
                     };
                 }
                 else
@@ -93,13 +82,15 @@ namespace Holofunk.Viewpoint
                     leftHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft));
                     rightHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight));
 
-                    updatedPlayer = new Player()
+                    // Keep the performer host address and the performer-to-viewpoint transform, if known.
+                    currentPlayer = new Player()
                     {
                         Tracked = true,
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         UserId = userId,
-                        PerformerHostAddress = performerHostAddress,
-                        SensorPosition = kinectManager.GetSensorData(0).sensorPosePosition,
+                        PerformerHostAddress = currentPlayer.PerformerHostAddress,
+                        SensorPosition = kinectManager.GetSensorTransform(0).position,
+                        SensorForwardDirection = kinectManager.GetSensorTransform(0).forward,
                         HeadPosition = headPositionAverager.Average,
                         HeadForwardDirection = headForwardDirectionAverager.Average,
                         AverageEyesPosition = averageEyesPositionAverager.Average,
@@ -107,13 +98,12 @@ namespace Holofunk.Viewpoint
                         LeftHandPosition = leftHandAverager.Average,
                         RightHandPosition = rightHandAverager.Average,
                         // hardcoded only one sensor right now
-                        ViewpointPosition = kinectManager.GetSensorTransform(0).position
+                        PerformerToViewpointTransform = currentPlayer.PerformerToViewpointTransform
                     };
                 }
 
                 // We currently use the prototype Viewpoint as the owned instance for this app.
-                DistributedViewpoint distributedViewpoint = Viewpoint.TheInstance;
-                distributedViewpoint.UpdatePlayer(updatedPlayer);
+                distributedViewpoint.UpdatePlayer(currentPlayer);
             }
         }
 

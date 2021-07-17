@@ -173,6 +173,8 @@ namespace Holofunk.Viewpoint
                                         Quaternion performerToViewpointRotation = Quaternion.FromToRotation(flattenedPerformerVector, flattenedViewpointVector);
                                         Matrix4x4 performerToViewpointRotationMatrix = Matrix4x4.Rotate(performerToViewpointRotation);
 
+                                        Vector3 rotationEulerAngles = performerToViewpointRotation.eulerAngles;
+
                                         // Translation to viewpoint-relative location
                                         Vector3 headToviewpointRelativeTranslation = new Vector3(viewpointHeadPosition.x, 0, viewpointHeadPosition.z);
                                         Matrix4x4 viewpointTranslation = Matrix4x4.Translate(headToviewpointRelativeTranslation);
@@ -181,10 +183,14 @@ namespace Holofunk.Viewpoint
 
                                         player.PerformerToViewpointTransform = finalMatrix;
 
-                                        HoloDebug.Log($"Recognized new player - performerToHeadRelativeTranslation {performerToHeadRelativeTranslation}");
-                                        HoloDebug.Log($"Recognized new player - performerAngleDeg {performerAngleDeg}, viewpointAngleDeg {viewpointAngleDeg}");
-                                        HoloDebug.Log($"Recognized new player - headToviewpointRelativeTranslation {headToviewpointRelativeTranslation}");
-                                        HoloDebug.Log($"Recognized new player - Z vector transformed to viewpoint: {finalMatrix * new Vector3(0, 0, 1)}");
+                                        HoloDebug.Log($@"Recognized new player!
+viewpointHeadForwardDirection {viewpointHeadForwardDirection}, viewpointSensorPosition {viewpointSensorPosition}
+viewpointHeadPosition {viewpointHeadPosition}, viewpointHandPosition {viewpointHandPosition}, viewpointHeadToHandVector {viewpointHeadToHandVector}, length {viewpointHeadToHandVector.magnitude}
+performerHeadPosition {performerHeadPosition}, performerHandPosition {performerHandPosition}, performerHeadToHandVector {performerHeadToHandVector}, length {performerHeadToHandVector.magnitude}
+performerToHeadRelativeTranslation {performerToHeadRelativeTranslation}
+performerAngleDeg {performerAngleDeg}, viewpointAngleDeg {viewpointAngleDeg}, rotationEulerAngles {rotationEulerAngles}
+headToViewpointRelativeTranslation {headToviewpointRelativeTranslation}
+Z vector transformed to viewpoint: {finalMatrix * new Vector3(0, 0, 1)}");
                                     }
                                 }
                             }

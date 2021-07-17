@@ -58,6 +58,24 @@ namespace Holofunk.Viewpoint
             return players[index];
         }
 
+        /// <summary>
+        /// Try to get the player with a given Id.
+        /// </summary>
+        public bool TryGetPlayer(PlayerId playerId, out Player player)
+        {
+            for (int i = 0; i < players.Count; i++)
+            {
+                Player p = players[i];
+                if (p.PlayerId == playerId)
+                {
+                    player = p;
+                    return true;
+                }
+            }
+            player = default(Player);
+            return false;
+        }
+
         public void OnDelete()
         {
             // Go gently
