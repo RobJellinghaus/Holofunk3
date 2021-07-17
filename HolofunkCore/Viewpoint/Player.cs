@@ -92,6 +92,12 @@ namespace Holofunk.Viewpoint
         /// </summary>
         public Vector3 ViewpointPosition { get; set; }
 
+        /// <summary>
+        /// The transformation matrix from performer space to viewpoint space (e.g. the local-to-world matrix,
+        /// considering the viewpoint as the world).
+        /// </summary>
+        public Matrix4x4 PerformerToViewpointTransform { get; set; }
+
         public void Deserialize(NetDataReader reader)
         {
             PlayerId = PlayerId.Deserialize(reader);
@@ -105,6 +111,7 @@ namespace Holofunk.Viewpoint
             LeftHandPosition = reader.GetVector3();
             RightHandPosition = reader.GetVector3();
             ViewpointPosition = reader.GetVector3();
+            PerformerToViewpointTransform = reader.GetMatrix4x4();
         }
 
         public void Serialize(NetDataWriter writer)
@@ -120,6 +127,7 @@ namespace Holofunk.Viewpoint
             writer.Put(LeftHandPosition);
             writer.Put(RightHandPosition);
             writer.Put(ViewpointPosition);
+            writer.Put(PerformerToViewpointTransform);
         }
     }
 }

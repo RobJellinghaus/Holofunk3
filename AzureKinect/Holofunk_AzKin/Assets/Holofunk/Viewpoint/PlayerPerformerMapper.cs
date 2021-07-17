@@ -118,25 +118,74 @@ namespace Holofunk.Viewpoint
                                 if (performance.LeftHandPose == HandPoseValue.Opened
                                     || performance.RightHandPose == HandPoseValue.Opened)
                                 {
-                                    // you're the one for us
-                                    player.PerformerHostAddress = new SerializedSocketAddress(thePerformer.OwningPeer);
-                                    theViewpoint.UpdatePlayer(player);
-
-                                    // Now, calculate the actual transforms between performer coordinates and viewpoint coordinates.
-                                    // First, which hand was it? If both were opened, prefer right hand.
-                                    KinectInterop.JointType whichHand;
-                                    if (performance.RightHandPose == HandPoseValue.Opened)
+                                    var owningPeerAddress = new SerializedSocketAddress(thePerformer.OwningPeer);
+                                    if (player.PerformerHostAddress == owningPeerAddress)
                                     {
-                                        whichHand = KinectInterop.JointType.HandRight;
+                                        HoloDebug.Log($"Recognized known performer at address {player.PerformerHostAddress}!");
                                     }
                                     else
                                     {
-                                        whichHand = KinectInterop.JointType.HandLeft;
+                                        // you're the one for us
+                                        player.PerformerHostAddress = new SerializedSocketAddress(thePerformer.OwningPeer);
+                                        theViewpoint.UpdatePlayer(player);
+
+                                        // Now, calculate the actual transforms between performer coordinates and viewpoint coordinates.
+                                        // First, which hand was it? If both were opened, prefer right hand.
+                                        KinectInterop.JointType whichHand;
+                                        if (performance.RightHandPose == HandPoseValue.Opened)
+                                        {
+                                            whichHand = KinectInterop.JointType.HandRight;
+                                        }
+                                        else
+                                        {
+                                            whichHand = KinectInterop.JointType.HandLeft;
+                                        }
+
+                                        // Determine the transformation from performer to viewpoint space (aka local to world space,
+                                        // since we consider the viewpoint to define the world space for now).
+                                        Vector3 viewpointHandPosition = kinectManager.GetJointPosition((ulong)player.UserId, whichHand);
+                                        Vector3 viewpointHeadToHandVector = viewpointHandPosition - viewpointHeadPosition;
+
+                                        Vector3 performerHeadPosition = performance.HeadPosition;
+                                        Vector3 performerHandPosition = whichHand == KinectInterop.JointType.HandLeft
+                                            ? performance.LeftHandPosition
+                                            : performance.RightHandPosition;
+                                        Vector3 performerHeadToHandVector = performerHandPosition - performerHeadPosition;
+
+                                        // We rely on both coordinate spaces having close enough scale that we can ignore scaling
+                                        // transformation. We also rely on them having consistent and flat Y planes, so the only
+                                        // rotational transformation we need is about the Y (up) axis.
+
+                                        // Translation to head-relative location
+                                        Vector3 performerToHeadRelativeTranslation = new Vector3(-performerHeadPosition.x, 0, -performerHeadPosition.z);
+                                        Matrix4x4 performerTranslation = Matrix4x4.Translate(performerToHeadRelativeTranslation);
+
+                                        // X/Z-plane projection of the head-to-hand vectors in performer space and viewpoint space
+                                        // (e.g. the rotation about the Y axis of the head)
+                                        Vector3 flattenedPerformerVector =
+                                            new Vector3(performerHeadToHandVector.x, 0, performerHeadToHandVector.z).normalized;
+                                        Vector3 flattenedViewpointVector =
+                                            new Vector3(viewpointHeadToHandVector.x, 0, viewpointHeadToHandVector.z).normalized;
+                                        float performerAngleDeg = Mathf.Atan2(performerHeadToHandVector.z, performerHeadToHandVector.x) * Mathf.Rad2Deg;
+                                        float viewpointAngleDeg = Mathf.Atan2(viewpointHeadToHandVector.z, viewpointHeadToHandVector.x) * Mathf.Rad2Deg;
+
+                                        // Rotate performer vector to viewpoint vector about Y axis only
+                                        Quaternion performerToViewpointRotation = Quaternion.FromToRotation(flattenedPerformerVector, flattenedViewpointVector);
+                                        Matrix4x4 performerToViewpointRotationMatrix = Matrix4x4.Rotate(performerToViewpointRotation);
+
+                                        // Translation to viewpoint-relative location
+                                        Vector3 headToviewpointRelativeTranslation = new Vector3(viewpointHeadPosition.x, 0, viewpointHeadPosition.z);
+                                        Matrix4x4 viewpointTranslation = Matrix4x4.Translate(headToviewpointRelativeTranslation);
+
+                                        Matrix4x4 finalMatrix = performerTranslation * performerToViewpointRotationMatrix * viewpointTranslation;
+
+                                        player.PerformerToViewpointTransform = finalMatrix;
+
+                                        HoloDebug.Log($"Recognized new player - performerToHeadRelativeTranslation {performerToHeadRelativeTranslation}");
+                                        HoloDebug.Log($"Recognized new player - performerAngleDeg {performerAngleDeg}, viewpointAngleDeg {viewpointAngleDeg}");
+                                        HoloDebug.Log($"Recognized new player - headToviewpointRelativeTranslation {headToviewpointRelativeTranslation}");
+                                        HoloDebug.Log($"Recognized new player - Z vector transformed to viewpoint: {finalMatrix * new Vector3(0, 0, 1)}");
                                     }
-
-                                    Vector3 viewpointHandPosition = kinectManager.GetJointPosition((ulong)player.UserId, whichHand);
-
-                                    HoloDebug.Log($"I see player at address {player.PerformerHostAddress}!!!");
                                 }
                             }
                         }

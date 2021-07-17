@@ -42,7 +42,7 @@ namespace Holofunk.Perform
             {
                 // get the prototype object
                 GameObject prototype = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Performer);
-                GameObject parent = DistributedObjectFactory.FindContainer(DistributedObjectFactory.DistributedType.Viewpoint, netPeer);
+                GameObject parent = DistributedObjectFactory.FindContainer(DistributedObjectFactory.DistributedType.Performer, netPeer);
                 GameObject clone = UnityEngine.Object.Instantiate(prototype, parent.transform);
 
                 clone.name = $"{createMessage.Id}";

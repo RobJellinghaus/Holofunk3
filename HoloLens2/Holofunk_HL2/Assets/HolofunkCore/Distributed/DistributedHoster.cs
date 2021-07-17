@@ -54,13 +54,22 @@ namespace Holofunk.Distributed
         {
             workQueue = new WorkQueue(HoloDebug.Instance);
             Host = new DistributedHost(workQueue, DefaultListenPort, isListener: true, logger: HoloDebug.Instance);
-            Host.RegisterType<Player>();
-            Host.RegisterType<Perform.Performer>();
+            
+            // Unity types
+            Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetVector3);
+            Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetVector4);
+            Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetMatrix4x4);
+
+            // Holofunk ID types and data objects
             Host.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
             Host.RegisterType(UserId.Serialize, UserId.Deserialize);
-            Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetVector3);
+            Host.RegisterType<Player>();
+            Host.RegisterType<Performer>();
+
+            // Distributed messages
             Host.RegisterWith(ViewpointMessages.Register);
             Host.RegisterWith(PerformerMessages.Register);
+
             Instance = this;
 
             // let the announcements begin!
