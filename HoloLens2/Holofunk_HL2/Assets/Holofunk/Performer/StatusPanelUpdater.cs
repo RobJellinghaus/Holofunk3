@@ -33,7 +33,7 @@ namespace Holofunk.Perform
             GameObject performerContainer = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Performer);
             LocalPerformer localPerformer = performerContainer.GetComponent<LocalPerformer>();
 
-            Vector3 viewpointSensorPos = player.ViewpointPosition;
+            Vector3 viewpointSensorPos = player.SensorPosition;
 
             Vector3 localHandPos = localPerformer.GetPerformer().RightHandPosition;
             Vector3 viewpointHandPos = player.RightHandPosition;
@@ -55,18 +55,18 @@ namespace Holofunk.Perform
             float viewpointVerticalEyesDistance = Math.Abs(viewpointHandPos.y - viewpointAverageEyesPos.y);
             float viewpointLinearEyesDistance = Vector3.Distance(viewpointHandPos, viewpointAverageEyesPos);
 
-            Vector3 eyesToViewpointVector = (viewpointAverageEyesPos - viewpointSensorPos).normalized;
-            Vector3 headToViewpointVector = (viewpointHeadPos - viewpointSensorPos).normalized;
+            Vector3 eyesToViewpointVector = (viewpointSensorPos - viewpointAverageEyesPos).normalized;
+            Vector3 headToViewpointVector = (viewpointSensorPos - viewpointHeadPos).normalized;
 
             string statusMessage = 
 $@"
-viewpointSensorPos {viewpointSensorPos} 
+viewpointSensorPos {viewpointSensorPos} viewpointForwardDir {player.SensorForwardDirection}
 localHandPos {localHandPos} | viewpointHandPos {viewpointHandPos}
 localHeadPos {localHeadPos} | viewpointHeadPos {viewpointHeadPos}
 localHeadPos {localHeadPos} | viewpointAverageEyesPos {viewpointAverageEyesPos}
 
-eyesorientation-> {viewpointAverageEyesForwardDir} | eyestosensor-> {eyesToViewpointVector} | collin {Vector3.Dot(viewpointAverageEyesForwardDir, eyesToViewpointVector):f4} 
-viewpointHead-> {viewpointHeadForwardDir} | headtosensor-> {headToViewpointVector} | collin {Vector3.Dot(viewpointHeadForwardDir, headToViewpointVector):f4} 
+eyesforward-> {viewpointAverageEyesForwardDir} | eyestosensor-> {eyesToViewpointVector} | collin {Vector3.Dot(viewpointAverageEyesForwardDir, eyesToViewpointVector):f4} 
+headforward-> {viewpointHeadForwardDir} | headtosensor-> {headToViewpointVector} | collin {Vector3.Dot(viewpointHeadForwardDir, headToViewpointVector):f4} 
 
 Head:
 localvertdist {localVerticalHeadDistance:f4} | viewpointvertdist {viewpointVerticalHeadDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalHeadDistance):f4}
