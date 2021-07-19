@@ -89,6 +89,11 @@ namespace Holofunk.Viewpoint
         /// </summary>
         public Matrix4x4 PerformerToViewpointTransform { get; set; }
 
+        /// <summary>
+        /// The inverse of the PerformerToViewpointTransform.
+        /// </summary>
+        public Matrix4x4 ViewpointToPerformerTransform { get; set; }
+
         public void Deserialize(NetDataReader reader)
         {
             PlayerId = PlayerId.Deserialize(reader);
@@ -102,6 +107,7 @@ namespace Holofunk.Viewpoint
             LeftHandPosition = reader.GetVector3();
             RightHandPosition = reader.GetVector3();
             PerformerToViewpointTransform = reader.GetMatrix4x4();
+            ViewpointToPerformerTransform = reader.GetMatrix4x4();
         }
 
         public void Serialize(NetDataWriter writer)
@@ -117,6 +123,7 @@ namespace Holofunk.Viewpoint
             writer.Put(LeftHandPosition);
             writer.Put(RightHandPosition);
             writer.Put(PerformerToViewpointTransform);
+            writer.Put(ViewpointToPerformerTransform);
         }
     }
 }
