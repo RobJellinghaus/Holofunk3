@@ -53,7 +53,8 @@ namespace Holofunk.Viewpoint
                         HeadForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                        PerformerToViewpointTransform = Matrix4x4.zero
+                        PerformerToViewpointTransform = Matrix4x4.zero,
+                        ViewpointToPerformerTransform = Matrix4x4.zero
                     };
                 }
                 else
@@ -82,7 +83,8 @@ namespace Holofunk.Viewpoint
                         LeftHandPosition = leftHandAverager.Average,
                         RightHandPosition = rightHandAverager.Average,
                         // hardcoded only one sensor right now
-                        PerformerToViewpointTransform = currentPlayer.PerformerToViewpointTransform
+                        PerformerToViewpointTransform = currentPlayer.PerformerToViewpointTransform,
+                        ViewpointToPerformerTransform = currentPlayer.ViewpointToPerformerTransform
                     };
                 }
 
