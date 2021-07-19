@@ -23,6 +23,7 @@ namespace Holofunk.Perform
         private Vector3Averager _leftHandPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager _rightHandPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager _headPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
+        private Vector3Averager _headForwardAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private TopCounter<HandPoseValue> _leftHandPoseCounter = new TopCounter<HandPoseValue>(
             MagicNumbers.FramesToAverageWhenSmoothing, (int)HandPoseValue.Max, v => (int)v, i => (HandPoseValue)i);
         private TopCounter<HandPoseValue> _rightHandPoseCounter = new TopCounter<HandPoseValue>(
@@ -31,6 +32,7 @@ namespace Holofunk.Perform
         public Vector3 AverageLeftHandPos => _leftHandPosAverager.Average;
         public Vector3 AverageRightHandPos => _rightHandPosAverager.Average;
         public Vector3 AverageHeadPos => _headPosAverager.Average;
+        public Vector3 AverageHeadForwardDir => _headForwardAverager.Average;
 
         // Update is called once per frame
         public void Update()
@@ -46,10 +48,12 @@ namespace Holofunk.Perform
             (Vector3 localRightHandPos, HandPoseValue rightHandPoseValue) = LocalHandPosition( Handedness.Right);
 
             Vector3 localHeadPos = LocalHeadPosition(gazeProvider);
+            Vector3 localHeadForwardDir = LocalGazeDirection(gazeProvider);
 
             _leftHandPosAverager.Update(localLeftHandPos);
             _rightHandPosAverager.Update(localRightHandPos);
             _headPosAverager.Update(localHeadPos);
+            _headForwardAverager.Update(localHeadForwardDir);
             _leftHandPoseCounter.Update(leftHandPoseValue);
             _rightHandPoseCounter.Update(rightHandPoseValue);
 
@@ -58,6 +62,7 @@ namespace Holofunk.Perform
                 LeftHandPosition = AverageLeftHandPos,
                 RightHandPosition = AverageRightHandPos,
                 HeadPosition = AverageHeadPos,
+                HeadForwardDirection = AverageHeadForwardDir,
                 LeftHandPose = new HandPose(
                     _leftHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown)),
                 RightHandPose = new HandPose(
@@ -73,7 +78,6 @@ namespace Holofunk.Perform
             {
                 if (handJointService.IsHandTracked(h))
                 {
-
                     Vector3 position = handJointService.RequestJointTransform(TrackedHandJoint.Palm, h).position;
                     _classifier.Recalculate(handJointService, gazeProvider, h);
                     return (position, _classifier.GetHandPose());
@@ -87,6 +91,11 @@ namespace Holofunk.Perform
             Vector3 LocalHeadPosition(IMixedRealityEyeGazeProvider gp)
             {
                 return gp.GazeOrigin;
+            }
+
+            Vector3 LocalGazeDirection(IMixedRealityEyeGazeProvider gp)
+            {
+                return gp.GazeDirection;
             }
         }
     }

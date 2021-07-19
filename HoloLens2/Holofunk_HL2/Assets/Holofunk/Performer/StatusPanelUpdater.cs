@@ -43,42 +43,44 @@ namespace Holofunk.Perform
             Vector3 localHeadPos = localPerformer.GetPerformer().HeadPosition;
             Vector3 viewpointHeadPos = player.HeadPosition;
             Vector3 viewpointHeadForwardDir = player.HeadForwardDirection;
-            Vector3 viewpointAverageEyesPos = player.AverageEyesPosition;
-            Vector3 viewpointAverageEyesForwardDir = player.AverageEyesForwardDirection;
 
             float localVerticalHeadDistance = Math.Abs(localHandPos.y - localHeadPos.y);
             float localLinearHeadDistance = Vector3.Distance(localHandPos, localHeadPos);
 
             float viewpointVerticalHeadDistance = Math.Abs(viewpointHandPos.y - viewpointHeadPos.y);
             float viewpointLinearHeadDistance = Vector3.Distance(viewpointHandPos, viewpointHeadPos);
-
-            float viewpointVerticalEyesDistance = Math.Abs(viewpointHandPos.y - viewpointAverageEyesPos.y);
-            float viewpointLinearEyesDistance = Vector3.Distance(viewpointHandPos, viewpointAverageEyesPos);
-
-            Vector3 eyesToViewpointVector = (viewpointSensorPos - viewpointAverageEyesPos).normalized;
             Vector3 headToViewpointVector = (viewpointSensorPos - viewpointHeadPos).normalized;
 
-            string statusMessage = 
+            string statusMessage =
 $@"
-viewpointSensorPos {viewpointSensorPos} viewpointForwardDir {player.SensorForwardDirection}
+viewpointSensorPos {viewpointSensorPos}
+viewpointForwardDir {player.SensorForwardDirection}
 localHandPos {localHandPos} | viewpointHandPos {viewpointHandPos}
 localHeadPos {localHeadPos} | viewpointHeadPos {viewpointHeadPos}
-localHeadPos {localHeadPos} | viewpointAverageEyesPos {viewpointAverageEyesPos}
 
-eyesforward-> {viewpointAverageEyesForwardDir} | eyestosensor-> {eyesToViewpointVector} | collin {Vector3.Dot(viewpointAverageEyesForwardDir, eyesToViewpointVector):f4} 
-headforward-> {viewpointHeadForwardDir} | headtosensor-> {headToViewpointVector} | collin {Vector3.Dot(viewpointHeadForwardDir, headToViewpointVector):f4} 
+headforward-> {viewpointHeadForwardDir} | headtosensor-> {headToViewpointVector} 
+| collin {Vector3.Dot(viewpointHeadForwardDir, headToViewpointVector):f4} 
 
 Head:
 localvertdist {localVerticalHeadDistance:f4} | viewpointvertdist {viewpointVerticalHeadDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalHeadDistance):f4}
 localdist {localLinearHeadDistance:f4} | viewpointdist {viewpointLinearHeadDistance:f4} | delta {Math.Abs(localLinearHeadDistance - viewpointLinearHeadDistance):f4}
 
-Eyes:
-localvertdist {localVerticalHeadDistance:f4} | viewpointvertdist {viewpointVerticalEyesDistance:f4} | delta {Math.Abs(localVerticalHeadDistance - viewpointVerticalEyesDistance):f4}
-localdist {localLinearHeadDistance:f4} | viewpointeyesdist {viewpointLinearEyesDistance:f4} | delta {Math.Abs(localLinearHeadDistance - viewpointLinearEyesDistance):f4}
-
 handPose {handPoseValue}";
 
             textMesh.text = statusMessage;
+
+            if (player.PlayerId != default(PlayerId))
+            {
+                if (player.ViewpointToPerformerTransform != Matrix4x4.zero)
+                {
+                    // position the "FloatingTextPanel 2" at the transformed position of the sensor
+                    Vector3 sensorPosition = player.SensorPosition;
+                    Vector3 sensorPositionInPerformerSpace = player.ViewpointToPerformerTransform.MultiplyPoint(sensorPosition);
+
+                    GameObject panel2 = GameObject.Find("FloatingTextPanel 2");
+                    panel2.transform.position = sensorPositionInPerformerSpace;
+                }
+            }
             //HoloDebug.Log(statusMessage);
 
             // Get the first Player in the first Viewpoint in the first currently connected peer.
