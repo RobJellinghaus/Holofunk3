@@ -128,7 +128,6 @@ namespace Holofunk.Viewpoint
                                     {
                                         // you're the one for us
                                         player.PerformerHostAddress = new SerializedSocketAddress(thePerformer.OwningPeer);
-                                        theViewpoint.UpdatePlayer(player);
 
                                         // Now, calculate the actual transforms between performer coordinates and viewpoint coordinates.
                                         // First, which hand was it? If both were opened, prefer right hand.
@@ -158,8 +157,7 @@ namespace Holofunk.Viewpoint
                                         // rotational transformation we need is about the Y (up) axis.
 
                                         // Translation to head-relative location
-                                        Vector3 performerToHeadRelativeTranslation = new Vector3(-performerHeadPosition.x, 0, -performerHeadPosition.z);
-                                        Matrix4x4 performerTranslation = Matrix4x4.Translate(performerToHeadRelativeTranslation);
+                                        Matrix4x4 performerTranslation = Matrix4x4.Translate(-performerHeadPosition);
 
                                         // X/Z-plane projection of the head-to-hand vectors in performer space and viewpoint space
                                         // (e.g. the rotation about the Y axis of the head)
@@ -167,20 +165,36 @@ namespace Holofunk.Viewpoint
                                             new Vector3(performerHeadToHandVector.x, 0, performerHeadToHandVector.z).normalized;
                                         Vector3 flattenedViewpointVector =
                                             new Vector3(viewpointHeadToHandVector.x, 0, viewpointHeadToHandVector.z).normalized;
-                                        float performerAngleDeg = Mathf.Atan2(performerHeadToHandVector.z, performerHeadToHandVector.x) * Mathf.Rad2Deg;
-                                        float viewpointAngleDeg = Mathf.Atan2(viewpointHeadToHandVector.z, viewpointHeadToHandVector.x) * Mathf.Rad2Deg;
 
                                         // Rotate performer vector to viewpoint vector about Y axis only
-                                        Quaternion performerToViewpointRotation = Quaternion.FromToRotation(flattenedPerformerVector, flattenedViewpointVector);
+                                        Quaternion performerToViewpointRotation = Quaternion.FromToRotation(
+                                            performerHeadToHandVector.normalized,
+                                            viewpointHeadToHandVector.normalized);
+                                        Quaternion performerToViewpointRotationNonNormalized = Quaternion.FromToRotation(
+                                            performerHeadToHandVector,
+                                            viewpointHeadToHandVector);
+
+                                        Quaternion flattenedPerformerToViewpointRotation = Quaternion.FromToRotation(
+                                            flattenedPerformerVector,
+                                            flattenedViewpointVector);
+                                        Matrix4x4 flattenedPerformerToViewpointRotationMatrix = Matrix4x4.Rotate(flattenedPerformerToViewpointRotation);
+
+                                        // TODO TOMORROW: are the above values the same? HYPOTHESIS: YES. CONCLUSION: YES.
                                         Matrix4x4 performerToViewpointRotationMatrix = Matrix4x4.Rotate(performerToViewpointRotation);
 
                                         Vector3 rotationEulerAngles = performerToViewpointRotation.eulerAngles;
+                                        Vector3 rotationEulerAnglesNonNormalized = performerToViewpointRotationNonNormalized.eulerAngles;
+                                        Vector3 flattenedRotationEulerAngles = flattenedPerformerToViewpointRotation.eulerAngles;
 
                                         // Translation to viewpoint-relative location
-                                        Vector3 headToviewpointRelativeTranslation = new Vector3(viewpointHeadPosition.x, 0, viewpointHeadPosition.z);
-                                        Matrix4x4 viewpointTranslation = Matrix4x4.Translate(headToviewpointRelativeTranslation);
+                                        Matrix4x4 viewpointTranslation = Matrix4x4.Translate(viewpointHeadPosition);
 
-                                        Matrix4x4 finalMatrix = performerTranslation * performerToViewpointRotationMatrix * viewpointTranslation;
+                                        Vector3 performerTranslatedPosition = performerTranslation.MultiplyPoint(new Vector4(0, 0, 1));
+                                        Vector3 rotatedPosition = flattenedPerformerToViewpointRotationMatrix.MultiplyPoint(performerTranslatedPosition);
+                                        Vector3 viewpointPosition = viewpointTranslation.MultiplyPoint(rotatedPosition);
+
+                                        Matrix4x4 finalMatrix = viewpointTranslation * flattenedPerformerToViewpointRotationMatrix * performerTranslation;
+                                        Vector3 finalPosition = finalMatrix.MultiplyPoint(new Vector3(0, 0, 1));
 
                                         player.PerformerToViewpointTransform = finalMatrix;
 
@@ -189,10 +203,15 @@ viewpointSensorPosition {viewpointSensorPosition}, viewpointSensorForwardDirecti
 viewpointHeadPosition {viewpointHeadPosition}, viewpointHeadForwardDirection {viewpointHeadForwardDirection}
 viewpointHandPosition {viewpointHandPosition}, viewpointHeadToHandVector {viewpointHeadToHandVector}, length {viewpointHeadToHandVector.magnitude}
 performerHeadPosition {performerHeadPosition}, performerHandPosition {performerHandPosition}, performerHeadToHandVector {performerHeadToHandVector}, length {performerHeadToHandVector.magnitude}
-performerToHeadRelativeTranslation {performerToHeadRelativeTranslation}
-performerAngleDeg {performerAngleDeg}, viewpointAngleDeg {viewpointAngleDeg}, rotationEulerAngles {rotationEulerAngles}
-headToViewpointRelativeTranslation {headToviewpointRelativeTranslation}
-Z vector transformed to viewpoint: {finalMatrix * new Vector3(0, 0, 1)}");
+rotationEulerAngles {rotationEulerAngles}, rotationNonNormalized {rotationEulerAnglesNonNormalized}, flattened {flattenedRotationEulerAngles}
+Z vector transformed to performer origin: {performerTranslatedPosition}
+Z vector flat-rotated to viewpoint alignment: {rotatedPosition}
+Z vector transformed to viewpoint location: {viewpointPosition}
+Z vector transformed by final matrix: {finalPosition}
+
+");
+
+                                        theViewpoint.UpdatePlayer(player);
                                     }
                                 }
                             }

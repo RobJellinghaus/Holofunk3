@@ -51,8 +51,6 @@ namespace Holofunk.Viewpoint
                         SensorForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         HeadForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
-                        AverageEyesPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                        AverageEyesForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         PerformerToViewpointTransform = Matrix4x4.zero
@@ -62,22 +60,10 @@ namespace Holofunk.Viewpoint
                 {
                     ulong userId = kinectManager.GetUserIdByIndex(playerIndex);
 
-                    headPositionAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.Head));
+                    headPositionAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.Nose));
 
-                    Vector3 headForwardDirection = GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.Head);
+                    Vector3 headForwardDirection = GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.Nose);
                     headForwardDirectionAverager.Update(headForwardDirection);
-
-                    Vector3 averageEyePosition = 
-                        (GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeLeft)
-                         + GetJointWorldSpacePosition(userId, KinectInterop.JointType.EyeRight))
-                        / 2;
-                    averageEyesPositionAverager.Update(averageEyePosition);
-
-                    Vector3 averageEyeForwardDirection =
-                        (GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.EyeLeft)
-                         + GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.EyeRight))
-                         / 2;
-                    averageEyesForwardDirectionAverager.Update(averageEyeForwardDirection);
 
                     leftHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft));
                     rightHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight));
@@ -93,8 +79,6 @@ namespace Holofunk.Viewpoint
                         SensorForwardDirection = kinectManager.GetSensorTransform(0).forward,
                         HeadPosition = headPositionAverager.Average,
                         HeadForwardDirection = headForwardDirectionAverager.Average,
-                        AverageEyesPosition = averageEyesPositionAverager.Average,
-                        AverageEyesForwardDirection = averageEyesForwardDirectionAverager.Average,
                         LeftHandPosition = leftHandAverager.Average,
                         RightHandPosition = rightHandAverager.Average,
                         // hardcoded only one sensor right now
@@ -154,9 +138,15 @@ namespace Holofunk.Viewpoint
             {
                 // TODO: to flip or not to flip?
                 Quaternion jointOrientation = kinectManager.GetJointOrientation(userId, joint, flip: false);
-                
                 // multiply orientation by a normalized forward Z vector
                 Vector3 jointForwardDirection = jointOrientation * new Vector3(0, 0, 1);
+
+                // NOW, TOTAL HACK: reverse the Z direction.
+                // We observe that the camera's forward direction is (0, 0, 1).
+                // But looking straight at the camera also yields a forward direction of (0, 0, 1).
+                // This seems impossible. The forward direction should be the opposite of the camera
+                // look direction. So, invert the Z coordinate before returning.
+                jointForwardDirection.z = -jointForwardDirection.z;
 
                 return jointForwardDirection;
             }
