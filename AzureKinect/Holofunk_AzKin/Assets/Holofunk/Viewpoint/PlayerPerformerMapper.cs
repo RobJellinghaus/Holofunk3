@@ -129,59 +129,85 @@ namespace Holofunk.Viewpoint
                                         // you're the one for us
                                         player.PerformerHostAddress = new SerializedSocketAddress(thePerformer.OwningPeer);
 
+                                        // The point of this code is to calculate the transformation matrices between viewpoint
+                                        // space and performer space, using the performer's head as the origin of the conversion.
+                                        // In other words the performer's head, at the moment of performer recognition, becomes
+                                        // the "anchor" that both systems have a common view of.
+
                                         // We rely on both coordinate spaces having close enough scale that we can ignore scaling
                                         // transformation. We also rely on them having consistent and flat Y planes, so the only
-                                        // rotational transformation we need is about the Y (up) axis.
+                                        // rotational transformation we need is about the Y (up) axis. We call this "flat-rotation".
 
-                                        // Rotate from the performer's look vector to the camera's look vector.
+                                        // The transformation from performer space to viewpoint space is:
+                                        // - Subtract the performer's head position
+                                        //   (e.g. bring the performer's head position to the origin)
+                                        // - Flat-rotate from the performer's forward direction to a straight unit Z direction
+                                        //   (e.g. bring the performer's orientation to the origin)
+                                        // - Flat-rotate from the sensor forward direction to the player's head's forward direction
+                                        //   (e.g. rotate to the head orientation in viewpoint space)
+                                        // - Add the player's head position
+                                        //   (e.g. translate to the head position in viewpoint space)
 
-                                        // Rotate performer vector to viewpoint vector about Y axis only
-                                        Quaternion performerToViewpointRotation = Quaternion.FromToRotation(
-                                            viewpointHeadForwardDirection,
-                                            viewpointSensorForwardDirection);
-                                        Quaternion viewpointToPerformerRotation = Quaternion.FromToRotation(
-                                            viewpointSensorForwardDirection,
-                                            viewpointHeadForwardDirection);
-                                        Quaternion performerToViewpointFlattenedRotation = Quaternion.FromToRotation(
-                                            new Vector3(viewpointHeadForwardDirection.x, 0, viewpointHeadForwardDirection.z),
-                                            new Vector3(viewpointSensorForwardDirection.x, 0, viewpointSensorForwardDirection.z));
+                                        Vector3 Flatten(Vector3 v) => new Vector3(v.x, 0, v.z);
 
-                                        // TODO TOMORROW: are the above values the same? HYPOTHESIS: YES. CONCLUSION: YES.
-                                        Matrix4x4 performerToViewpointRotationMatrix = Matrix4x4.Rotate(performerToViewpointRotation);
-                                        Matrix4x4 performerToViewpointFlattenedRotationMatrix = Matrix4x4.Rotate(performerToViewpointFlattenedRotation);
+                                        // Translate from the performer's head location to the performance's origin.
+                                        Matrix4x4 translateFromPerformerHeadMatrix = Matrix4x4.Translate(-performance.HeadPosition);
 
-                                        Matrix4x4 viewpointToPerformerRotationMatrix = Matrix4x4.Rotate(viewpointToPerformerRotation);
+                                        // Flat-rotate from the performer's gaze direction to the unit Z direction.
+                                        Matrix4x4 flatRotateFromPerformerHeadMatrix = Matrix4x4.Rotate(
+                                            Quaternion.FromToRotation(Flatten(performance.HeadForwardDirection), Vector3.forward));
 
-                                        Vector3 rotationEulerAngles = performerToViewpointRotation.eulerAngles;
-                                        Vector3 flattenedRotationEulerAngles = performerToViewpointFlattenedRotation.eulerAngles;
+                                        // Flat-rotate from the unit Z direction to the viewpoint's head direction.
+                                        Matrix4x4 flatRotateToPlayerHeadMatrix = Matrix4x4.Rotate(
+                                            Quaternion.FromToRotation(Vector3.forward, Flatten(player.HeadForwardDirection)));
 
-                                        // Translation to viewpoint-relative location
-                                        Matrix4x4 viewpointTranslation = Matrix4x4.Translate(viewpointHeadPosition);
+                                        // Translate to the viewpoint's head position.
+                                        Matrix4x4 translateToPlayerHeadMatrix = Matrix4x4.Translate(player.HeadPosition);
 
-                                        Vector3 pointInFrontOfMe = new Vector3(0, 0, 1);
-                                        Vector3 rotatedPosition = performerToViewpointRotationMatrix.MultiplyPoint(pointInFrontOfMe);
-                                        Vector3 viewpointPosition = viewpointTranslation.MultiplyPoint(rotatedPosition);
+                                        Vector3 point1_0 = Vector3.forward;
+                                        Vector3 point1_1 = translateFromPerformerHeadMatrix.MultiplyPoint(point1_0);
+                                        Vector3 point1_2 = flatRotateFromPerformerHeadMatrix.MultiplyPoint(point1_1);
+                                        Vector3 point1_3 = flatRotateToPlayerHeadMatrix.MultiplyPoint(point1_2);
+                                        Vector3 point1_4 = translateToPlayerHeadMatrix.MultiplyPoint(point1_3);
 
-                                        Vector3 flattenedRotatedPosition = performerToViewpointFlattenedRotationMatrix.MultiplyPoint(pointInFrontOfMe);
-                                        Vector3 flattenedViewpointPosition = viewpointTranslation.MultiplyPoint(flattenedRotatedPosition);
+                                        Matrix4x4 finalMatrix = translateToPlayerHeadMatrix
+                                            * flatRotateToPlayerHeadMatrix
+                                            * flatRotateFromPerformerHeadMatrix
+                                            * translateFromPerformerHeadMatrix;
+                                        Vector3 finalPosition = finalMatrix.MultiplyPoint(Vector3.forward);
 
-                                        Matrix4x4 finalMatrix = viewpointTranslation * performerToViewpointRotationMatrix;
-                                        Vector3 finalPosition = finalMatrix.MultiplyPoint(new Vector3(0, 0, 1));
+                                        Matrix4x4 translateFromPlayerHeadMatrix = Matrix4x4.Translate(performance.HeadPosition);
+                                        Matrix4x4 rotateFromPlayerHeadMatrix =
+                                            Matrix4x4.Rotate(Quaternion.FromToRotation(Flatten(player.HeadForwardDirection), Vector3.forward));
+                                        Matrix4x4 rotateToPerformerHeadMatrix =
+                                            Matrix4x4.Rotate(Quaternion.FromToRotation(Vector3.forward, Flatten(performance.HeadForwardDirection)));
+                                        Matrix4x4 translateToPerformerHeadMatrix =
+                                            Matrix4x4.Translate(performance.HeadPosition);
+
+                                        Vector3 point2_0 = Vector3.forward;
+                                        Vector3 point2_1 = translateFromPlayerHeadMatrix.MultiplyPoint(point2_0);
+                                        Vector3 point2_2 = rotateFromPlayerHeadMatrix.MultiplyPoint(point2_1);
+                                        Vector3 point2_3 = rotateToPerformerHeadMatrix.MultiplyPoint(point2_2);
+                                        Vector3 point2_4 = translateToPerformerHeadMatrix.MultiplyPoint(point2_3);
+
+                                        Matrix4x4 finalInverseMatrix =
+                                            translateToPerformerHeadMatrix
+                                            * rotateToPerformerHeadMatrix
+                                            * rotateFromPlayerHeadMatrix
+                                            * translateFromPlayerHeadMatrix;
 
                                         player.PerformerToViewpointTransform = finalMatrix;
-
-                                        Matrix4x4 finalInverseMatrix = viewpointToPerformerRotationMatrix * Matrix4x4.Translate(-viewpointHeadPosition);
                                         player.ViewpointToPerformerTransform = finalInverseMatrix;
 
                                         HoloDebug.Log($@"Recognized new player!
 viewpointSensorPosition {viewpointSensorPosition}, viewpointSensorForwardDirection {viewpointSensorForwardDirection}
 viewpointHeadPosition {viewpointHeadPosition}, viewpointHeadForwardDirection {viewpointHeadForwardDirection}
-rotationEulerAngles {rotationEulerAngles}, flatEulerAngles {flattenedRotationEulerAngles}
-Z vector rotated to viewpoint alignment: {rotatedPosition}
-Z vector transformed to viewpoint location: {viewpointPosition}
-Z vector transformed by final matrix: {finalPosition}
-Z vector flat-rotated to viewpoint forward dir: {flattenedRotatedPosition}
-Z vector flat-transformed to viewpoint location: {flattenedViewpointPosition}
+
+Performer {point1_0} => {point1_1} => {point1_2} => {point1_3} => {point1_4} Viewpoint
+Or: => {finalPosition}
+
+Viewpoint {point2_0} => {point2_1} => {point2_2} => {point2_3} => {point2_4} Performer
+Or: => {finalInverseMatrix.MultiplyPoint(Vector3.forward)}
 ");
 
                                         theViewpoint.UpdatePlayer(player);
