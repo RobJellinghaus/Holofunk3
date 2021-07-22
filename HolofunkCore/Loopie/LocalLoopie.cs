@@ -38,9 +38,9 @@ namespace Holofunk.Loopie
             // Go gently
         }
 
-        public void SetMute(bool mute)
+        public void SetMute(bool isMuted)
         {
-            
+            loopie.IsMuted = isMuted;
         }
     }
 }

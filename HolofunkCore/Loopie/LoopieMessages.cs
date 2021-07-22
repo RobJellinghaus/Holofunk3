@@ -30,10 +30,20 @@ namespace Holofunk.Loopie
                 IsMuted = isMuted;
             }
 
-            public override void Invoke(IDistributedInterface target)
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetMute(IsMuted);
+        }
+
+        public class SetVolume : ReliableMessage
+        {
+            public float Volume { get; set; }
+            public SetVolume() : base() { }
+
+            public SetVolume(DistributedId id, bool isRequest, float volume) : base(id, isRequest)
             {
-                ((IDistributedLoopie)target).SetMute(IsMuted);
+                Volume = volume;
             }
+
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetVolume(Volume);
         }
 
         // TODO: refactor this for actual sharing with the other Register methods
@@ -45,6 +55,9 @@ namespace Holofunk.Loopie
                 (local, message) => local.Initialize(message.Loopie));
 
             Registrar.RegisterReliableMessage<SetMute, DistributedLoopie, LocalLoopie, IDistributedLoopie>(
+                proxyCapability);
+
+            Registrar.RegisterReliableMessage<SetVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(
                 proxyCapability);
         }
     }

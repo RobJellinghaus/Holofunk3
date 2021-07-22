@@ -61,10 +61,7 @@ namespace Holofunk.Viewpoint
         /// nulled out.
         /// </remarks>
         [ReliableMethod]
-        public void UpdatePlayer(Player playerToUpdate)
-        {
-            RouteReliableMessage(isRequest => new UpdatePlayer(Id, isRequest, playerToUpdate));
-        }
+        public void UpdatePlayer(Player playerToUpdate) => RouteReliableMessage(isRequest => new UpdatePlayer(Id, isRequest, playerToUpdate));
 
         #endregion
 

@@ -31,5 +31,14 @@ namespace Holofunk.Loopie
         /// Mute or unmute the Loopie.
         /// </summary>
         void SetMute(bool mute);
+
+        /// <summary>
+        /// Set the current volume of this Loopie.
+        /// </summary>
+        /// <remarks>
+        /// This should be a broadcast message, and eventually probably will be, but at first we
+        /// make it reliable.
+        /// </remarks>
+        void SetVolume(float volume);
     }
 }

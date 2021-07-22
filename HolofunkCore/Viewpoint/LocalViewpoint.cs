@@ -32,10 +32,7 @@ namespace Holofunk.Viewpoint
 
         public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedViewpoint>();
 
-        internal void Initialize(Player[] playerArray)
-        {
-            players.AddRange(playerArray);
-        }
+        internal void Initialize(Player[] playerArray) => players.AddRange(playerArray);
 
         /// <summary>
         /// Internal method for use by Create message.

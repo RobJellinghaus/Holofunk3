@@ -46,10 +46,13 @@ namespace Holofunk.Loopie
         /// Set whether the loopie is muted.
         /// </summary>
         [ReliableMethod]
-        public void SetMute(bool isMuted)
-        {
-            RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
-        }
+        public void SetMute(bool isMuted) => RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
+
+        /// <summary>
+        /// Set whether the loopie is muted.
+        /// </summary>
+        [ReliableMethod]
+        public void SetVolume(float volume) => RouteReliableMessage(isRequest => new SetVolume(Id, isRequest: !IsOwner, volume: volume));
 
         #endregion
 
@@ -67,7 +70,7 @@ namespace Holofunk.Loopie
 
         protected override void SendCreateMessage(NetPeer netPeer)
         {
-            HoloDebug.Log($"Sending PerformerMessages.Create for id {Id} to peer {netPeer.EndPoint}");
+            HoloDebug.Log($"Sending Loopie.Create for id {Id} to peer {netPeer.EndPoint}");
             Host.SendReliableMessage(new Create(Id, GetLoopie()), netPeer);
         }
 
