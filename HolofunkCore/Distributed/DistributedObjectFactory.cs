@@ -26,6 +26,7 @@ namespace Holofunk.Distributed
         {
             Viewpoint,
             Performer,
+            Loopie,
         }
 
         /// <summary>

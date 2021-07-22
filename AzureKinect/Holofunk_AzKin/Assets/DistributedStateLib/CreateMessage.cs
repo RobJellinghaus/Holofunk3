@@ -11,12 +11,12 @@ namespace Distributed.State
     /// Note that derived classes get their own subscriptions; those subscriptions create
     /// proxy objects when CreateMessages are received.
     /// </remarks>
-    public abstract class CreateMessage : BaseMessage
+    public abstract class CreateMessage : ReliableMessage
     {
         public CreateMessage()
         { }
 
-        public CreateMessage(DistributedId id) : base(id)
+        public CreateMessage(DistributedId id) : base(id, isRequest: false)
         { }
 
         public override void Invoke(IDistributedInterface target)

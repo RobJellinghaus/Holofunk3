@@ -38,32 +38,13 @@ namespace Holofunk.Viewpoint
 
         public static void Register(DistributedHost.ProxyCapability proxyCapability)
         {
-            proxyCapability.SubscribeReusable((Create createMessage, NetPeer netPeer) =>
-            {
-                // get the prototype object
-                GameObject prototype = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Viewpoint);
-                GameObject parent = DistributedObjectFactory.FindContainer(DistributedObjectFactory.DistributedType.Viewpoint, netPeer);
-                GameObject clone = UnityEngine.Object.Instantiate(prototype, parent.transform);
+            Registrar.RegisterCreateMessage<Create, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
+                proxyCapability,
+                DistributedObjectFactory.DistributedType.Viewpoint,
+                (local, message) => local.Initialize(message.Players));
 
-                clone.name = $"{createMessage.Id}";
-
-                HoloDebug.Log($"Received ViewpointMessages.Create for id {createMessage.Id} from peer {netPeer.EndPoint}");
-
-                // wire the local and distributed things together
-                LocalViewpoint local = clone.GetComponent<LocalViewpoint>();
-                DistributedViewpoint distributed = clone.GetComponent<DistributedViewpoint>();
-
-                local.Initialize(createMessage.Players);
-                distributed.InitializeProxy(netPeer, createMessage.Id);
-
-                proxyCapability.AddProxy(netPeer, distributed);
-            });
-
-            proxyCapability.SubscribeReusable((UpdatePlayer updatePlayerMessage, NetPeer netPeer) =>
-                HandleReliableMessage<UpdatePlayer, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
-                    proxyCapability.Host,
-                    netPeer,
-                    updatePlayerMessage));
+            Registrar.RegisterReliableMessage<UpdatePlayer, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
+                proxyCapability);
         }
     }
 }
