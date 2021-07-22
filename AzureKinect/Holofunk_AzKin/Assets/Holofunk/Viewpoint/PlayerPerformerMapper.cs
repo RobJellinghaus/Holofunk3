@@ -1,4 +1,4 @@
-﻿/// Copyright (c) 2021 by Rob Jellinghaus. All rights reserved.
+﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using com.rfilkov.kinect;
 using Distributed.State;

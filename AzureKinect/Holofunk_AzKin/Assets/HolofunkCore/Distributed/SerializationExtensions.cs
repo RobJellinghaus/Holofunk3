@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2021 by Rob Jellinghaus.
+﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using LiteNetLib.Utils;
 using System;
