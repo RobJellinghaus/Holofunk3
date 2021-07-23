@@ -1,11 +1,12 @@
 ﻿/// Copyright by Rob Jellinghaus.  All rights reserved.
 
 using Holofunk.Core;
+using Holofunk.Hand;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using UnityEngine;
 
-namespace Holofunk.Hand
+namespace Holofunk.HandComponents
 {
     /// <summary>
     /// Hand pose, along with all finger poses and adjacencies.

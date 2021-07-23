@@ -3,6 +3,7 @@
 using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Hand;
+using Holofunk.HandComponents;
 using Holofunk.Viewpoint;
 using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
