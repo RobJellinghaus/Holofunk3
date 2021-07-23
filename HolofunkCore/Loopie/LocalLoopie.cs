@@ -42,5 +42,10 @@ namespace Holofunk.Loopie
         {
             loopie.IsMuted = isMuted;
         }
+
+        public void SetVolume(float volume)
+        {
+            loopie.Volume = volume;
+        }
     }
 }

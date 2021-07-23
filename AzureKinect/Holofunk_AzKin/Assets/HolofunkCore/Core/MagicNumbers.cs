@@ -19,5 +19,26 @@ namespace Holofunk.Core
         /// In practice when looking right at the sensor the collinearity is over 0.99, so 0.90 is fairly safe.
         /// </remarks>
         public static readonly float MinimumGazeViewpointAlignment = 0.90f;
+
+        /// <summary>
+        /// 2048 is enough to resolve down to about two octaves below middle C (e.g. 65 Hz).
+        /// </summary>
+        public static readonly int FftBinSize = 2048;
+        /// <summary>
+        /// Number of output bins; this can be whatever we want to see, rendering-wise.
+        /// </summary>
+        public static readonly int OutputBinCount = 20;
+        /// <summary>
+        /// Number of divisions per octave (e.g. setting this to 3 equals four semitones per bin, 12 divided by 3).
+        /// </summary>
+        public static readonly int OctaveDivisions = 5;
+        /// <summary>
+        /// The central frequency of the histogram; this is middle C.
+        /// </summary>
+        public static readonly float CentralFrequency = 261.626f;
+        /// <summary>
+        /// The bin (out of OutputBinCount) in which the central frequency should be mapped; zero-indexed.
+        /// </summary>
+        public static readonly int CentralFrequencyBin = 10;
     }
 }
