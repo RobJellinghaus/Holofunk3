@@ -204,8 +204,8 @@ namespace Holofunk.Viewpoint
 
                                         Matrix4x4 finalInverseMatrix = viewpointToPerformerTransformation.Transform;
 
-                                        player.PerformerToViewpointTransform = finalMatrix;
-                                        player.ViewpointToPerformerTransform = finalInverseMatrix;
+                                        player.PerformerToViewpointMatrix = finalMatrix;
+                                        player.ViewpointToPerformerMatrix = finalInverseMatrix;
 
                                         HoloDebug.Log($@"Recognized new player!
 viewpointSensorPosition {viewpointSensorPosition}, viewpointSensorForwardDirection {viewpointSensorForwardDirection}

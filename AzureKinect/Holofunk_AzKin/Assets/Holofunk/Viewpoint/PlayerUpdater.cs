@@ -22,8 +22,6 @@ namespace Holofunk.Viewpoint
 
         private Vector3Averager headPositionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager headForwardDirectionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
-        private Vector3Averager averageEyesPositionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
-        private Vector3Averager averageEyesForwardDirectionAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager leftHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager rightHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
 
@@ -53,8 +51,8 @@ namespace Holofunk.Viewpoint
                         HeadForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                         LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                         RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                        PerformerToViewpointTransform = Matrix4x4.zero,
-                        ViewpointToPerformerTransform = Matrix4x4.zero
+                        PerformerToViewpointMatrix = Matrix4x4.zero,
+                        ViewpointToPerformerMatrix = Matrix4x4.zero
                     };
                 }
                 else
@@ -83,8 +81,8 @@ namespace Holofunk.Viewpoint
                         LeftHandPosition = leftHandAverager.Average,
                         RightHandPosition = rightHandAverager.Average,
                         // hardcoded only one sensor right now
-                        PerformerToViewpointTransform = currentPlayer.PerformerToViewpointTransform,
-                        ViewpointToPerformerTransform = currentPlayer.ViewpointToPerformerTransform
+                        PerformerToViewpointMatrix = currentPlayer.PerformerToViewpointMatrix,
+                        ViewpointToPerformerMatrix = currentPlayer.ViewpointToPerformerMatrix
                     };
                 }
 

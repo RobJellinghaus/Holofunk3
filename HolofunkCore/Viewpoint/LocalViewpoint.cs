@@ -121,7 +121,6 @@ namespace Holofunk.Viewpoint
 
             // what is our current host?
             SerializedSocketAddress hostAddress = DistributedObject.Host.SocketAddress;
-            bool found = false;
             // do we have a player that has been recognized as being from here?
             for (int i = 0; i < PlayerCount; i++)
             {
