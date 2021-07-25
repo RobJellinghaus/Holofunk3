@@ -23,6 +23,7 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// Get the count of currently known Players.
         /// </summary>
+        [LocalMethod]
         int PlayerCount { get; }
 
         /// <summary>
@@ -33,12 +34,14 @@ namespace Holofunk.Viewpoint
         /// Note that the index of the player here has nothing to do with the PlayerId field of the player;
         /// this index is semantically meaningless and only used for iterating over currently known players.
         /// </remarks>
+        [LocalMethod]
         Player GetPlayer(int index);
 
         /// <summary>
         /// Try to get the player with this ID.
         /// </summary>
         /// <param name="playerId">The player ID to look for.</param>
+        [LocalMethod]
         bool TryGetPlayer(PlayerId playerId, out Player player);
 
         /// <summary>
@@ -49,6 +52,27 @@ namespace Holofunk.Viewpoint
         /// There is no way to delete a player, but a player object can be marked untracked and have its fields
         /// nulled out.
         /// </remarks>
+        [ReliableMethod]
         void UpdatePlayer(Player playerToUpdate);
+
+        /// <summary>
+        /// Get the viewpoint-to-local matrix.
+        /// </summary>
+        /// <remarks>
+        /// This will be Matrix4x4.zero if there is no connected viewpoint or if the current performer
+        /// has not been recognized. This will be Matrix4x4.identity if this is the viewpoint host.
+        /// </remarks>
+        [LocalMethod]
+        Matrix4x4 ViewpointToLocalMatrix();
+
+        /// <summary>
+        /// Get the local-to-viewpoint matrix.
+        /// </summary>
+        /// <remarks>
+        /// This will be Matrix4x4.zero if there is no connected viewpoint or if the current performer
+        /// has not been recognized. This will be Matrix4x4.identity if this is the viewpoint host.
+        /// </remarks>
+        [LocalMethod]
+        Matrix4x4 LocalToViewpointMatrix();
     }
 }

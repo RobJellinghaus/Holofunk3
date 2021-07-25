@@ -26,9 +26,9 @@ namespace Holofunk.Perform
             TextMesh textMesh = gameObject.transform.GetChild(0).GetComponent<TextMesh>();
 
             // do we currently have a Viewpoint?
-            GameObject instanceContainer = DistributedObjectFactory.FindFirstContainer(
+            LocalViewpoint localViewpoint = DistributedObjectFactory.FindFirstInstanceComponent<LocalViewpoint>(
                 DistributedObjectFactory.DistributedType.Viewpoint);
-            Player player = GetPlayer0(instanceContainer);
+            Player player = localViewpoint.PlayerCount > 0 ? localViewpoint.GetPlayer(0) : default(Player);
 
             // we know we have a Performer
             GameObject performerContainer = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Performer);
@@ -72,37 +72,35 @@ handPose {handPoseValue}";
 
             if (player.PlayerId != default(PlayerId))
             {
-                if (player.ViewpointToPerformerTransform != Matrix4x4.zero)
+                if (player.ViewpointToPerformerMatrix != Matrix4x4.zero)
                 {
                     // position the "FloatingTextPanel 2" at the transformed position of the sensor
                     Vector3 sensorPosition = player.SensorPosition;
-                    Vector3 sensorPositionInPerformerSpace = player.ViewpointToPerformerTransform.MultiplyPoint(sensorPosition);
+                    Vector3 sensorPositionInPerformerSpace = player.ViewpointToPerformerMatrix.MultiplyPoint(sensorPosition);
 
                     GameObject panel2 = GameObject.Find("FloatingTextPanel 2");
                     panel2.transform.position = sensorPositionInPerformerSpace;
                 }
             }
-            //HoloDebug.Log(statusMessage);
+        }
 
-            // Get the first Player in the first Viewpoint in the first currently connected peer.
-            Player GetPlayer0(GameObject ic)
+        private static Player GetPlayer0(GameObject ic)
+        {
+            if (ic != null)
             {
-                if (ic != null)
+                // get the first viewpoint out of it
+                if (ic.transform.childCount > 0)
                 {
-                    // get the first viewpoint out of it
-                    if (ic.transform.childCount > 0)
+                    LocalViewpoint localViewpoint = ic.transform.GetChild(0).GetComponent<LocalViewpoint>();
+                    if (localViewpoint.PlayerCount > 0)
                     {
-                        LocalViewpoint localViewpoint = ic.transform.GetChild(0).GetComponent<LocalViewpoint>();
-                        if (localViewpoint.PlayerCount > 0)
-                        {
-                            Player player0 = localViewpoint.GetPlayer(0);
-                            return player0;
-                        }
+                        Player player0 = localViewpoint.GetPlayer(0);
+                        return player0;
                     }
                 }
-
-                return default(Player);
             }
+
+            return default(Player);
         }
     }
 }

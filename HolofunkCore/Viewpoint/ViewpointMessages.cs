@@ -14,26 +14,15 @@ namespace Holofunk.Viewpoint
         {
             public Player[] Players { get; set; }
             public Create() : base() { }
-            public Create(DistributedId id, Player[] players) : base(id)
-            {
-                Players = players;
-            }
+            public Create(DistributedId id, Player[] players) : base(id) { Players = players; }
         }
 
         public class UpdatePlayer : ReliableMessage
         {
             public Player Player { get; set; }
             public UpdatePlayer() : base() { }
-
-            public UpdatePlayer(DistributedId id, bool isRequest, Player player) : base(id, isRequest)
-            {
-                Player = player;
-            }
-
-            public override void Invoke(IDistributedInterface target)
-            {
-                ((IDistributedViewpoint)target).UpdatePlayer(Player);
-            }
+            public UpdatePlayer(DistributedId id, bool isRequest, Player player) : base(id, isRequest) { Player = player; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedViewpoint)target).UpdatePlayer(Player);
         }
 
         public static void Register(DistributedHost.ProxyCapability proxyCapability)

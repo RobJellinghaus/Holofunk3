@@ -14,26 +14,15 @@ namespace Holofunk.Perform
         {
             public Performer Performer { get; set; }
             public Create() : base() { }
-            public Create(DistributedId id, Performer performer) : base(id)
-            {
-                Performer = performer;
-            }
+            public Create(DistributedId id, Performer performer) : base(id) { Performer = performer; }
         }
 
         public class UpdatePerformer : ReliableMessage
         {
             public Performer Performer { get; set; }
             public UpdatePerformer() : base() { }
-
-            public UpdatePerformer(DistributedId id, bool isRequest, Performer performer) : base(id, isRequest)
-            {
-                Performer = performer;
-            }
-
-            public override void Invoke(IDistributedInterface target)
-            {
-                ((IDistributedPerformer)target).UpdatePerformer(Performer);
-            }
+            public UpdatePerformer(DistributedId id, bool isRequest, Performer performer) : base(id, isRequest) { Performer = performer; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedPerformer)target).UpdatePerformer(Performer);
         }
 
         public static void Register(DistributedHost.ProxyCapability proxyCapability)

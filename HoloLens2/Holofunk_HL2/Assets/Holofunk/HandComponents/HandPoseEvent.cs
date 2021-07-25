@@ -46,7 +46,7 @@ namespace Holofunk.HandComponents
         internal static HandPoseEvent Flat { get { return new HandPoseEvent(HandPoseValue.Flat); } }
         internal static HandPoseEvent Unknown { get { return new HandPoseEvent(HandPoseValue.Unknown); } }
 
-        public static HandPoseEvent FromHandPoseEventType(HandPoseValue handPose)
+        public static HandPoseEvent FromHandPose(HandPoseValue handPose)
         {
             switch (handPose)
             {

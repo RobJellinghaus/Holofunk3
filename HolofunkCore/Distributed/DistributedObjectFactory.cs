@@ -44,6 +44,30 @@ namespace Holofunk.Distributed
             return child.gameObject;
         }
 
+        public static T FindPrototypeComponent<T>(DistributedType type)
+        {
+            GameObject obj = FindPrototype(type);
+            return obj.GetComponent<T>();
+        }
+
+        // Get the first Player in the first Viewpoint in the first currently connected peer.
+        public static T FindFirstInstanceComponent<T>(DistributedType type)
+            where T : class
+        {
+            GameObject ic = FindFirstContainer(type);
+            
+            if (ic != null)
+            {
+                // get the first viewpoint out of it
+                if (ic.transform.childCount > 0)
+                {
+                    return ic.transform.GetChild(0).GetComponent<T>();
+                }
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Find the first parent GameObject for new object instances of the given type.
         /// </summary>

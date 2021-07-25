@@ -4,6 +4,7 @@ using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
 using LiteNetLib;
+using UnityEngine;
 using static Holofunk.Loopie.LoopieMessages;
 
 namespace Holofunk.Loopie
@@ -46,17 +47,26 @@ namespace Holofunk.Loopie
         /// Set whether the loopie is muted.
         /// </summary>
         [ReliableMethod]
-        public void SetMute(bool isMuted) => RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
+        public void SetMute(bool isMuted) => 
+            RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
 
         /// <summary>
         /// Set whether the loopie is muted.
         /// </summary>
         [ReliableMethod]
-        public void SetVolume(float volume) => RouteReliableMessage(isRequest => new SetVolume(Id, isRequest: !IsOwner, volume: volume));
+        public void SetVolume(float volume) =>
+            RouteReliableMessage(isRequest => new SetVolume(Id, isRequest: !IsOwner, volume: volume));
+
+
+        public void SetViewpointPosition(Vector3 viewpointPosition) =>
+            RouteReliableMessage(isRequest => new SetViewpointPosition(Id, isRequest: !IsOwner, viewpointPosition: viewpointPosition));
+
+        public void FinishRecording() =>
+            RouteReliableMessage(isRequest => new FinishRecording(Id, isRequest: !IsOwner));
 
         #endregion
 
-        #region Standard meta-operations
+        #region DistributedState
 
         public override void Delete()
         {
@@ -79,6 +89,34 @@ namespace Holofunk.Loopie
             // don't do it!
         }
 
+        #endregion
+
+        #region Instantiation
+
+        /// <summary>
+        /// Create a new Loopie at this position in viewpoint space.
+        /// </summary>
+        public static GameObject Create(Vector3 viewpointPosition)
+        {
+            GameObject prototypeLoopie = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Loopie);
+
+            GameObject newLoopie = GameObject.Instantiate(prototypeLoopie);
+            DistributedLoopie distributedLoopie = newLoopie.GetComponent<DistributedLoopie>();
+            LocalLoopie localLoopie = distributedLoopie.GetLocalLoopie();
+
+            // First set up the Loopie state in distributed terms.
+            localLoopie.Initialize(new Loopie
+            {
+                ViewpointPosition = viewpointPosition,
+                IsMuted = false,
+                Volume = 0.7f
+            });
+
+            // Then enable the distributed behavior.
+            distributedLoopie.InitializeOwner();
+
+            return newLoopie;
+        }
         #endregion
     }
 }

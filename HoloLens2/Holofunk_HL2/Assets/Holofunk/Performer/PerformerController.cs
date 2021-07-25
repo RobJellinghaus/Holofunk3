@@ -17,9 +17,11 @@ namespace Holofunk.Perform
     /// This behavior updates the prototype Performer instance, to propagate this
     /// user's body locations (in performer space).
     /// </summary>
-    public class PerformerUpdater : MonoBehaviour
+    public class PerformerController : MonoBehaviour
     {
         private HandPoseClassifier _classifier = new HandPoseClassifier();
+
+        private Player ourPlayer = default(Player);
 
         private Vector3Averager _leftHandPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager _rightHandPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
@@ -35,18 +37,68 @@ namespace Holofunk.Perform
         public Vector3 AverageHeadPos => _headPosAverager.Average;
         public Vector3 AverageHeadForwardDir => _headForwardAverager.Average;
 
+        /// <summary>
+        /// Get the state of our Player instance.
+        /// </summary>
+        /// <remarks>
+        /// Returned by ref for efficiency, since Player is a large struct.
+        /// </remarks>
+        public ref Player OurPlayer => ref ourPlayer;
+
         // Update is called once per frame
         public void Update()
         {
-            var handJointService = CoreServices.GetInputSystemDataProvider<IMixedRealityHandJointService>();
-            var gazeProvider = CoreServices.InputSystem.EyeGazeProvider;
+            IMixedRealityHandJointService handJointService = CoreServices.GetInputSystemDataProvider<IMixedRealityHandJointService>();
+            IMixedRealityEyeGazeProvider gazeProvider = CoreServices.InputSystem.EyeGazeProvider;
 
-            // do we currently have a Performer?
-            GameObject instanceContainer = DistributedObjectFactory.FindPrototype(
-                DistributedObjectFactory.DistributedType.Performer);
+            UpdateDistributedPerformer(handJointService, gazeProvider);
 
-            (Vector3 localLeftHandPos, HandPoseValue leftHandPoseValue) = LocalHandPosition(Handedness.Left);
-            (Vector3 localRightHandPos, HandPoseValue rightHandPoseValue) = LocalHandPosition( Handedness.Right);
+            UpdateOurPlayer();
+
+            void UpdateOurPlayer()
+            {
+                // Look for our matching Player.
+                // if we don't have a player with our host address, then we aren't recognized yet,
+                // so do nothing.
+                // TODO: handle multiple Players.
+                LocalViewpoint localViewpoint = DistributedObjectFactory.FindFirstInstanceComponent<LocalViewpoint>(
+                    DistributedObjectFactory.DistributedType.Viewpoint);
+                ourPlayer = default(Player);
+                if (localViewpoint != null && localViewpoint.PlayerCount > 0)
+                {
+                    ourPlayer = localViewpoint.GetPlayer(0);
+                }
+            }
+        }
+
+        private static Vector3 LocalGazeDirection(IMixedRealityEyeGazeProvider gp)
+        {
+            return gp.GazeDirection;
+        }
+
+        private (Vector3, HandPoseValue) LocalHandPosition(Handedness h, IMixedRealityHandJointService handJointService, IMixedRealityEyeGazeProvider gazeProvider)
+        {
+            if (handJointService.IsHandTracked(h))
+            {
+                Vector3 position = handJointService.RequestJointTransform(TrackedHandJoint.Palm, h).position;
+                _classifier.Recalculate(handJointService, gazeProvider, h);
+                return (position, _classifier.GetHandPose());
+            }
+            else
+            {
+                return (new Vector3(float.NaN, float.NaN, float.NaN), HandPoseValue.Unknown);
+            }
+        }
+
+        private static Vector3 LocalHeadPosition(IMixedRealityEyeGazeProvider gp)
+        {
+            return gp.GazeOrigin;
+        }
+
+        private void UpdateDistributedPerformer(IMixedRealityHandJointService handJointService, IMixedRealityEyeGazeProvider gazeProvider)
+        {
+            (Vector3 localLeftHandPos, HandPoseValue leftHandPoseValue) = LocalHandPosition(Handedness.Left, handJointService, gazeProvider);
+            (Vector3 localRightHandPos, HandPoseValue rightHandPoseValue) = LocalHandPosition(Handedness.Right, handJointService, gazeProvider);
 
             Vector3 localHeadPos = LocalHeadPosition(gazeProvider);
             Vector3 localHeadForwardDir = LocalGazeDirection(gazeProvider);
@@ -70,34 +122,12 @@ namespace Holofunk.Perform
                     _rightHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown))
             };
 
-            DistributedPerformer performerPrototype = instanceContainer.GetComponent<DistributedPerformer>();
-            
+            DistributedPerformer performerPrototype =
+                DistributedObjectFactory.FindPrototypeComponent<DistributedPerformer>(
+                    DistributedObjectFactory.DistributedType.Performer);
+
             // Update this over the network
             performerPrototype.UpdatePerformer(performer);
-
-            (Vector3, HandPoseValue) LocalHandPosition(Handedness h)
-            {
-                if (handJointService.IsHandTracked(h))
-                {
-                    Vector3 position = handJointService.RequestJointTransform(TrackedHandJoint.Palm, h).position;
-                    _classifier.Recalculate(handJointService, gazeProvider, h);
-                    return (position, _classifier.GetHandPose());
-                }
-                else
-                {
-                    return (new Vector3(float.NaN, float.NaN, float.NaN), HandPoseValue.Unknown);
-                }
-            }
-
-            Vector3 LocalHeadPosition(IMixedRealityEyeGazeProvider gp)
-            {
-                return gp.GazeOrigin;
-            }
-
-            Vector3 LocalGazeDirection(IMixedRealityEyeGazeProvider gp)
-            {
-                return gp.GazeDirection;
-            }
         }
     }
 }

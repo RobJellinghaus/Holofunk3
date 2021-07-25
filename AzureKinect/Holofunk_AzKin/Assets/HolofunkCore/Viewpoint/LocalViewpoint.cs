@@ -39,6 +39,8 @@ namespace Holofunk.Viewpoint
         /// </summary>
         internal Player[] PlayersAsArray => players.ToArray();
 
+        #region IDistributedViewpoint
+
         /// <summary>
         /// Get the player with a given index.
         /// </summary>
@@ -98,5 +100,83 @@ namespace Holofunk.Viewpoint
             }
             players.Add(playerToUpdate);
         }
+
+        /// <summary>
+        /// The Player which has been recognized as being from this host.
+        /// </summary>
+        /// <remarks>
+        /// default(Player) if this is the viewpoint host (corresponding to no player).
+        /// default(Player) if the player corresponding to this performer has not been recognized.
+        /// 
+        /// This is used for acquiring the viewpoint-to-local matrices, since these are not defined
+        /// unless the current performer is recognized.
+        /// </remarks>
+        private Player GetLocalPlayer()
+        {
+            // If we are the viewpoint host then there is no local player.
+            if (DistributedObject.IsOwner)
+            {
+                return default(Player);
+            }
+
+            // what is our current host?
+            SerializedSocketAddress hostAddress = DistributedObject.Host.SocketAddress;
+            bool found = false;
+            // do we have a player that has been recognized as being from here?
+            for (int i = 0; i < PlayerCount; i++)
+            {
+                Player p = GetPlayer(i);
+                if (p.PerformerHostAddress == hostAddress)
+                {
+                    // found it!
+                    return p;
+                }
+            }
+
+            // didn't found it
+            return default(Player);
+        }
+
+        public Matrix4x4 ViewpointToLocalMatrix()
+        {
+            if (DistributedObject.IsOwner)
+            {
+                return Matrix4x4.identity;
+            }
+            else
+            {
+                Player localPlayer = GetLocalPlayer();
+                if (localPlayer.PlayerId.IsInitialized)
+                {
+                    return localPlayer.ViewpointToPerformerMatrix;
+                }
+                else
+                {
+                    return Matrix4x4.zero;
+                }
+            }
+        }
+
+        public Matrix4x4 LocalToViewpointMatrix()
+        {
+            if (DistributedObject.IsOwner)
+            {
+                return Matrix4x4.identity;
+            }
+            else
+            {
+                Player localPlayer = GetLocalPlayer();
+                if (localPlayer.PlayerId.IsInitialized)
+                {
+                    return localPlayer.PerformerToViewpointMatrix;
+                }
+                else
+                {
+                    return Matrix4x4.zero;
+                }
+            }
+        }
+
+        #endregion
     }
 }

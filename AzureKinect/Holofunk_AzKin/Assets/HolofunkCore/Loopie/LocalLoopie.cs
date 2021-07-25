@@ -2,6 +2,7 @@
 
 using Distributed.State;
 using Holofunk.Distributed;
+using Holofunk.Viewpoint;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,8 @@ namespace Holofunk.Loopie
 
         public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedLoopie>();
 
+        private Vector3 lastViewpointPosition = Vector3.zero;
+
         internal void Initialize(Loopie loopie)
         {
             this.loopie = loopie;
@@ -32,6 +35,22 @@ namespace Holofunk.Loopie
         /// Get the loopie's state.
         /// </summary>
         public Loopie GetLoopie() => loopie;
+
+        public void Update()
+        {
+            // move to viewpoint position if viewpoint position moved (and/or viewpoint matrix came back)
+            if (lastViewpointPosition != loopie.ViewpointPosition)
+            {
+                if (DistributedViewpoint.TheViewpoint != null)
+                {
+                    Matrix4x4 viewpointToLocalMatrix = DistributedViewpoint.TheViewpoint.ViewpointToLocalMatrix();
+                    Vector3 localLoopiePosition = viewpointToLocalMatrix.MultiplyPoint(loopie.ViewpointPosition);
+                    lastViewpointPosition = loopie.ViewpointPosition;
+
+                    transform.localPosition = localLoopiePosition;
+                }
+            }
+        }
 
         public void OnDelete()
         {
@@ -46,6 +65,16 @@ namespace Holofunk.Loopie
         public void SetVolume(float volume)
         {
             loopie.Volume = volume;
+        }
+
+        public void SetViewpointPosition(Vector3 viewpointPosition)
+        {
+            loopie.ViewpointPosition = viewpointPosition;
+        }
+
+        public void FinishRecording()
+        {
+            // TODO
         }
     }
 }

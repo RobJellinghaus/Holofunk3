@@ -19,6 +19,9 @@ namespace Holofunk.Loopie
     /// their loopies will all vanish. It may be that this actually is a worse experience, and perhaps
     /// all the loopies should be owned by the viewpoint that's doing the sound rendering. For now, we
     /// go with creator-owned loopies.
+    /// 
+    /// All loopies are created in recording state, and need FinishRecording() to be called before they
+    /// start looping (which they do as soon as appropriate after being told to finish recording).
     /// </remarks>
     public interface IDistributedLoopie : IDistributedInterface
     {
@@ -26,6 +29,17 @@ namespace Holofunk.Loopie
         /// The state of the Loopie.
         /// </summary>
         Loopie GetLoopie();
+
+        /// <summary>
+        /// Move the loopie in space.
+        /// </summary>
+        /// <param name="viewpointPosition">The new position in viewpoint coordinates.</param>
+        void SetViewpointPosition(Vector3 viewpointPosition);
+
+        /// <summary>
+        /// Stop recording at the next quantized interval (as configured in NowSoundLib).
+        /// </summary>
+        void FinishRecording();
 
         /// <summary>
         /// Mute or unmute the Loopie.
