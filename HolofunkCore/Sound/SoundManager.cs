@@ -18,19 +18,17 @@ namespace Holofunk.Sound
     /// Component which manages this app's knowledge of NowSoundLib.
     /// </summary>
     /// <remarks>
-    /// Note that this will pull data from a proxy SoundSource object if one exists and
-    /// there is no local NowSoundLib. In other words, this object is useful even without
-    /// local sound, as it tracks what is known about the remote sound.
+    /// This component exists only where sound is being hosted.
     /// </remarks>
     public class SoundManager : MonoBehaviour
     {
         #region Static state
 
-        /// <summary>
-        /// The singleton HolofunkController.
-        /// </summary>
         private static SoundManager s_instance;
 
+        /// <summary>
+        /// The singleton SoundManager; if this is null, there is no local sound support.
+        /// </summary>
         public static SoundManager Instance { get { return s_instance; } }
 
         #endregion
@@ -387,6 +385,39 @@ namespace Holofunk.Sound
 
             // pick up any log messages
             WriteAllLogMessagesToUnityDebugConsole();
+        }
+
+        public void OnApplicationQuit()
+        {
+            // shhhhh
+            NowSoundGraphAPI.ShutdownInstance();
+        }
+
+        #endregion
+
+        #region Recording control
+
+        public void StartRecording()
+        {
+            Contract.Requires(!IsRecordingToFile);
+
+            string myDocumentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string recordingsPath = Path.Combine(myDocumentsPath, "HolofunkRecordings");
+            Directory.CreateDirectory(recordingsPath);
+
+            DateTime now = DateTime.Now;
+            string recordingFile = Path.Combine(recordingsPath, now.ToString("yyyyMMdd_HHmmss.wav"));
+
+            _isRecordingToFile = true;
+            NowSoundGraphAPI.StartRecording(recordingFile);
+        }
+
+        public void StopRecording()
+        {
+            Contract.Requires(IsRecordingToFile);
+
+            _isRecordingToFile = false;
+            NowSoundGraphAPI.StopRecording();
         }
 
         #endregion

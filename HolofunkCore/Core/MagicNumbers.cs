@@ -40,5 +40,16 @@ namespace Holofunk.Core
         /// The bin (out of OutputBinCount) in which the central frequency should be mapped; zero-indexed.
         /// </summary>
         public static readonly int CentralFrequencyBin = 10;
+
+        /// <summary>
+        /// Minimum loopie scale for minimum amplitude.
+        /// </summary>
+        public static readonly float MinLoopieScale = 0.6f;
+
+        /// <summary>
+        /// Maximum loopie scale for maximum amplitude.
+        /// </summary>
+        public static readonly float MaxLoopieScale = 1.1f;
+
     }
 }

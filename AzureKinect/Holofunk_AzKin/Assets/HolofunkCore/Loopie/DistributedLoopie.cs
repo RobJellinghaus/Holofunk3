@@ -64,6 +64,9 @@ namespace Holofunk.Loopie
         public void FinishRecording() =>
             RouteReliableMessage(isRequest => new FinishRecording(Id, isRequest: !IsOwner));
 
+        public void SetCurrentAmplitude(float min, float avg, float max) =>
+            RouteBroadcastMessage(new SetCurrentAmplitude(Id, new SerializedSocketAddress(OwningPeer), min, avg, max));
+
         #endregion
 
         #region DistributedState
@@ -96,11 +99,17 @@ namespace Holofunk.Loopie
         /// <summary>
         /// Create a new Loopie at this position in viewpoint space.
         /// </summary>
+        /// <remarks>
+        /// This is how Loopies come to exist on their owning hosts.
+        /// 
+        /// TODO: figure out how to refactor out the shared plumbing here, similarly to the Registrar.
+        /// </remarks>
         public static GameObject Create(Vector3 viewpointPosition)
         {
             GameObject prototypeLoopie = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Loopie);
 
             GameObject newLoopie = GameObject.Instantiate(prototypeLoopie);
+            newLoopie.SetActive(true);
             DistributedLoopie distributedLoopie = newLoopie.GetComponent<DistributedLoopie>();
             LocalLoopie localLoopie = distributedLoopie.GetLocalLoopie();
 
@@ -117,6 +126,7 @@ namespace Holofunk.Loopie
 
             return newLoopie;
         }
+
         #endregion
     }
 }

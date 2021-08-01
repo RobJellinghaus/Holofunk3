@@ -37,6 +37,7 @@ namespace Holofunk.Distributed
                 GameObject clone = UnityEngine.Object.Instantiate(prototype, parent.transform);
 
                 clone.name = $"{message.Id}";
+                clone.SetActive(true);
 
                 HoloDebug.Log($"Received {nameof(TMessage)} for id {message.Id} from peer {netPeer.EndPoint}");
 
@@ -71,6 +72,25 @@ namespace Holofunk.Distributed
                     proxyCapability.Host,
                     netPeer,
                     message));
+        }
+
+        /// <summary>
+        /// Register a broadcast message type.
+        /// </summary>
+        /// <typeparam name="TMessage">The message type</typeparam>
+        /// <typeparam name="TDistributed">The distributed type</typeparam>
+        /// <typeparam name="TLocal">The local type</typeparam>
+        /// <typeparam name="TInterface">The distributed interface</typeparam>
+        /// <param name="proxyCapability">The registration capability</param>
+        public static void RegisterBroadcastMessage<TMessage, TDistributed, TLocal, TInterface>(
+            DistributedHost.ProxyCapability proxyCapability)
+            where TMessage : BroadcastMessage, new()
+            where TDistributed : IDistributedObject, TInterface
+            where TLocal : ILocalObject, TInterface
+            where TInterface : IDistributedInterface
+        {
+            proxyCapability.SubscribeReusable((TMessage message, NetPeer netPeer) =>
+                HandleBroadcastMessage<TMessage, TDistributed, TLocal, TInterface>(proxyCapability.Host, message));
         }
     }
 }

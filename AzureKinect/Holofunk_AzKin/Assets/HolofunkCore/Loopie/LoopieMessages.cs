@@ -48,6 +48,20 @@ namespace Holofunk.Loopie
             public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).FinishRecording();
         }
 
+        public class SetCurrentAmplitude : BroadcastMessage
+        {
+            float min, avg, max;
+            public SetCurrentAmplitude() : base() { }
+            public SetCurrentAmplitude(DistributedId id, SerializedSocketAddress owner, float min, float avg, float max)
+                : base(id, owner)
+            {
+                this.min = min;
+                this.avg = avg;
+                this.max = max;
+            }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentAmplitude(min, avg, max);
+        }
+
         // TODO: refactor this for actual sharing with the other Register methods
         public static void Register(DistributedHost.ProxyCapability proxyCapability)
         {
@@ -55,18 +69,11 @@ namespace Holofunk.Loopie
                 proxyCapability,
                 DistributedObjectFactory.DistributedType.Loopie,
                 (local, message) => local.Initialize(message.Loopie));
-
-            Registrar.RegisterReliableMessage<SetMute, DistributedLoopie, LocalLoopie, IDistributedLoopie>(
-                proxyCapability);
-
-            Registrar.RegisterReliableMessage<SetVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(
-                proxyCapability);
-
-            Registrar.RegisterReliableMessage<SetViewpointPosition, DistributedLoopie, LocalLoopie, IDistributedLoopie>(
-                proxyCapability);
-
-            Registrar.RegisterReliableMessage<FinishRecording, DistributedLoopie, LocalLoopie, IDistributedLoopie>(
-                proxyCapability);
+            Registrar.RegisterReliableMessage<SetMute, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterReliableMessage<SetVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterReliableMessage<SetViewpointPosition, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterReliableMessage<FinishRecording, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterBroadcastMessage<SetCurrentAmplitude, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
         }
     }
 }

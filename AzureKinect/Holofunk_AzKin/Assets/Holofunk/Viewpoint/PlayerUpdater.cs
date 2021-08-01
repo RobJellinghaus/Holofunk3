@@ -33,7 +33,7 @@ namespace Holofunk.Viewpoint
             {
                 int playerIndex = PlayerIndex;
                 bool tracked = kinectManager.IsUserDetected(playerIndex);
-                DistributedViewpoint distributedViewpoint = Viewpoint.TheInstance;
+                DistributedViewpoint distributedViewpoint = TheViewpoint.Instance;
                 Player currentPlayer;
                 distributedViewpoint.TryGetPlayer(new PlayerId((byte)(playerIndex + 1)), out currentPlayer);
 

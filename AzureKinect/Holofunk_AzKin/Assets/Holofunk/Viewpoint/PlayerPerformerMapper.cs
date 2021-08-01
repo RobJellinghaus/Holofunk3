@@ -98,7 +98,7 @@ namespace Holofunk.Viewpoint
 
         public void Update()
         {
-            DistributedViewpoint theViewpoint = Viewpoint.TheInstance;
+            DistributedViewpoint theViewpoint = TheViewpoint.Instance;
 
             // Any tracked but unidentified players?
             bool trackedButUnidentified = false;
@@ -153,9 +153,9 @@ namespace Holofunk.Viewpoint
                             // TODO: support multiple performers. (be nice to have multiple HoloLenses LOL)
                             // In a multiple-performer world, each of these filters applies to each player/performer;
                             // for now we only look for one performer.
-                            if (Viewpoint.GetPerformerCount() > 0)
+                            if (TheViewpoint.GetPerformerCount() > 0)
                             {
-                                DistributedPerformer thePerformer = Viewpoint.GetPerformer(0);
+                                DistributedPerformer thePerformer = TheViewpoint.GetPerformer(0);
                                 // is their hand open?
                                 Performer performance = thePerformer.GetPerformer();
 

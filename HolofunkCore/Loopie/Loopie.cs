@@ -2,6 +2,7 @@
 
 using Holofunk.Distributed;
 using Holofunk.Hand;
+using Holofunk.Sound;
 using LiteNetLib.Utils;
 using UnityEngine;
 
@@ -13,9 +14,17 @@ namespace Holofunk.Loopie
     /// <remarks>
     /// Note that this does not contain any state about the actual sound. The actual sound is kept
     /// as local state by only the viewpoint's proxy instance of the loopie.
+    /// 
+    /// Also note that the amplitude (current loudness) of the loopie is broadcast "ephemerally"
+    /// from one proxy to all instances, and isn't part of the "persistent" distributed state of the loopie.
     /// </remarks>
     public struct Loopie : INetSerializable
     {
+        /// <summary>
+        /// The audio input to start recording from.
+        /// </summary>
+        public AudioInput AudioInput { get; set; }
+
         /// <summary>
         /// The position of the loopie, in viewpoint coordinates.
         /// </summary>
@@ -33,6 +42,7 @@ namespace Holofunk.Loopie
 
         public void Deserialize(NetDataReader reader)
         {
+            AudioInput.Deserialize(reader);
             ViewpointPosition = reader.GetVector3();
             IsMuted = reader.GetBool();
             Volume = reader.GetFloat();
@@ -40,6 +50,7 @@ namespace Holofunk.Loopie
 
         public void Serialize(NetDataWriter writer)
         {
+            AudioInput.Serialize(writer);
             writer.Put(ViewpointPosition);
             writer.Put(IsMuted);
             writer.Put(Volume);

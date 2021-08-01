@@ -1,8 +1,11 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
+using Holofunk.Core;
 using Holofunk.Distributed;
+using Holofunk.Sound;
 using Holofunk.Viewpoint;
+using NowSoundLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,19 +25,33 @@ namespace Holofunk.Loopie
         /// </summary>
         private Loopie loopie;
 
-        public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedLoopie>();
+        /// <summary>
+        /// If there is a SoundManager, and we created a track, this is its ID.
+        /// </summary>
+        /// <remarks>
+        /// For now, we do not expose this as distributed state.
+        /// </remarks>
+        private TrackId trackId;
+
+        /// <summary>
+        /// The current amplitude; broadcast from one proxy to all others.
+        /// </summary>
+        private float minAmplitude, avgAmplitude, maxAmplitude;
 
         private Vector3 lastViewpointPosition = Vector3.zero;
 
         internal void Initialize(Loopie loopie)
         {
             this.loopie = loopie;
+
+            // and if there is a sound manager, start recording!
+            if (SoundManager.Instance != null)
+            {
+                trackId = NowSoundGraphAPI.CreateRecordingTrackAsync(loopie.AudioInput.Value);
+            }
         }
 
-        /// <summary>
-        /// Get the loopie's state.
-        /// </summary>
-        public Loopie GetLoopie() => loopie;
+        #region MonoBehaviour
 
         public void Update()
         {
@@ -50,11 +67,43 @@ namespace Holofunk.Loopie
                     transform.localPosition = localLoopiePosition;
                 }
             }
+
+            // if there is a sound manager, get the track's current volume and broadcast it
+            if (SoundManager.Instance != null)
+            {
+                NowSoundSignalInfo signalInfo = NowSoundTrackAPI.SignalInfo(trackId);
+                ((DistributedLoopie)DistributedObject).SetCurrentAmplitude(signalInfo.Min, signalInfo.Avg, signalInfo.Max);
+            }
+
+            // TODO: scale the loopie according to avg amplitude
+            if (avgAmplitude > 0f)
+            {
+                // scale accordingly
+                float delta = MagicNumbers.MaxLoopieScale - MagicNumbers.MinLoopieScale;
+                float scale = MagicNumbers.MinLoopieScale + avgAmplitude * delta;
+                transform.localScale = new Vector3(scale, scale, scale);
+            }
         }
+
+        #endregion
+
+        #region IDistributedLoopie
+
+        public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedLoopie>();
+
+        /// <summary>
+        /// Get the loopie's state.
+        /// </summary>
+        public Loopie GetLoopie() => loopie;
 
         public void OnDelete()
         {
-            // Go gently
+            if (SoundManager.Instance != null)
+            {
+                Core.Contract.Assert(trackId != TrackId.Undefined);
+
+                NowSoundGraphAPI.DeleteTrack(trackId);
+            }
         }
 
         public void SetMute(bool isMuted)
@@ -74,7 +123,21 @@ namespace Holofunk.Loopie
 
         public void FinishRecording()
         {
-            // TODO
+            if (SoundManager.Instance != null)
+            {
+                Core.Contract.Assert(trackId != TrackId.Undefined);
+
+                NowSoundTrackAPI.FinishRecording(trackId);
+            }
         }
+
+        public void SetCurrentAmplitude(float min, float avg, float max)
+        {
+            minAmplitude = min;
+            avgAmplitude = avg;
+            maxAmplitude = max;
+        }
+
+        #endregion
     }
 }

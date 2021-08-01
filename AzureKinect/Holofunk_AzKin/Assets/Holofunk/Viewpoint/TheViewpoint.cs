@@ -13,9 +13,9 @@ namespace Holofunk.Viewpoint
     /// <summary>
     /// Static methods for convenience of accessing singleton Viewpoint.
     /// </summary>
-    public static class Viewpoint
+    public static class TheViewpoint
     {
-        public static DistributedViewpoint TheInstance
+        public static DistributedViewpoint Instance
         {
             get
             {

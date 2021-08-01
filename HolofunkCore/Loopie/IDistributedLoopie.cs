@@ -28,31 +28,41 @@ namespace Holofunk.Loopie
         /// <summary>
         /// The state of the Loopie.
         /// </summary>
+        [LocalMethod]
         Loopie GetLoopie();
 
         /// <summary>
         /// Move the loopie in space.
         /// </summary>
         /// <param name="viewpointPosition">The new position in viewpoint coordinates.</param>
+        [ReliableMethod]
         void SetViewpointPosition(Vector3 viewpointPosition);
 
         /// <summary>
         /// Stop recording at the next quantized interval (as configured in NowSoundLib).
         /// </summary>
+        [ReliableMethod]
         void FinishRecording();
 
         /// <summary>
         /// Mute or unmute the Loopie.
         /// </summary>
+        [ReliableMethod]
         void SetMute(bool mute);
 
         /// <summary>
         /// Set the current volume of this Loopie.
         /// </summary>
-        /// <remarks>
-        /// This should be a broadcast message, and eventually probably will be, but at first we
-        /// make it reliable.
-        /// </remarks>
+        [ReliableMethod]
         void SetVolume(float volume);
+
+        /// <summary>
+        /// Broadcast the current amplitude of this Loopie.
+        /// </summary>
+        /// <remarks>
+        /// Soon, broadcast the entire FFT, but this is for starters.
+        /// </remarks>
+        [BroadcastMethod]
+        void SetCurrentAmplitude(float min, float avg, float max);
     }
 }
