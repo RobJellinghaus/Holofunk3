@@ -22,14 +22,15 @@ namespace Holofunk.Viewpoint
 
         public static DistributedViewpoint TheViewpoint => theViewpoint;
 
+        public static void InitializeTheViewpoint(DistributedViewpoint viewpoint)
+        {
+            theViewpoint = viewpoint;
+        }
+
         #region MonoBehaviours
 
         public void Start()
         {
-            // We only ever get one of these as of now.
-            Holofunk.Core.Contract.Assert(theViewpoint == null);
-            theViewpoint = this;
-
             // If we have no ID yet, then we are an owning object that has not yet gotten an initial ID.
             // So, initialize ourselves as an owner.
             if (!Id.IsInitialized)

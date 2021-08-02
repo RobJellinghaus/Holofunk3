@@ -64,9 +64,22 @@ namespace Holofunk.Perform
                 LocalViewpoint localViewpoint = DistributedObjectFactory.FindFirstInstanceComponent<LocalViewpoint>(
                     DistributedObjectFactory.DistributedType.Viewpoint);
                 ourPlayer = default(Player);
-                if (localViewpoint != null && localViewpoint.PlayerCount > 0)
+                if (localViewpoint != null)
                 {
-                    ourPlayer = localViewpoint.GetPlayer(0);
+                    if (DistributedViewpoint.TheViewpoint == null)
+                    {
+                        DistributedViewpoint.InitializeTheViewpoint(localViewpoint.GetComponent<DistributedViewpoint>());
+                    }
+
+                    if (localViewpoint.PlayerCount > 0)
+                    {
+                        ourPlayer = localViewpoint.GetPlayer(0);
+                    }
+                }
+                else
+                {
+                    // wipe it
+                    DistributedViewpoint.InitializeTheViewpoint(null);
                 }
             }
         }
