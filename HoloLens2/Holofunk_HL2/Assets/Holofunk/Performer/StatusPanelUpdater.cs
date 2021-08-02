@@ -20,6 +20,10 @@ namespace Holofunk.Perform
     {
         private HandPoseClassifier _classifier = new HandPoseClassifier();
 
+        private bool showDistanceStatistics = false;
+
+        private bool showRightHandProperties = true;
+
         // Update is called once per frame
         public void Update()
         {
@@ -28,22 +32,69 @@ namespace Holofunk.Perform
             // do we currently have a Viewpoint?
             LocalViewpoint localViewpoint = DistributedObjectFactory.FindFirstInstanceComponent<LocalViewpoint>(
                 DistributedObjectFactory.DistributedType.Viewpoint);
+            // if not, then nothing to do
+            if (localViewpoint == null)
+            {
+                return;
+            }
+
             Player player = localViewpoint.PlayerCount > 0 ? localViewpoint.GetPlayer(0) : default(Player);
 
             // we know we have a Performer
             GameObject performerContainer = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Performer);
             LocalPerformer localPerformer = performerContainer.GetComponent<LocalPerformer>();
 
-            Vector3 viewpointSensorPos = player.SensorPosition;
+            if (showDistanceStatistics)
+            {
+                ShowDistanceStatisticsInTextPanel(textMesh, player, localPerformer);
+            }
 
-            Vector3 localHandPos = localPerformer.GetPerformer().RightHandPosition;
-            Vector3 viewpointHandPos = player.RightHandPosition;
+            if (showRightHandProperties)
+            {
+                ShowRightHandPropertiesInTextPanel(textMesh, player, localPerformer);
+            }
 
-            HandPoseValue handPoseValue = localPerformer.GetPerformer().RightHandPose;
+            if (player.PlayerId != default(PlayerId))
+            {
+                if (player.ViewpointToPerformerMatrix != Matrix4x4.zero)
+                {
+                    // position the "FloatingTextPanel 2" at the transformed position of the sensor
+                    Vector3 sensorPosition = player.SensorPosition;
+                    Vector3 sensorPositionInPerformerSpace = player.ViewpointToPerformerMatrix.MultiplyPoint(sensorPosition);
 
-            Vector3 localHeadPos = localPerformer.GetPerformer().HeadPosition;
-            Vector3 viewpointHeadPos = player.HeadPosition;
-            Vector3 viewpointHeadForwardDir = player.HeadForwardDirection;
+                    GameObject panel2 = GameObject.Find("StatusPanel2");
+                    panel2.transform.position = sensorPositionInPerformerSpace;
+                }
+            }
+        }
+
+        private void ShowRightHandPropertiesInTextPanel(TextMesh textMesh, Player player, LocalPerformer localPerformer)
+        {
+            HandPoseValue rightHandPose = localPerformer.GetPerformer().RightHandPose;
+            HandController rightHandController = localPerformer
+                .gameObject
+                .transform
+                .GetChild(1)
+                .GetComponent<HandController>();
+
+            textMesh.text =
+$@"Player's host address {player.PerformerHostAddress}
+Right hand pose {rightHandPose}
+Right hand state {rightHandController.HandStateMachineInstanceString}";
+        }
+
+        private static void ShowDistanceStatisticsInTextPanel(TextMesh text, Player p, LocalPerformer performer)
+        {
+            Vector3 viewpointSensorPos = p.SensorPosition;
+
+            Vector3 localHandPos = performer.GetPerformer().RightHandPosition;
+            Vector3 viewpointHandPos = p.RightHandPosition;
+
+            HandPoseValue handPoseValue = performer.GetPerformer().RightHandPose;
+
+            Vector3 localHeadPos = performer.GetPerformer().HeadPosition;
+            Vector3 viewpointHeadPos = p.HeadPosition;
+            Vector3 viewpointHeadForwardDir = p.HeadForwardDirection;
 
             float localVerticalHeadDistance = Math.Abs(localHandPos.y - localHeadPos.y);
             float localLinearHeadDistance = Vector3.Distance(localHandPos, localHeadPos);
@@ -55,7 +106,7 @@ namespace Holofunk.Perform
             string statusMessage =
 $@"
 viewpointSensorPos {viewpointSensorPos}
-viewpointForwardDir {player.SensorForwardDirection}
+viewpointForwardDir {p.SensorForwardDirection}
 localHandPos {localHandPos} | viewpointHandPos {viewpointHandPos}
 localHeadPos {localHeadPos} | viewpointHeadPos {viewpointHeadPos}
 
@@ -68,20 +119,7 @@ localdist {localLinearHeadDistance:f4} | viewpointdist {viewpointLinearHeadDista
 
 handPose {handPoseValue}";
 
-            textMesh.text = statusMessage;
-
-            if (player.PlayerId != default(PlayerId))
-            {
-                if (player.ViewpointToPerformerMatrix != Matrix4x4.zero)
-                {
-                    // position the "FloatingTextPanel 2" at the transformed position of the sensor
-                    Vector3 sensorPosition = player.SensorPosition;
-                    Vector3 sensorPositionInPerformerSpace = player.ViewpointToPerformerMatrix.MultiplyPoint(sensorPosition);
-
-                    GameObject panel2 = GameObject.Find("FloatingTextPanel 2");
-                    panel2.transform.position = sensorPositionInPerformerSpace;
-                }
-            }
+            text.text = statusMessage;
         }
 
         private static Player GetPlayer0(GameObject ic)

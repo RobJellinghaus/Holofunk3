@@ -17,6 +17,9 @@ using UnityEngine;
 
 namespace Holofunk.HandComponents
 {
+    using HandState = State<HandPoseEvent, HandController, HandController>;
+    using HandAction = Action<HandPoseEvent, HandController>;
+    //using HandToHandMenuState = State<HandPoseEvent, MenuModel<HandController>, HandController>;
     using HandStateMachineInstance = StateMachineInstance<HandPoseEvent>;
 
     /// <summary>
@@ -105,6 +108,11 @@ namespace Holofunk.HandComponents
 
         internal DistributedPerformer DistributedPerformer => gameObject.transform.parent.gameObject.GetComponent<DistributedPerformer>();
 
+        /// <summary>
+        /// for debugging only
+        /// </summary>
+        internal string HandStateMachineInstanceString => stateMachineInstance?.ToString() ?? "";
+
         // Update is called once per frame
         void Update()
         {
@@ -126,8 +134,22 @@ namespace Holofunk.HandComponents
 
             if (PerformerController.OurPlayer.PerformerHostAddress == default(SerializedSocketAddress))
             {
+                // if we have a state machine, shut it down now.
+                if (stateMachineInstance != null)
+                {
+                    stateMachineInstance.OnCompleted();
+                    stateMachineInstance = null;
+                }
+
                 // we aren't recognized yet... state machine not running.
                 return;
+            }
+
+            // if we don't have a state machine instance yet, then we should now create one!
+            // (it exists only as long as we are recognized by the viewpoint.)
+            if (stateMachineInstance == null)
+            {
+                stateMachineInstance = new HandStateMachineInstance(HandPoseEvent.Opened, HandStateMachine.Instance, this);
             }
 
             // Update the hand state, based on the latest known Kinect hand state.

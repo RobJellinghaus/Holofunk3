@@ -13,11 +13,11 @@ namespace Holofunk.HandComponents
     /// <summary>An event in a Loopie machine.</summary>
     public struct HandPoseEvent
     {
-        readonly HandPoseValue _type;
+        readonly HandPoseValue _value;
         readonly bool _isCaptured;
 
-        /// <summary>The type of event.</summary>
-        internal HandPoseValue Type { get { return _type; } }
+        /// <summary>The value of the hand pose.</summary>
+        internal HandPoseValue Value { get { return _value; } }
 
         /// <summary>
         /// Has this event already been captured?
@@ -29,14 +29,14 @@ namespace Holofunk.HandComponents
         /// </remarks>
         internal bool IsCaptured { get { return _isCaptured; } }
 
-        internal HandPoseEvent(HandPoseValue type) { _type = type; _isCaptured = false; }
+        internal HandPoseEvent(HandPoseValue type) { _value = type; _isCaptured = false; }
 
         /// <summary>
         /// Construct a captured BodyPoseEvent from an existing one.
         /// </summary>
         internal HandPoseEvent AsCaptured() { return new HandPoseEvent(this); }
 
-        private HandPoseEvent(HandPoseEvent other) { _type = other._type; _isCaptured = true; }
+        private HandPoseEvent(HandPoseEvent other) { _value = other._value; _isCaptured = true; }
 
         internal static HandPoseEvent Opened { get { return new HandPoseEvent(HandPoseValue.Opened); } }
         internal static HandPoseEvent Closed { get { return new HandPoseEvent(HandPoseValue.Closed); } }
@@ -63,7 +63,7 @@ namespace Holofunk.HandComponents
 
         public override string ToString()
         {
-            return Type.ToString();
+            return Value.ToString();
         }
     }
 
@@ -73,7 +73,7 @@ namespace Holofunk.HandComponents
 
         public int Compare(HandPoseEvent x, HandPoseEvent y)
         {
-            int delta = (int)x.Type - (int)y.Type;
+            int delta = (int)x.Value - (int)y.Value;
             return delta;
         }
     }

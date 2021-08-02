@@ -17,6 +17,8 @@ namespace Holofunk.StateMachines
 
         public String Label { get { return _label; } }
 
+        public override string ToString() => $"State[{Label}]";
+
         /// <summary>
         /// Enter this state, passing in the model from the parent, and obtaining the new model.
         /// </summary>

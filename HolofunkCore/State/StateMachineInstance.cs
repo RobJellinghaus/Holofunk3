@@ -29,10 +29,17 @@ namespace Holofunk.StateMachines
         // internal id
         private static int s_id;
 
+        /// <summary>
+        /// Number of transitions to log internally for debugging.
+        /// </summary>
+        private readonly static int TransitionsToKeep = 5;
+
         readonly int _id;
 
         readonly StateMachine<TEvent> _machine;
         State<TEvent> _machineState;
+
+        List<string> _lastTransitionStrings = new List<string>(TransitionsToKeep);
 
         // The model is the object on which actions operate; it may be transformed on entry or exit.
         IModel _model;
@@ -168,10 +175,18 @@ namespace Holofunk.StateMachines
             // Find transition if any.
             State<TEvent> destination = _machine.TransitionFrom(_machineState, value, _model);
             if (destination != null) {
+                string transitionString = $"{_machineState} => {value} => {destination}";
+                _lastTransitionStrings.Add(transitionString);
+                if (_lastTransitionStrings.Count > TransitionsToKeep)
+                {
+                    _lastTransitionStrings.RemoveAt(0);
+                }
                 MoveTo(value, destination);
             }
 
             m_lastTransitionMoment = now;
         }
+
+        public override string ToString() => $"StateMachineInstance[{_machineState}{(_lastTransitionStrings.Count > 0 ? "; " : "")}{string.Join("; ", _lastTransitionStrings)}]";
     }
 }
