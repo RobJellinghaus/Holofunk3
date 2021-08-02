@@ -220,6 +220,8 @@ Viewpoint {viewpointToPerformerTransformation.TransformPoint(Vector3.forward)} P
 Or: => {finalInverseMatrix.MultiplyPoint(Vector3.forward)}
 
 Sensor position -> viewpoint: {viewpointToPerformerTransformation.TransformPoint(player.SensorPosition)}
+
+Player host address: {player.PerformerHostAddress}
 ");
 
                                         theViewpoint.UpdatePlayer(player);

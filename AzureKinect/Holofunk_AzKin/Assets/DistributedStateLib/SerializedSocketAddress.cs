@@ -102,7 +102,7 @@ namespace Distributed.State
 
         public override string ToString()
         {
-            return SocketAddress.ToString();
+            return SocketAddress?.ToString() ?? "UninitializedSocketAddress";
         }
     }
 }
