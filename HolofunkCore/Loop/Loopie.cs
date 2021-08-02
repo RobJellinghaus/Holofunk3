@@ -42,7 +42,7 @@ namespace Holofunk.Loop
 
         public void Deserialize(NetDataReader reader)
         {
-            AudioInput.Deserialize(reader);
+            AudioInput = AudioInput.Deserialize(reader);
             ViewpointPosition = reader.GetVector3();
             IsMuted = reader.GetBool();
             Volume = reader.GetFloat();
@@ -50,7 +50,7 @@ namespace Holofunk.Loop
 
         public void Serialize(NetDataWriter writer)
         {
-            AudioInput.Serialize(writer);
+            AudioInput.Serialize(writer, AudioInput);
             writer.Put(ViewpointPosition);
             writer.Put(IsMuted);
             writer.Put(Volume);
