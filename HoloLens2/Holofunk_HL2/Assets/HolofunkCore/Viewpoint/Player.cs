@@ -99,7 +99,7 @@ namespace Holofunk.Viewpoint
             PlayerId = PlayerId.Deserialize(reader);
             UserId = UserId.Deserialize(reader);
             Tracked = reader.GetBool();
-            PerformerHostAddress.Deserialize(reader);
+            PerformerHostAddress = SerializedSocketAddress.Deserialize(reader);
             SensorPosition = reader.GetVector3();
             SensorForwardDirection = reader.GetVector3();
             HeadPosition = reader.GetVector3();
@@ -115,7 +115,7 @@ namespace Holofunk.Viewpoint
             PlayerId.Serialize(writer, PlayerId);
             UserId.Serialize(writer, UserId);
             writer.Put(Tracked);
-            PerformerHostAddress.Serialize(writer);
+            SerializedSocketAddress.Serialize(writer, PerformerHostAddress);
             writer.Put(SensorPosition);
             writer.Put(SensorForwardDirection);
             writer.Put(HeadPosition);
