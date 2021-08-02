@@ -55,5 +55,7 @@ namespace Holofunk.Loop
             writer.Put(IsMuted);
             writer.Put(Volume);
         }
+
+        public override string ToString() => $"Loopie[{AudioInput}, @{ViewpointPosition}]";
     }
 }

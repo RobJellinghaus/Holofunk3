@@ -83,7 +83,7 @@ namespace Holofunk.Loop
 
         protected override void SendCreateMessage(NetPeer netPeer)
         {
-            HoloDebug.Log($"Sending Loopie.Create for id {Id} to peer {netPeer.EndPoint}");
+            HoloDebug.Log($"Sending Loopie.Create for id {Id} to peer {netPeer.EndPoint} with loopie {GetLoopie()}");
             Host.SendReliableMessage(new Create(Id, GetLoopie()), netPeer);
         }
 
@@ -116,6 +116,7 @@ namespace Holofunk.Loop
             // First set up the Loopie state in distributed terms.
             localLoopie.Initialize(new Loopie
             {
+                AudioInput = new Sound.AudioInput(NowSoundLib.AudioInputId.AudioInput1),
                 ViewpointPosition = viewpointPosition,
                 IsMuted = false,
                 Volume = 0.7f
