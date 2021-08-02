@@ -26,12 +26,9 @@ namespace Holofunk.Viewpoint
 
         public void Start()
         {
-            // If we are enabled, then we are the singleton prototype viewpoint in the Azure Kinect app.
-            if (enabled)
-            {
-                Holofunk.Core.Contract.Assert(theViewpoint == null);
-                theViewpoint = this;
-            }
+            // We only ever get one of these as of now.
+            Holofunk.Core.Contract.Assert(theViewpoint == null);
+            theViewpoint = this;
 
             // If we have no ID yet, then we are an owning object that has not yet gotten an initial ID.
             // So, initialize ourselves as an owner.

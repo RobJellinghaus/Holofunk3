@@ -39,7 +39,7 @@ namespace Holofunk.Distributed
                 clone.name = $"{message.Id}";
                 clone.SetActive(true);
 
-                HoloDebug.Log($"Received {nameof(TMessage)} for id {message.Id} from peer {netPeer.EndPoint}");
+                HoloDebug.Log($"Received {message.GetType()} for id {message.Id} from peer {netPeer.EndPoint}");
 
                 // wire the local and distributed things together
                 TLocal local = clone.GetComponent<TLocal>();

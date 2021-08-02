@@ -187,6 +187,6 @@ namespace Holofunk.StateMachines
             m_lastTransitionMoment = now;
         }
 
-        public override string ToString() => $"StateMachineInstance[{_machineState}{(_lastTransitionStrings.Count > 0 ? "; " : "")}{string.Join("; ", _lastTransitionStrings)}]";
+        public override string ToString() => $"StateMachineInstance[{_machineState}{(_lastTransitionStrings.Count > 0 ? "; " : "")}{string.Join($";{Environment.NewLine}", _lastTransitionStrings)}]";
     }
 }
