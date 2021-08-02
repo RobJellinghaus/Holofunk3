@@ -6,7 +6,7 @@ using Holofunk.Distributed;
 using LiteNetLib;
 using UnityEngine;
 
-namespace Holofunk.Loopie
+namespace Holofunk.Loop
 {
     public class LoopieMessages : Messages
     {

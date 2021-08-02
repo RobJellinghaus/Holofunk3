@@ -5,9 +5,9 @@ using Holofunk.Core;
 using Holofunk.Distributed;
 using LiteNetLib;
 using UnityEngine;
-using static Holofunk.Loopie.LoopieMessages;
+using static Holofunk.Loop.LoopieMessages;
 
-namespace Holofunk.Loopie
+namespace Holofunk.Loop
 {
     /// <summary>
     /// The distributed interface of a Loopie.

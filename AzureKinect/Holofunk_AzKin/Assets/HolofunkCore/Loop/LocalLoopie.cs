@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Holofunk.Loopie
+namespace Holofunk.Loop
 {
     /// <summary>
     /// The local implementation of a Loopie object.

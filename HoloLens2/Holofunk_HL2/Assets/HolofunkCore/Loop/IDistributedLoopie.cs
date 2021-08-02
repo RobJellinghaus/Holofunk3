@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Holofunk.Loopie
+namespace Holofunk.Loop
 {
     /// <summary>
     /// The distributed interface of a loopie.

@@ -2,10 +2,9 @@
 
 using Distributed.State;
 using Holofunk.Core;
+using Holofunk.Loop;
 using Holofunk.Perform;
 using Holofunk.Viewpoint;
-using LiteNetLib;
-using LiteNetLib.Utils;
 using UnityEngine;
 
 namespace Holofunk.Distributed
@@ -65,6 +64,7 @@ namespace Holofunk.Distributed
             Host.RegisterType(UserId.Serialize, UserId.Deserialize);
             Host.RegisterType<Player>();
             Host.RegisterType<Performer>();
+            Host.RegisterType<Loopie>();
 
             // Distributed messages
             Host.RegisterWith(ViewpointMessages.Register);

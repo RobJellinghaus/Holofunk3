@@ -2,7 +2,7 @@
 
 using Holofunk.Core;
 using Holofunk.Hand;
-using Holofunk.Loopie;
+using Holofunk.Loop;
 using Holofunk.StateMachines;
 using NowSoundLib;
 using System;

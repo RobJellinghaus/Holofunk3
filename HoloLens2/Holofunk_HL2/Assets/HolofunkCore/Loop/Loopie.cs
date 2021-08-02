@@ -6,7 +6,7 @@ using Holofunk.Sound;
 using LiteNetLib.Utils;
 using UnityEngine;
 
-namespace Holofunk.Loopie
+namespace Holofunk.Loop
 {
     /// <summary>
     /// Serialized state of a loopie (e.g. a virtual recorded sound object).

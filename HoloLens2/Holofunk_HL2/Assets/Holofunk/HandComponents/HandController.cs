@@ -4,7 +4,7 @@ using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Hand;
-using Holofunk.Loopie;
+using Holofunk.Loop;
 using Holofunk.Perform;
 using Holofunk.StateMachines;
 using Holofunk.Viewpoint;
