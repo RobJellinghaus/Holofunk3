@@ -6,7 +6,7 @@ using System;
 
 namespace Distributed.State
 {
-    /// <summary>`
+    /// <summary>
     /// ID of a distributed object.
     /// </summary>
     /// <remarks>

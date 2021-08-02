@@ -249,10 +249,11 @@ namespace Distributed.State
         internal List<IPEndPoint> AnnouncedEndPoints = new List<IPEndPoint>();
 
         /// <summary>
-        /// Get the proxies that are owned by this peer.
+        /// Get the proxies that are owned by this peer; returns null if peer is unknown.
         /// </summary>
         public IReadOnlyDictionary<DistributedId, IDistributedObject> ProxiesForPeer(SerializedSocketAddress serializedSocketAddress)
         {
+            /* this contract does not hold if proxies drop. Original intent was to make sure data structures were consistent.
             Contract.Requires(netManager.ConnectedPeerList.Any(peer =>
             {
                 SerializedSocketAddress peerAddress = new SerializedSocketAddress(peer);
@@ -261,9 +262,18 @@ namespace Distributed.State
             }));
 
             Contract.Requires(proxies.ContainsKey(serializedSocketAddress));
+            */
 
-            return proxies[serializedSocketAddress];
+            if (proxies.ContainsKey(serializedSocketAddress))
+            {
+                return proxies[serializedSocketAddress];
+            }
+            else
+            {
+                return null;
+            }
         }
+
 
         #endregion
 
@@ -303,7 +313,7 @@ namespace Distributed.State
             }
 
             netPacketProcessor = new NetPacketProcessor();
-            RegisterType<SerializedSocketAddress>();
+            RegisterType(SerializedSocketAddress.Serialize, SerializedSocketAddress.Deserialize);
             RegisterType<DistributedId>();
             netPacketProcessor.SubscribeReusable<AnnounceMessage, IPEndPoint>(OnAnnounceReceived);
             netPacketProcessor.SubscribeReusable<AnnounceResponseMessage, IPEndPoint>(OnAnnounceResponseReceived);
