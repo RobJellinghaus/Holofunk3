@@ -4,6 +4,7 @@ using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Loop;
 using Holofunk.Perform;
+using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using UnityEngine;
 
@@ -59,14 +60,17 @@ namespace Holofunk.Distributed
             Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetVector4);
             Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetMatrix4x4);
 
-            // Holofunk ID types and data objects
+            // Holofunk ID types
             Host.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
             Host.RegisterType(UserId.Serialize, UserId.Deserialize);
+            Host.RegisterType(AudioInput.Serialize, AudioInput.Deserialize);
+
+            // Holofunk struct types
             Host.RegisterType<Player>();
             Host.RegisterType<Performer>();
             Host.RegisterType<Loopie>();
 
-            // Distributed messages
+            // Distributed message types
             Host.RegisterWith(ViewpointMessages.Register);
             Host.RegisterWith(PerformerMessages.Register);
             Host.RegisterWith(LoopieMessages.Register);

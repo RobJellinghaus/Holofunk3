@@ -12,7 +12,7 @@ namespace Holofunk.Sound
     /// <remarks>
     /// Wraps the NowSoundLib AudioInputId type.
     /// </remarks>
-    public struct AudioInput : INetSerializable
+    public struct AudioInput
     {
         private AudioInputId value;
 
@@ -34,18 +34,12 @@ namespace Holofunk.Sound
 
         public static void RegisterWith(NetPacketProcessor packetProcessor)
         {
-            packetProcessor.RegisterNestedType<AudioInput>();
+            packetProcessor.RegisterNestedType(Serialize, Deserialize);
         }
 
-        public void Serialize(NetDataWriter writer)
-        {
-            writer.Put((int)value);
-        }
+        public static void Serialize(NetDataWriter writer, AudioInput audioInput) => writer.Put((int)audioInput.Value);
 
-        public void Deserialize(NetDataReader reader)
-        {
-            value = (AudioInputId)reader.GetInt();
-        }
+        public static AudioInput Deserialize(NetDataReader reader) => new AudioInput((AudioInputId)reader.GetInt());
 
         public static bool operator ==(AudioInput left, AudioInput right)
         {

@@ -24,5 +24,7 @@ namespace Distributed.State
         /// Invoke the message on the given target, which may be a distributed object or a local object.
         /// </summary>
         public abstract void Invoke(IDistributedInterface target);
+
+        public override string ToString() => $"{GetType()}";
     }
 }

@@ -15,6 +15,7 @@ namespace Holofunk.Loop
             public Loopie Loopie { get; set; }
             public Create() : base() { }
             public Create(DistributedId id, Loopie loopie) : base(id) { Loopie = loopie; }
+            public override string ToString() => $"{base.ToString()}{Loopie}";
         }
 
         public class SetMute : ReliableMessage
