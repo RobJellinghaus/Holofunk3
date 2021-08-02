@@ -11,7 +11,7 @@ namespace Distributed.State
     /// <remarks>
     /// Might as well bite the bullet and handle the full port/IPV4/IPV6 enchilada.
     /// </remarks>
-    public struct SerializedSocketAddress : INetSerializable
+    public struct SerializedSocketAddress
     {
         public SocketAddress SocketAddress { get; set; }
 
@@ -45,13 +45,13 @@ namespace Distributed.State
             return !(left.SocketAddress == right.SocketAddress);
         }
 
-        public void Deserialize(NetDataReader reader)
+        public static SerializedSocketAddress Deserialize(NetDataReader reader)
         {
             int socketAddressSize = reader.GetByte();
 
             if (socketAddressSize == 0)
             {
-                SocketAddress = default(SocketAddress);
+                return default(SerializedSocketAddress);
             }
             else
             {
@@ -63,25 +63,25 @@ namespace Distributed.State
                 {
                     socketAddress[i + 2] = reader.GetByte();
                 }
-                SocketAddress = socketAddress;
+                return new SerializedSocketAddress(socketAddress);
             }
         }
 
-        public void Serialize(NetDataWriter writer)
+        public static void Serialize(NetDataWriter writer, SerializedSocketAddress address)
         {
             // If we are not initialized then just write 0 and be done
-            if (!IsInitialized)
+            if (!address.IsInitialized)
             {
                 writer.Put((byte)0);
                 return;
             
             }
             // first write the size
-            writer.Put((byte)SocketAddress.Size);
+            writer.Put((byte)address.SocketAddress.Size);
             // then the bytes
-            for (int i = 0; i < SocketAddress.Size; i++)
+            for (int i = 0; i < address.SocketAddress.Size; i++)
             {
-                writer.Put(SocketAddress[i]);
+                writer.Put(address.SocketAddress[i]);
             }
         }
 

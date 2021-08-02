@@ -313,7 +313,7 @@ namespace Distributed.State
             }
 
             netPacketProcessor = new NetPacketProcessor();
-            RegisterType<SerializedSocketAddress>();
+            RegisterType(SerializedSocketAddress.Serialize, SerializedSocketAddress.Deserialize);
             RegisterType<DistributedId>();
             netPacketProcessor.SubscribeReusable<AnnounceMessage, IPEndPoint>(OnAnnounceReceived);
             netPacketProcessor.SubscribeReusable<AnnounceResponseMessage, IPEndPoint>(OnAnnounceResponseReceived);
