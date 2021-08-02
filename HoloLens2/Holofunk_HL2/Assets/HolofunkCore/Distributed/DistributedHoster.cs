@@ -69,6 +69,7 @@ namespace Holofunk.Distributed
             // Distributed messages
             Host.RegisterWith(ViewpointMessages.Register);
             Host.RegisterWith(PerformerMessages.Register);
+            Host.RegisterWith(LoopieMessages.Register);
 
             Instance = this;
 

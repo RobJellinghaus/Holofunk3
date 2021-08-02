@@ -12,7 +12,7 @@ namespace Holofunk.Loop
     {
         public class Create : CreateMessage
         {
-            public Loopie Loopie{ get; set; }
+            public Loopie Loopie { get; set; }
             public Create() : base() { }
             public Create(DistributedId id, Loopie loopie) : base(id) { Loopie = loopie; }
         }

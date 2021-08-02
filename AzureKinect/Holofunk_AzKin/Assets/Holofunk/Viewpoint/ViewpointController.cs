@@ -2,6 +2,7 @@
 
 using com.rfilkov.kinect;
 using Holofunk.Core;
+using Holofunk.Distributed;
 using Holofunk.Sound;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,13 @@ namespace Holofunk.Viewpoint
 {
     public class ViewpointController : MonoBehaviour
     {
+        public void Start()
+        {
+            DistributedViewpoint.InitializeTheViewpoint(
+                DistributedObjectFactory.FindPrototypeComponent<DistributedViewpoint>(
+                    DistributedObjectFactory.DistributedType.Viewpoint));
+        }
+
         public void Update()
         {
             KinectManager kinectManager = KinectManager.Instance;
