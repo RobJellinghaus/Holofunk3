@@ -128,7 +128,7 @@ namespace Distributed.State
         /// Random port that happened to be, not only open, but with no other UDP or TCP ports in the 3????? range
         /// on my local Windows laptop.
         /// </summary>
-        public static ushort DefaultListenPort = 9050;
+        public static ushort DefaultListenPort = 30303;
 
         /// <summary>
         /// Random port that happened to be, not only open, but with no other UDP or TCP ports in the 3????? range
@@ -139,7 +139,7 @@ namespace Distributed.State
         /// <summary>
         /// Delay between announce messages.
         /// </summary>
-        public static int AnnounceDelayMsec = 2000;
+        public int AnnounceDelayMsec { get; set; }
 
         /// <summary>
         /// The broadcast port for announcing new peers and disseminating information.
@@ -202,6 +202,14 @@ namespace Distributed.State
         /// </remarks>
         private readonly Dictionary<SerializedSocketAddress, Dictionary<DistributedId, IDistributedObject>> proxies
             = new Dictionary<SerializedSocketAddress, Dictionary<DistributedId, IDistributedObject>>();
+
+        /// <summary>
+        /// How many self-announcements has this peer received?
+        /// </summary>
+        /// <remarks>
+        /// Only for testing.
+        /// </remarks>
+        public int SelfAnnounceCount { get; private set; }
 
         /// <summary>
         /// How many peer announcements has this peer received?
@@ -289,6 +297,7 @@ namespace Distributed.State
             Contract.Requires(listenPort != 0);
 
             ListenPort = listenPort;
+            AnnounceDelayMsec = 2000; // default value, works OK for interactive discovery
             this.workQueue = workQueue;
             this.logger = logger;
 
@@ -614,7 +623,8 @@ namespace Distributed.State
                 SerializedSocketAddress incomingAddress = new SerializedSocketAddress(endpoint.Serialize());
                 if (incomingAddress == this.SocketAddress)
                 {
-                    // ignore this, we're talking to ourselves
+                    // for testing only, really
+                    SelfAnnounceCount++;
                     return;
                 }
 
