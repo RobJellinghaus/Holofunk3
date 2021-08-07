@@ -51,16 +51,18 @@ namespace Holofunk.Loop
 
         public class SetCurrentAmplitude : BroadcastMessage
         {
-            float min, avg, max;
+            public float Min { get; set; }
+            public float Avg { get; set; }
+            public float Max { get; set; }
             public SetCurrentAmplitude() : base() { }
             public SetCurrentAmplitude(DistributedId id, SerializedSocketAddress owner, float min, float avg, float max)
                 : base(id, owner)
             {
-                this.min = min;
-                this.avg = avg;
-                this.max = max;
+                Min = min;
+                Avg = avg;
+                Max = max;
             }
-            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentAmplitude(min, avg, max);
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentAmplitude(Min, Avg, Max);
         }
 
         // TODO: refactor this for actual sharing with the other Register methods
