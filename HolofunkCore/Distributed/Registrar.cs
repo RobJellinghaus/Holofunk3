@@ -5,6 +5,7 @@ using Holofunk.Core;
 using Holofunk.Distributed;
 using LiteNetLib;
 using System;
+using System.Net;
 using UnityEngine;
 
 namespace Holofunk.Distributed
@@ -89,7 +90,7 @@ namespace Holofunk.Distributed
             where TLocal : ILocalObject, TInterface
             where TInterface : IDistributedInterface
         {
-            proxyCapability.SubscribeReusable((TMessage message, NetPeer netPeer) =>
+            proxyCapability.SubscribeReusable((TMessage message, IPEndPoint endPoint) =>
                 HandleBroadcastMessage<TMessage, TDistributed, TLocal, TInterface>(proxyCapability.Host, message));
         }
     }

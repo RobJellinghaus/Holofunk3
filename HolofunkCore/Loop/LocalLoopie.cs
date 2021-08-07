@@ -68,14 +68,11 @@ namespace Holofunk.Loop
                 }
             }
 
-            // if there is a sound manager, get the track's current volume and broadcast it
-            /* TODO: GET THIS WORKING
             if (SoundManager.Instance != null)
             {
                 NowSoundSignalInfo signalInfo = NowSoundTrackAPI.SignalInfo(trackId);
                 ((DistributedLoopie)DistributedObject).SetCurrentAmplitude(signalInfo.Min, signalInfo.Avg, signalInfo.Max);
             }
-            */
 
             // TODO: scale the loopie according to avg amplitude
             if (avgAmplitude > 0f)
