@@ -74,7 +74,7 @@ namespace Holofunk.Loop
             Registrar.RegisterReliableMessage<SetVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<SetViewpointPosition, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<FinishRecording, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
-            //Registrar.RegisterBroadcastMessage<SetCurrentAmplitude, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterBroadcastMessage<SetCurrentAmplitude, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
         }
     }
 }
