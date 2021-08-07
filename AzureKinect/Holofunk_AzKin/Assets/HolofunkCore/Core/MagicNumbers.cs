@@ -51,5 +51,12 @@ namespace Holofunk.Core
         /// </summary>
         public static readonly float MaxLoopieScale = 1.1f;
 
+        /// <summary>
+        /// Loopie amplitude is logarithmic, so we boost it up to make it more noticeable.
+        /// </summary>
+        /// <remarks>
+        /// TODO: consider emitting RMS or other linearized amplitude
+        /// </remarks>
+        public static readonly float LoopieAmplitudeBias = 10.0f;
     }
 }
