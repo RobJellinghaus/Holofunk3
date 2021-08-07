@@ -77,9 +77,10 @@ namespace Holofunk.Loop
             // TODO: scale the loopie according to avg amplitude
             if (avgAmplitude > 0f)
             {
-                // scale accordingly
                 float delta = MagicNumbers.MaxLoopieScale - MagicNumbers.MinLoopieScale;
-                float scale = MagicNumbers.MinLoopieScale + avgAmplitude * delta;
+                float scale = MagicNumbers.MinLoopieScale + avgAmplitude * delta * MagicNumbers.LoopieAmplitudeBias;
+                // and clamp in case bias sends us over
+                scale = Math.Max(scale, MagicNumbers.MaxLoopieScale);
                 transform.localScale = new Vector3(scale, scale, scale);
             }
         }
