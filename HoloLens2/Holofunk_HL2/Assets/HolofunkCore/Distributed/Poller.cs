@@ -15,7 +15,7 @@ namespace Holofunk.Distributed
     /// TODO: consider whether it would be better to do network polling on the FixedUpdate cycle.
     /// Not clear it would actually reduce latency at all assuming inter-frame packet delivery latency....
     /// </remarks>
-    public abstract class Poller : MonoBehaviour
+    public class Poller : MonoBehaviour
     {
         public Poller()
         {
