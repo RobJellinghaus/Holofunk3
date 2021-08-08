@@ -58,5 +58,10 @@ namespace Holofunk.Core
         /// TODO: consider emitting RMS or other linearized amplitude
         /// </remarks>
         public static readonly float LoopieAmplitudeBias = 10.0f;
+
+        /// <summary>
+        /// The radius of the hand, in meters.
+        /// </summary>
+        public static readonly float HandRadius = 0.1f; // 10 cm = 4 inches. Pretty big but let's start there
     }
 }

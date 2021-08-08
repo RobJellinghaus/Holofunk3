@@ -13,6 +13,7 @@ using Microsoft.MixedReality.Toolkit.Utilities;
 using NowSoundLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Holofunk.HandComponents
@@ -52,14 +53,6 @@ namespace Holofunk.HandComponents
         private GameObject currentlyHeldLoopie;
 
         /// <summary>
-        /// The radius of the hand in world space.
-        /// </summary>
-        /// <remarks>
-        /// Determined from the X scale of the HollowSprite circle.
-        /// </remarks>
-        private float handRadius = 0.1f; // 10 cm = 4 inches. Pretty big but let's start there
-
-        /// <summary>
         /// Whhat should this hand do when it touches a loopie?
         /// </summary>
         /// <remarks>
@@ -68,14 +61,22 @@ namespace Holofunk.HandComponents
         internal Action<DistributedLoopie> touchedLoopieAction;
 
         /// <summary>
-        /// The loopies touched by this hand.
+        /// The sorted IDs of the loopies touched by this hand.
         /// </summary>
-        private readonly List<DistributedLoopie> touchedLoopies = new List<DistributedLoopie>();
+        /// <remarks>
+        /// Recalculated anew on every frame.
+        /// </remarks>
+        private readonly List<DistributedId> touchedLoopieIds = new List<DistributedId>();
 
         /// <summary>
-        /// Debugging touched loopies issues is impossible unless you log only the *changes* in the touched loopie list.
+        /// The previous contents of touchedLoopies (for debugging).
         /// </summary>
-        private readonly List<DistributedLoopie> previouslyTouchedLoopies = new List<DistributedLoopie>();
+        private readonly List<DistributedId> previouslyTouchedLoopieIds = new List<DistributedId>();
+
+        /// <summary>
+        /// The (sorted) IDs of the loopies currently touched by this hand.
+        /// </summary>
+        public IEnumerable<DistributedId> TouchedLoopieIds => touchedLoopieIds;
 
         /// <summary>
         /// Should hand position be ignored when determining hand pose?
@@ -94,18 +95,32 @@ namespace Holofunk.HandComponents
         /// </remarks>
         internal bool KeepTouchedLoopiesStable { get; set; }
 
-        internal bool AnyLoopiesTouched => touchedLoopies.Count > 0;
+        /// <summary>
+        /// Any loopies touched by this hand?
+        /// </summary>
+        internal bool AnyLoopiesTouched => touchedLoopieIds.Count > 0;
 
         internal void ApplyToTouchedLoopies(Action<DistributedLoopie> action)
         {
-            touchedLoopies.ForEach(action);
+            foreach (LocalLoopie localLoopie in
+                DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
+                    DistributedObjectFactory.DistributedType.Loopie))
+            {
+                if (touchedLoopieIds.Contains(localLoopie.DistributedObject.Id))
+                {
+                    action((DistributedLoopie)localLoopie.DistributedObject);
+                }
+            }
         }
 
         /// <summary>
-        /// Get the parent PerformerController.
+        /// Get the PerformerController component from our parent..
         /// </summary>
-        internal PerformerController PerformerController => gameObject.transform.parent.gameObject.GetComponent<PerformerController>();
+        internal PerformerPreController PerformerController => gameObject.transform.parent.gameObject.GetComponent<PerformerPreController>();
 
+        /// <summary>
+        /// Get the DistributedPerformer component from our parent.
+        /// </summary>
         internal DistributedPerformer DistributedPerformer => gameObject.transform.parent.gameObject.GetComponent<DistributedPerformer>();
 
         /// <summary>
@@ -116,20 +131,6 @@ namespace Holofunk.HandComponents
         // Update is called once per frame
         void Update()
         {
-            /* prior code for loopie selection... needs updates now.
-            // Update touched loopies first, before updating hand position and state.
-            if (KeepTouchedLoopiesStable)
-            {
-                // visually ensure the loopies still look touched
-                ApplyToTouchedLoopies(loopie => loopie.AppearTouched());
-            }
-            else
-            {
-                // freely update the touched loopie set
-                UpdateTouchedLoopies();
-            }
-            */
-
             Performer performer = DistributedPerformer.GetPerformer();
 
             if (PerformerController.OurPlayer.PerformerHostAddress == default(SerializedSocketAddress))
@@ -158,6 +159,7 @@ namespace Holofunk.HandComponents
             // Pass the performer state down by ref for efficiency (no mutation please, it'll be lost)
             UpdateHandState(currentHandPose, ref performer);
 
+            // Update the loopie's position while the user is holding it.
             if (currentlyHeldLoopie != null && DistributedViewpoint.TheViewpoint != null)
             {
                 Vector3 performerHandPosition = HandPosition(ref performer);
@@ -167,6 +169,53 @@ namespace Holofunk.HandComponents
                     Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
                     currentlyHeldLoopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
                 }
+            }
+
+            // Update touched loopies first, before updating hand position and state.
+            if (KeepTouchedLoopiesStable)
+            {
+                // do nothing! the previous TouchedLoopieIdList can remain the same.
+                // Even if some or all of the loopies in it have been deleted, the effect
+                // of this is benign because when we go to actually traverse them, we
+                // will skip them.
+            }
+            else
+            {
+                // freely update the touched loopie list of the performer
+                UpdateTouchedLoopies(ref performer);
+            }
+
+            ApplyToTouchedLoopies(touchedLoopieAction);
+        }
+
+        /// <summary>
+        /// Update the local lists of loopies touched by this hand.
+        /// </summary>
+        private void UpdateTouchedLoopies(ref Performer performer)
+        {
+            touchedLoopieIds.Clear();
+
+            Vector3 handPosition = HandPosition(ref performer);
+
+            foreach (LocalLoopie localLoopie in
+                DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
+                    DistributedObjectFactory.DistributedType.Loopie))
+            {
+                Vector3 loopiePosition = localLoopie.transform.position;
+                if (Vector3.Distance(loopiePosition, handPosition) < MagicNumbers.HandRadius)
+                {
+                    touchedLoopieIds.Add(localLoopie.DistributedObject.Id);
+                }
+            }
+
+            touchedLoopieIds.Sort(DistributedId.Comparer.Instance);
+
+            if (previouslyTouchedLoopieIds.Count != touchedLoopieIds.Count
+                || !previouslyTouchedLoopieIds.SequenceEqual(touchedLoopieIds))
+            {
+                previouslyTouchedLoopieIds.Clear();
+                previouslyTouchedLoopieIds.AddRange(touchedLoopieIds);
+                // TODO: add debug spam here if necessary
             }
         }
 
@@ -253,64 +302,5 @@ namespace Holofunk.HandComponents
                 currentlyHeldLoopie = null;
             }
         }
-
-        /* save for later once we actually have some
-        private void UpdateTouchedLoopies()
-        {
-            previouslyTouchedLoopies.Clear();
-            previouslyTouchedLoopies.AddRange(touchedLoopies);
-
-            GameObject mainCamera = null;
-            Vector3 cameraToHand = Vector3.zero;
-            if (!MagicConstants.UseDistanceBasedTouching)
-            {
-                mainCamera = GameObject.Find("MainCamera");
-                cameraToHand = (transform.position - mainCamera.transform.position).normalized;
-            }
-
-            touchedLoopies.Clear();
-
-            DistributedLoopie.Apply(loopie =>
-            {
-                if (MagicConstants.UseDistanceBasedTouching)
-                {
-                    Vector3 distanceVector = loopie.transform.position - transform.position;
-                    float distance = distanceVector.magnitude;
-                    //builder.AppendFormat("[{0} dist {1}", i, distance);
-                    if (distance < handRadius)
-                    {
-                        touchedLoopies.Add(loopie);
-                        loopie.AppearTouched();
-
-                        if (touchedLoopieAction != null)
-                        {
-                            touchedLoopieAction(loopie);
-                        }
-                    }
-                }
-                else
-                {
-                    Vector3 cameraToLoopie = (loopie.transform.position - mainCamera.transform.position).normalized;
-                    float dotProduct = Vector3.Dot(cameraToHand, cameraToLoopie);
-
-                    if (dotProduct > MagicConstants.MinimumDotProductForRayBasedTouching)
-                    {
-                        touchedLoopies.Add(loopie);
-                        loopie.AppearTouched();
-
-                        if (touchedLoopieAction != null)
-                        {
-                            touchedLoopieAction(loopie);
-                        }
-                    }
-                }
-            });
-
-            if (previouslyTouchedLoopies.Count != touchedLoopies.Count)
-            {
-                Debug.Log($"HandController.UpdateTouchedLoopies(): player {playerController.playerIndex} {handSide} hand: now touching [{string.Join(", ", touchedLoopies.Select(loopie => loopie.TrackId.ToString()))}]");
-            }
-        }
-        */
     }
 }

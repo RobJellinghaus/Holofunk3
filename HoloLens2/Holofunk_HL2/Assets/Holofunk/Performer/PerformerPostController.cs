@@ -1,5 +1,6 @@
 ﻿/// Copyright by Rob Jellinghaus.  All rights reserved.
 
+using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Hand;
@@ -9,19 +10,19 @@ using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Holofunk.Perform
 {
     /// <summary>
     /// This behavior updates the prototype Performer instance, to propagate this
-    /// user's body locations (in performer space).
+    /// user's body locations (in performer space) and touched loopie IDs.
     /// </summary>
-    public class PerformerController : MonoBehaviour
+    public class PerformerPostController : MonoBehaviour
     {
         private HandPoseClassifier _classifier = new HandPoseClassifier();
-
-        private Player ourPlayer = default(Player);
 
         private Vector3Averager _leftHandPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager _rightHandPosAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
@@ -37,13 +38,7 @@ namespace Holofunk.Perform
         public Vector3 AverageHeadPos => _headPosAverager.Average;
         public Vector3 AverageHeadForwardDir => _headForwardAverager.Average;
 
-        /// <summary>
-        /// Get the state of our Player instance.
-        /// </summary>
-        /// <remarks>
-        /// Returned by ref for efficiency, since Player is a large struct.
-        /// </remarks>
-        public ref Player OurPlayer => ref ourPlayer;
+        private List<DistributedId> touchedLoopieIdList = new List<DistributedId>();
 
         // Update is called once per frame
         public void Update()
@@ -52,36 +47,6 @@ namespace Holofunk.Perform
             IMixedRealityEyeGazeProvider gazeProvider = CoreServices.InputSystem.EyeGazeProvider;
 
             UpdateDistributedPerformer(handJointService, gazeProvider);
-
-            UpdateOurPlayer();
-
-            void UpdateOurPlayer()
-            {
-                // Look for our matching Player.
-                // if we don't have a player with our host address, then we aren't recognized yet,
-                // so do nothing.
-                // TODO: handle multiple Players.
-                LocalViewpoint localViewpoint = DistributedObjectFactory.FindFirstInstanceComponent<LocalViewpoint>(
-                    DistributedObjectFactory.DistributedType.Viewpoint);
-                ourPlayer = default(Player);
-                if (localViewpoint != null)
-                {
-                    if (DistributedViewpoint.TheViewpoint == null)
-                    {
-                        DistributedViewpoint.InitializeTheViewpoint(localViewpoint.GetComponent<DistributedViewpoint>());
-                    }
-
-                    if (localViewpoint.PlayerCount > 0)
-                    {
-                        ourPlayer = localViewpoint.GetPlayer(0);
-                    }
-                }
-                else
-                {
-                    // wipe it
-                    DistributedViewpoint.InitializeTheViewpoint(null);
-                }
-            }
         }
 
         private static Vector3 LocalGazeDirection(IMixedRealityEyeGazeProvider gp)
@@ -123,6 +88,13 @@ namespace Holofunk.Perform
             _leftHandPoseCounter.Update(leftHandPoseValue);
             _rightHandPoseCounter.Update(rightHandPoseValue);
 
+            // Collect the left and right hand lists of touched loopie IDs.
+            touchedLoopieIdList.Clear();
+            HandController left = transform.GetChild(0).GetComponent<HandController>();
+            HandController right = transform.GetChild(1).GetComponent<HandController>();
+            touchedLoopieIdList.AddRange(left.TouchedLoopieIds.Union(right.TouchedLoopieIds));
+            touchedLoopieIdList.Sort(DistributedId.Comparer.Instance);
+
             Performer performer = new Performer
             {
                 LeftHandPosition = AverageLeftHandPos,
@@ -132,7 +104,8 @@ namespace Holofunk.Perform
                 LeftHandPose = new HandPose(
                     _leftHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown)),
                 RightHandPose = new HandPose(
-                    _rightHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown))
+                    _rightHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown)),
+                TouchedLoopieIdList = touchedLoopieIdList.Cast<uint>().ToArray()
             };
 
             DistributedPerformer performerPrototype =

@@ -3,6 +3,7 @@
 using LiteNetLib;
 using LiteNetLib.Utils;
 using System;
+using System.Collections.Generic;
 
 namespace Distributed.State
 {
@@ -14,6 +15,15 @@ namespace Distributed.State
     /// </remarks>
     public struct DistributedId
     {
+        public class Comparer : IComparer<DistributedId>
+        {
+            public int Compare(DistributedId x, DistributedId y)
+            {
+                return x.value.CompareTo(y.value);
+            }
+            public static Comparer Instance = new Comparer();
+        }
+
         private uint value;
 
         public DistributedId(uint value)
