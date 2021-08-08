@@ -106,9 +106,12 @@ namespace Holofunk.Loop
         /// </remarks>
         public static GameObject Create(Vector3 viewpointPosition)
         {
-            GameObject prototypeLoopie = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Loopie);
+            GameObject prototypeLoopie = DistributedObjectFactory.FindPrototype(
+                DistributedObjectFactory.DistributedType.Loopie);
+            GameObject localContainer = DistributedObjectFactory.FindLocalhostInstanceContainer(
+                DistributedObjectFactory.DistributedType.Loopie);
 
-            GameObject newLoopie = GameObject.Instantiate(prototypeLoopie);
+            GameObject newLoopie = Instantiate(prototypeLoopie, localContainer.transform);
             newLoopie.SetActive(true);
             DistributedLoopie distributedLoopie = newLoopie.GetComponent<DistributedLoopie>();
             LocalLoopie localLoopie = distributedLoopie.GetLocalLoopie();
@@ -124,6 +127,9 @@ namespace Holofunk.Loop
 
             // Then enable the distributed behavior.
             distributedLoopie.InitializeOwner();
+
+            // And finally set the loopie name.
+            newLoopie.name = $"{distributedLoopie.Id}";
 
             return newLoopie;
         }

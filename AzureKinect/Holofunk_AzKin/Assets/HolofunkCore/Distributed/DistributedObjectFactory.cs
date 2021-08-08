@@ -54,7 +54,7 @@ namespace Holofunk.Distributed
         public static T FindFirstInstanceComponent<T>(DistributedType type)
             where T : class
         {
-            GameObject ic = FindFirstContainer(type);
+            GameObject ic = FindFirstInstanceContainer(type);
             
             if (ic != null)
             {
@@ -74,7 +74,7 @@ namespace Holofunk.Distributed
         /// <remarks>
         /// This just assumes the first endpoint we find is the one we want.
         /// </remarks>
-        public static GameObject FindFirstContainer(DistributedType type)
+        public static GameObject FindFirstInstanceContainer(DistributedType type)
         {
             Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
             Contract.Requires(instanceContainer != null);
@@ -100,17 +100,16 @@ namespace Holofunk.Distributed
         /// object's type. Net effect should be a Unity hierarchy that nicely shows what objects came from
         /// where.
         /// </remarks>
-        public static GameObject FindContainer(DistributedType type, NetPeer netPeer)
+        private static GameObject FindInstanceContainer(DistributedType type, string id)
         {
             Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
             Contract.Requires(instanceContainer != null);
 
             // find or create child game object for this host
-            string hostName = netPeer.EndPoint.ToString();
-            Transform hostContainer = instanceContainer.Find(hostName);
+            Transform hostContainer = instanceContainer.Find(id);
             if (hostContainer == null)
             {
-                GameObject newContainerObject = new GameObject(hostName);
+                GameObject newContainerObject = new GameObject(id);
                 newContainerObject.transform.SetParent(instanceContainer.transform);
                 hostContainer = newContainerObject.transform;
             }
@@ -127,6 +126,30 @@ namespace Holofunk.Distributed
         }
 
         /// <summary>
+        /// Find the parent GameObject for new object instances of the given type from the given peer.
+        /// </summary>
+        /// <remarks>
+        /// Under the DistributedObjectInstances top-level object (which must exist), this method creates
+        /// a child container named after the host endpoint, and then a grandchild container named after the
+        /// object's type. Net effect should be a Unity hierarchy that nicely shows what objects came from
+        /// where.
+        /// </remarks>
+        public static GameObject FindProxyInstanceContainer(DistributedType type, NetPeer netPeer)
+            => FindInstanceContainer(type, netPeer.EndPoint.ToString());
+
+        /// <summary>
+        /// Find the parent GameObject for new object instances of the given type from the given peer.
+        /// </summary>
+        /// <remarks>
+        /// Under the DistributedObjectInstances top-level object (which must exist), this method creates
+        /// a child container named after the host endpoint, and then a grandchild container named after the
+        /// object's type. Net effect should be a Unity hierarchy that nicely shows what objects came from
+        /// where.
+        /// </remarks>
+        public static GameObject FindLocalhostInstanceContainer(DistributedType type)
+            => FindInstanceContainer(type, "localhost");
+
+        /// <summary>
         /// Enumerate all components of the given object type across all known instances.
         /// </summary>
         /// <remarks>
@@ -136,6 +159,12 @@ namespace Holofunk.Distributed
         public static IEnumerable<T> FindComponentInstances<T>(DistributedType type)
             where T : Component
         {
+            GameObject prototype = FindPrototype(type);
+            if (prototype.activeSelf)
+            {
+                yield return prototype.GetComponent<T>();
+            }
+
             Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
             Contract.Requires(instanceContainer != null);
 

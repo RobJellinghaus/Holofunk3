@@ -33,14 +33,14 @@ namespace Holofunk.Viewpoint
         /// </remarks>
         public static int GetPerformerCount()
         {
-            GameObject performerContainer = DistributedObjectFactory.FindFirstContainer(DistributedObjectFactory.DistributedType.Performer);
+            GameObject performerContainer = DistributedObjectFactory.FindFirstInstanceContainer(DistributedObjectFactory.DistributedType.Performer);
             // if no container, then ain't no performers
             return performerContainer?.transform.childCount ?? 0;
         }
 
         public static DistributedPerformer GetPerformer(int performerIndex)
         {
-            GameObject performerContainer = DistributedObjectFactory.FindFirstContainer(DistributedObjectFactory.DistributedType.Performer);
+            GameObject performerContainer = DistributedObjectFactory.FindFirstInstanceContainer(DistributedObjectFactory.DistributedType.Performer);
             GameObject distributedPerformerGameObject = performerContainer.transform.GetChild(performerIndex).gameObject;
             return distributedPerformerGameObject.GetComponent<DistributedPerformer>();
         }
