@@ -56,6 +56,10 @@ namespace Holofunk.Viewpoint
         private List<int> playerList = new List<int>();
         static Vector3 Flatten(Vector3 v) => new Vector3(v.x, 0, v.z);
 
+        /// <summary>
+        /// Helper struct to build the viewpoint-to-performer transform matrix and inverse
+        /// transform matrix.
+        /// </summary>
         private struct Transformation
         {
             private Vector3 startingHeadPosition;
@@ -137,15 +141,18 @@ namespace Holofunk.Viewpoint
                         Vector3 viewpointSensorPosition = player.SensorPosition;
                         Vector3 viewpointSensorForwardDirection = player.SensorForwardDirection;
 
-                        Vector3 headToSensorDirection = viewpointSensorPosition - viewpointHeadPosition.normalized;
-
                         Vector3 headToViewpointVector = (viewpointSensorPosition - viewpointHeadPosition).normalized;
-                        float gazeViewpointAlignment = Vector3.Dot(headToViewpointVector, viewpointHeadForwardDirection);
+                        float headViewpointAlignment = Vector3.Dot(headToViewpointVector, viewpointHeadForwardDirection);
 
-                        if (gazeViewpointAlignment > MagicNumbers.MinimumGazeViewpointAlignment)
+                        if (headViewpointAlignment > player.MostSensorAlignment)
                         {
-                            // This player is indeed looking towards the camera.
+                            player.MostSensorAlignedHeadForwardDirection = viewpointHeadForwardDirection;
+                            player.MostSensorAlignedHeadPosition = viewpointHeadPosition;
+                            player.MostSensorAlignment = headViewpointAlignment;
+                        }
 
+                        if (headViewpointAlignment > MagicNumbers.MinimumHeadViewpointAlignment)
+                        {
                             // Is their hand at a vertical (Y) level close to their head?
                             // TODO: even care about that at all (skip for now)
 
@@ -194,7 +201,7 @@ namespace Holofunk.Viewpoint
                                         Transformation performerToViewpointTransformation = new Transformation(
                                             performance.HeadPosition,
                                             performance.HeadForwardDirection,
-                                            headToSensorDirection,
+                                            headToViewpointVector,
                                             player.HeadPosition);
 
                                         Matrix4x4 finalMatrix = performerToViewpointTransformation.Transform;

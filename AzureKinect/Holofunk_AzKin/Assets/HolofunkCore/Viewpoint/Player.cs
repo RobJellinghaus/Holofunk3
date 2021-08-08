@@ -74,6 +74,38 @@ namespace Holofunk.Viewpoint
         public Vector3 HeadForwardDirection { get; set; }
 
         /// <summary>
+        /// The head position at the moment that the head forward direction was most aligned
+        /// with the head->sensor direction.
+        /// </summary>
+        /// <remarks>
+        /// This is populated when the system is tracking players before recognizing them;
+        /// we want to base the transformation on the moment they were looking most directly at
+        /// the sensor.
+        /// </remarks>
+        public Vector3 MostSensorAlignedHeadPosition { get; set; }
+
+        /// <summary>
+        /// The head forward direction that was most aligned with the head->sensor direction.
+        /// </summary>
+        /// <remarks>
+        /// This is populated when the system is tracking players before recognizing them;
+        /// we want to base the transformation on the moment they were looking most directly at
+        /// the sensor.
+        /// </remarks>
+        public Vector3 MostSensorAlignedHeadForwardDirection { get; set; }
+
+        /// <summary>
+        /// The value of the dot product between MostSensorAlignedHeadForwardDirection and
+        /// the head->sensor direction, at the time that MostSensorAlignedHeadForwardDirection
+        /// was set.
+        /// </summary>
+        /// <remarks>
+        /// This is the computed value we want the maximum value of, when making the player-performer
+        /// coordinate mapping.
+        /// </remarks>
+        public float MostSensorAlignment { get; set; }
+
+        /// <summary>
         /// The position of the left hand, in viewpoint coordinates.
         /// </summary>
         public Vector3 LeftHandPosition { get; set; }
@@ -104,6 +136,8 @@ namespace Holofunk.Viewpoint
             SensorForwardDirection = reader.GetVector3();
             HeadPosition = reader.GetVector3();
             HeadForwardDirection = reader.GetVector3();
+            MostSensorAlignedHeadPosition = reader.GetVector3();
+            MostSensorAlignedHeadForwardDirection = reader.GetVector3();
             LeftHandPosition = reader.GetVector3();
             RightHandPosition = reader.GetVector3();
             PerformerToViewpointMatrix = reader.GetMatrix4x4();
@@ -120,6 +154,8 @@ namespace Holofunk.Viewpoint
             writer.Put(SensorForwardDirection);
             writer.Put(HeadPosition);
             writer.Put(HeadForwardDirection);
+            writer.Put(MostSensorAlignedHeadPosition);
+            writer.Put(MostSensorAlignedHeadForwardDirection);
             writer.Put(LeftHandPosition);
             writer.Put(RightHandPosition);
             writer.Put(PerformerToViewpointMatrix);

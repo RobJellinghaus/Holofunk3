@@ -18,7 +18,7 @@ namespace Holofunk.Core
         /// <remarks>
         /// In practice when looking right at the sensor the collinearity is over 0.99, so 0.90 is fairly safe.
         /// </remarks>
-        public static readonly float MinimumGazeViewpointAlignment = 0.90f;
+        public static readonly float MinimumHeadViewpointAlignment = 0.90f;
 
         /// <summary>
         /// 2048 is enough to resolve down to about two octaves below middle C (e.g. 65 Hz).

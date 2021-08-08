@@ -74,7 +74,6 @@ namespace Holofunk.Loop
                 ((DistributedLoopie)DistributedObject).SetCurrentAmplitude(signalInfo.Min, signalInfo.Avg, signalInfo.Max);
             }
 
-            // TODO: scale the loopie according to avg amplitude
             if (avgAmplitude > 0f)
             {
                 float delta = MagicNumbers.MaxLoopieScale - MagicNumbers.MinLoopieScale;
