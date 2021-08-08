@@ -4,6 +4,7 @@ using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Hand;
 using Holofunk.HandComponents;
+using Holofunk.Loop;
 using Holofunk.Viewpoint;
 using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
@@ -22,7 +23,9 @@ namespace Holofunk.Perform
 
         private bool showDistanceStatistics = false;
 
-        private bool showRightHandProperties = true;
+        private bool showRightHandProperties = false;
+
+        private bool showLoopieDistance = true;
 
         // Update is called once per frame
         public void Update()
@@ -54,6 +57,11 @@ namespace Holofunk.Perform
                 ShowRightHandPropertiesInTextPanel(textMesh, player, localPerformer);
             }
 
+            if (showLoopieDistance)
+            {
+                ShowLoopieDistanceInTextPanel(textMesh, player, localPerformer);
+            }
+
             if (player.PlayerId != default(PlayerId))
             {
                 if (player.ViewpointToPerformerMatrix != Matrix4x4.zero)
@@ -65,6 +73,25 @@ namespace Holofunk.Perform
                     GameObject panel2 = GameObject.Find("StatusPanel2");
                     panel2.transform.position = sensorPositionInPerformerSpace;
                 }
+            }
+        }
+
+        private void ShowLoopieDistanceInTextPanel(TextMesh textMesh, Player player, LocalPerformer localPerformer)
+        {
+            LocalLoopie firstLoopie = DistributedObjectFactory.FindFirstInstanceComponent<LocalLoopie>(
+                DistributedObjectFactory.DistributedType.Loopie);
+            if (firstLoopie == null)
+            {
+                textMesh.text = "No loopies yet";
+            }
+            else
+            {
+                Vector3 handPos = localPerformer.GetPerformer().RightHandPosition;
+                Vector3 loopiePos = firstLoopie.transform.position;
+                textMesh.text = $@"
+Hand position: {handPos}
+Loopie position: {loopiePos}
+Distance: {Vector3.Distance(handPos, loopiePos)}";
             }
         }
 
