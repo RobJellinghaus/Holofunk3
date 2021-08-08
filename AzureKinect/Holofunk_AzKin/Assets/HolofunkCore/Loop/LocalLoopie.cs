@@ -82,6 +82,28 @@ namespace Holofunk.Loop
                 scale = Math.Max(scale, MagicNumbers.MaxLoopieScale);
                 transform.localScale = new Vector3(scale, scale, scale);
             }
+
+            // get the color of the prototype loopie
+            LocalLoopie prototypeLocalLoopie = DistributedObjectFactory.FindPrototypeComponent<LocalLoopie>(
+                DistributedObjectFactory.DistributedType.Loopie);
+
+            Color color = prototypeLocalLoopie.transform.GetChild(0).GetComponent<Renderer>().material.color;
+            if (IsTouched)
+            {
+                color = new Color(Increase(color.r), Increase(color.g), Increase(color.b), Increase(color.a));
+            }
+
+            transform.GetChild(0).GetComponent<Renderer>().material.color = color;
+        }
+
+        /// <summary>
+        /// Increase value by 1/3 of its remaining distance from 1.
+        /// </summary>
+        private float Increase(float value)
+        {
+            Core.Contract.Requires(value >= 0 && value <= 1, "value >= 0 && value <= 1");
+
+            return value + ((1f - value) / 2f);
         }
 
         #endregion
@@ -136,6 +158,18 @@ namespace Holofunk.Loop
             avgAmplitude = avg;
             maxAmplitude = max;
         }
+
+        #endregion
+
+        #region Touch operations
+
+        /// <summary>
+        /// Is this loopie currently being touched by any performer?
+        /// </summary>
+        /// <remarks>
+        /// This is not distributed state; it is purely local, and moreover is recomputed every frame.
+        /// </remarks>
+        public bool IsTouched { get; set; }
 
         #endregion
     }

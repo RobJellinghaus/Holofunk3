@@ -168,6 +168,8 @@ GameObject:
   - component: {fileID: 187975480}
   - component: {fileID: 187975482}
   - component: {fileID: 187975483}
+  - component: {fileID: 187975485}
+  - component: {fileID: 187975484}
   m_Layer: 5
   m_Name: Viewpoint
   m_TagString: Untagged
@@ -240,6 +242,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1ccaed5c85371864bb81b27d30544872, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &187975484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187975478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1420cc11ba1da84a8c5f227b095373b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &187975485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 187975478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19cd8bfd90c75754a8bcf45520e5e9af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &268666703

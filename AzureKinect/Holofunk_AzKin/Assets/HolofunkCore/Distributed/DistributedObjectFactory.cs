@@ -92,7 +92,7 @@ namespace Holofunk.Distributed
         }
 
         /// <summary>
-        /// Find the parent GameObject for new object instances of the given type.
+        /// Find the parent GameObject for new object instances of the given type from the given peer.
         /// </summary>
         /// <remarks>
         /// Under the DistributedObjectInstances top-level object (which must exist), this method creates
@@ -124,6 +124,36 @@ namespace Holofunk.Distributed
             }
 
             return typeContainer.gameObject;
+        }
+
+        /// <summary>
+        /// Enumerate all components of the given object type across all known instances.
+        /// </summary>
+        /// <remarks>
+        /// TODO: look at whether this ever becomes a performance hot spot because everyone hates LINQ in Unity.
+        /// But look at how simple this app is, surely if any app can afford it, Holofunk can!
+        /// </remarks>
+        public static IEnumerable<T> FindComponentInstances<T>(DistributedType type)
+            where T : Component
+        {
+            Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
+            Contract.Requires(instanceContainer != null);
+
+            for (int i = 0; i < instanceContainer.childCount; i++)
+            {
+                Transform child = instanceContainer.GetChild(i);
+
+                Transform typeChild = child.Find(type.ToString());
+
+                if (typeChild != null)
+                {
+                    for (int j = 0; j < typeChild.childCount; j++)
+                    {
+                        Transform instanceChild = typeChild.GetChild(j);
+                        yield return instanceChild.gameObject.GetComponent<T>();
+                    }
+                }
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
+using Distributed.State;
 using Holofunk.Distributed;
 using Holofunk.Hand;
 using LiteNetLib.Utils;
@@ -45,6 +46,18 @@ namespace Holofunk.Perform
         /// </summary>
         public HandPose RightHandPose { get; set; }
 
+        /// <summary>
+        /// The DistributedIds of the loopies this performer is currently touching.
+        /// </summary>
+        /// <remarks>
+        /// Packet size limitations cause this to be bounded to a smallish number,
+        /// such that this list doesn't outgrow a single packet.
+        /// 
+        /// LiteNetLib seems not to support arrays of serializable type, so this gets
+        /// passed as a uint[] array instead of a DistributedId[] array.
+        /// </remarks>
+        public uint[] TouchedLoopieIdList { get; set; }
+
         public void Deserialize(NetDataReader reader)
         {
             HeadPosition = reader.GetVector3();
@@ -53,6 +66,7 @@ namespace Holofunk.Perform
             RightHandPosition = reader.GetVector3();
             LeftHandPose = HandPose.Deserialize(reader);
             RightHandPose = HandPose.Deserialize(reader);
+            TouchedLoopieIdList = reader.GetUIntArray();
         }
 
         public void Serialize(NetDataWriter writer)
@@ -63,6 +77,7 @@ namespace Holofunk.Perform
             writer.Put(RightHandPosition);
             HandPose.Serialize(writer, LeftHandPose);
             HandPose.Serialize(writer, RightHandPose);
+            writer.PutArray(TouchedLoopieIdList);
         }
     }
 }

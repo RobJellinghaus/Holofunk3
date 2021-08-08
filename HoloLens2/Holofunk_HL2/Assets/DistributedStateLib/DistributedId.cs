@@ -12,7 +12,7 @@ namespace Distributed.State
     /// <remarks>
     /// We believe strongly in not using C# primitive types for semantically meaningful values, due to type confusion.
     /// </remarks>
-    public struct DistributedId : INetSerializable
+    public struct DistributedId
     {
         private uint value;
 
@@ -39,17 +39,17 @@ namespace Distributed.State
 
         public static void RegisterWith(NetPacketProcessor packetProcessor)
         {
-            packetProcessor.RegisterNestedType<DistributedId>();
+            packetProcessor.RegisterNestedType(Serialize, Deserialize);
         }
 
-        public void Serialize(NetDataWriter writer)
+        public static void Serialize(NetDataWriter writer, DistributedId id)
         {
-            writer.Put(value);
+            writer.Put(id.value);
         }
 
-        public void Deserialize(NetDataReader reader)
+        public static DistributedId Deserialize(NetDataReader reader)
         {
-            value = reader.GetUInt();
+            return reader.GetUInt();
         }
 
         public static bool operator ==(DistributedId left, DistributedId right)

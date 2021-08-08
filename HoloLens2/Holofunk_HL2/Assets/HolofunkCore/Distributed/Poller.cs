@@ -9,7 +9,13 @@ namespace Holofunk.Distributed
     /// <summary>
     /// Polls a NetManager.
     /// </summary>
-    public class Poller : MonoBehaviour
+    /// <remarks>
+    /// Two vacuous subclasses of this handle polling before and after the rest of the Unity update cycle.
+    /// 
+    /// TODO: consider whether it would be better to do network polling on the FixedUpdate cycle.
+    /// Not clear it would actually reduce latency at all assuming inter-frame packet delivery latency....
+    /// </remarks>
+    public abstract class Poller : MonoBehaviour
     {
         public Poller()
         {
