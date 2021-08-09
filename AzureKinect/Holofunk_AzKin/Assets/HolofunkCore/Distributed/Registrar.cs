@@ -54,6 +54,28 @@ namespace Holofunk.Distributed
         }
 
         /// <summary>
+        /// Register this kind of delete message for this local object.
+        /// </summary>
+        /// <typeparam name="TDeleteMessage">The create message type</typeparam>
+        /// <typeparam name="TDistributed">The distributed object type</typeparam>
+        /// <typeparam name="TLocal">The local object type</typeparam>
+        /// <param name="proxyCapability">The registration capability</param>
+        /// <param name="distributedType">The distributed type enum value</param>
+        public static void RegisterDeleteMessage<TMessage, TDistributed, TLocal, TInterface>(
+            DistributedHost.ProxyCapability proxyCapability)
+            where TMessage : DeleteMessage, new()
+            where TDistributed : DistributedComponent, TInterface
+            where TLocal : ILocalObject, TInterface
+            where TInterface : IDistributedInterface
+        {
+            proxyCapability.SubscribeReusable((TMessage message, NetPeer netPeer) =>
+                HandleReliableMessage<TMessage, TDistributed, TLocal, TInterface>(
+                    proxyCapability.Host,
+                    netPeer,
+                    message));
+        }
+
+        /// <summary>
         /// Register a reliable message type.
         /// </summary>
         /// <typeparam name="TMessage">The message type</typeparam>
