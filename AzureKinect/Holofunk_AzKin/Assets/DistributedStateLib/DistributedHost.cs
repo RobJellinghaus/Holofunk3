@@ -417,6 +417,9 @@ namespace Distributed.State
                 {
                     sendDeleteMessage(netPeer, false);
                 }
+
+                // and delete the local object too
+                distributedObject.OnDelete();
             }
             else
             {
