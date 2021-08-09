@@ -13,5 +13,10 @@ namespace Distributed.State
         public DeleteMessage(DistributedId id, bool isRequest) : base(id, isRequest)
         {
         }
+
+        public override void Invoke(IDistributedInterface target)
+        {
+            target.OnDelete();
+        }
     }
 }
