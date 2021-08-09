@@ -106,7 +106,7 @@ namespace Holofunk.HandComponents
             {
                 foreach (LocalLoopie localLoopie in
                     DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
-                        DistributedObjectFactory.DistributedType.Loopie))
+                        DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
                 {
                     if (touchedLoopieIds.Contains(localLoopie.DistributedObject.Id))
                     {
@@ -202,7 +202,7 @@ namespace Holofunk.HandComponents
 
             foreach (LocalLoopie localLoopie in
                 DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
-                    DistributedObjectFactory.DistributedType.Loopie))
+                    DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
             {
                 Vector3 loopiePosition = localLoopie.transform.position;
                 if (Vector3.Distance(loopiePosition, handPosition) < MagicNumbers.HandRadius)

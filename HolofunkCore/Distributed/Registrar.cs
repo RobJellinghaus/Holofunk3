@@ -33,7 +33,7 @@ namespace Holofunk.Distributed
             proxyCapability.SubscribeReusable((TMessage message, NetPeer netPeer) =>
             {
                 // get the prototype object
-                GameObject prototype = DistributedObjectFactory.FindPrototype(distributedType);
+                GameObject prototype = DistributedObjectFactory.FindPrototypeContainer(distributedType);
                 GameObject parent = DistributedObjectFactory.FindProxyInstanceContainer(distributedType, netPeer);
                 GameObject clone = UnityEngine.Object.Instantiate(prototype, parent.transform);
 

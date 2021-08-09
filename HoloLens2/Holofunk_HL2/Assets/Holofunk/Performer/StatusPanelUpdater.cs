@@ -44,7 +44,7 @@ namespace Holofunk.Perform
             Player player = localViewpoint.PlayerCount > 0 ? localViewpoint.GetPlayer(0) : default(Player);
 
             // we know we have a Performer
-            GameObject performerContainer = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Performer);
+            GameObject performerContainer = DistributedObjectFactory.FindPrototypeContainer(DistributedObjectFactory.DistributedType.Performer);
             LocalPerformer localPerformer = performerContainer.GetComponent<LocalPerformer>();
 
             if (showDistanceStatistics)

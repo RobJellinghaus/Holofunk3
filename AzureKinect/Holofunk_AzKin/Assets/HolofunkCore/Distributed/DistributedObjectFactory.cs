@@ -35,7 +35,7 @@ namespace Holofunk.Distributed
         /// <remarks>
         /// Note that the prototype may vary structurally across apps.
         /// </remarks>
-        public static GameObject FindPrototype(DistributedType type)
+        public static GameObject FindPrototypeContainer(DistributedType type)
         {
             GameObject prototypeContainer = GameObject.Find(DistributedObjectPrototypes);
             Contract.Requires(prototypeContainer != null);
@@ -46,27 +46,14 @@ namespace Holofunk.Distributed
 
         public static T FindPrototypeComponent<T>(DistributedType type)
         {
-            GameObject obj = FindPrototype(type);
+            GameObject obj = FindPrototypeContainer(type);
             return obj.GetComponent<T>();
         }
 
         // Get the first Player in the first Viewpoint in the first currently connected peer.
         public static T FindFirstInstanceComponent<T>(DistributedType type)
             where T : class
-        {
-            GameObject ic = FindFirstInstanceContainer(type);
-            
-            if (ic != null)
-            {
-                // get the first viewpoint out of it
-                if (ic.transform.childCount > 0)
-                {
-                    return ic.transform.GetChild(0).GetComponent<T>();
-                }
-            }
-
-            return null;
-        }
+            => FindFirstInstanceContainer(type)?.GetComponent<T>();
 
         /// <summary>
         /// Find the first parent GameObject for new object instances of the given type.
@@ -75,21 +62,7 @@ namespace Holofunk.Distributed
         /// This just assumes the first endpoint we find is the one we want.
         /// </remarks>
         public static GameObject FindFirstInstanceContainer(DistributedType type)
-        {
-            Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
-            Contract.Requires(instanceContainer != null);
-
-            if (instanceContainer.childCount == 0)
-            {
-                return null;
-            }
-
-            Transform hostContainer = instanceContainer.GetChild(0);
-
-            Transform typeContainer = hostContainer.Find(type.ToString());
-
-            return typeContainer?.gameObject;
-        }
+            => FindComponentContainers(type, false).FirstOrDefault();
 
         /// <summary>
         /// Find the parent GameObject for new object instances of the given type from the given peer.
@@ -149,6 +122,10 @@ namespace Holofunk.Distributed
         public static GameObject FindLocalhostInstanceContainer(DistributedType type)
             => FindInstanceContainer(type, "localhost");
 
+        public static IEnumerable<T> FindComponentInstances<T>(DistributedType type, bool includeActivePrototype)
+            where T : Component
+            => FindComponentContainers(type, includeActivePrototype).Select(gameobj => gameobj.GetComponent<T>());
+
         /// <summary>
         /// Enumerate all components of the given object type across all known instances.
         /// </summary>
@@ -156,13 +133,16 @@ namespace Holofunk.Distributed
         /// TODO: look at whether this ever becomes a performance hot spot because everyone hates LINQ in Unity.
         /// But look at how simple this app is, surely if any app can afford it, Holofunk can!
         /// </remarks>
-        public static IEnumerable<T> FindComponentInstances<T>(DistributedType type)
-            where T : Component
+        public static IEnumerable<GameObject> FindComponentContainers(DistributedType type, bool includeActivePrototype)
+
         {
-            GameObject prototype = FindPrototype(type);
-            if (prototype.activeSelf)
+            if (includeActivePrototype)
             {
-                yield return prototype.GetComponent<T>();
+                GameObject prototype = FindPrototypeContainer(type);
+                if (prototype.activeSelf)
+                {
+                    yield return prototype;
+                }
             }
 
             Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
@@ -179,7 +159,7 @@ namespace Holofunk.Distributed
                     for (int j = 0; j < typeChild.childCount; j++)
                     {
                         Transform instanceChild = typeChild.GetChild(j);
-                        yield return instanceChild.gameObject.GetComponent<T>();
+                        yield return instanceChild.gameObject;
                     }
                 }
             }

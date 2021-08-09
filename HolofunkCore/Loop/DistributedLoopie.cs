@@ -106,7 +106,7 @@ namespace Holofunk.Loop
         /// </remarks>
         public static GameObject Create(Vector3 viewpointPosition)
         {
-            GameObject prototypeLoopie = DistributedObjectFactory.FindPrototype(
+            GameObject prototypeLoopie = DistributedObjectFactory.FindPrototypeContainer(
                 DistributedObjectFactory.DistributedType.Loopie);
             GameObject localContainer = DistributedObjectFactory.FindLocalhostInstanceContainer(
                 DistributedObjectFactory.DistributedType.Loopie);
