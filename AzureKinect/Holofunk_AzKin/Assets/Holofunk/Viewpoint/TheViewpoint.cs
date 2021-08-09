@@ -6,6 +6,7 @@ using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Perform;
+using System.Linq;
 using UnityEngine;
 
 namespace Holofunk.Viewpoint
@@ -15,15 +16,8 @@ namespace Holofunk.Viewpoint
     /// </summary>
     public static class TheViewpoint
     {
-        public static DistributedViewpoint Instance
-        {
-            get
-            {
-                GameObject viewpointPrototype = DistributedObjectFactory.FindPrototype(DistributedObjectFactory.DistributedType.Viewpoint);
-                DistributedViewpoint distributedViewpoint = viewpointPrototype.GetComponent<DistributedViewpoint>();
-                return distributedViewpoint;
-            }
-        }
+        public static DistributedViewpoint Instance => DistributedObjectFactory.FindPrototypeComponent<DistributedViewpoint>(
+            DistributedObjectFactory.DistributedType.Viewpoint);
 
         /// <summary>
         /// Get the number of Performers that currently have local proxies.
@@ -32,17 +26,13 @@ namespace Holofunk.Viewpoint
         /// Performers only ever exist as proxies on Azure Kinect hosts.
         /// </remarks>
         public static int GetPerformerCount()
-        {
-            GameObject performerContainer = DistributedObjectFactory.FindFirstInstanceContainer(DistributedObjectFactory.DistributedType.Performer);
-            // if no container, then ain't no performers
-            return performerContainer?.transform.childCount ?? 0;
-        }
+            => DistributedObjectFactory.FindComponentContainers(
+                DistributedObjectFactory.DistributedType.Performer, includeActivePrototype: false)
+            .Count();
 
         public static DistributedPerformer GetPerformer(int performerIndex)
-        {
-            GameObject performerContainer = DistributedObjectFactory.FindFirstInstanceContainer(DistributedObjectFactory.DistributedType.Performer);
-            GameObject distributedPerformerGameObject = performerContainer.transform.GetChild(performerIndex).gameObject;
-            return distributedPerformerGameObject.GetComponent<DistributedPerformer>();
-        }
+            => DistributedObjectFactory.FindComponentInstances<DistributedPerformer>(
+                DistributedObjectFactory.DistributedType.Performer, includeActivePrototype: false)
+            .ElementAt(performerIndex);
     }
 }
