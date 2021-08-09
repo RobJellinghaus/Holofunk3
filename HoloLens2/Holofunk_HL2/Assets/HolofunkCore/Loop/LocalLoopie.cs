@@ -132,6 +132,11 @@ namespace Holofunk.Loop
         {
             HoloDebug.Log($"LocalLoopie.SetMute: id {DistributedObject.Id}, isMuted {isMuted}");
             loopie.IsMuted = isMuted;
+
+            if (SoundManager.Instance != null)
+            {
+                NowSoundTrackAPI.SetIsMuted(trackId, isMuted);
+            }
         }
 
         public void SetVolume(float volume)
