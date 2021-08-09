@@ -30,7 +30,10 @@ namespace Holofunk.Distributed
 
         public abstract ILocalObject LocalObject { get; }
 
-        public abstract void Delete();
+        public void Delete()
+        {
+            Host.Delete(this, SendDeleteMessage);
+        }
 
         public abstract void OnDelete();
 

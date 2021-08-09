@@ -56,14 +56,10 @@ namespace Holofunk.Perform
 
         #region Standard meta-operations
 
-        public override void Delete()
-        {
-            // No-op; Viewpoints are never deleted, they just leave the system
-        }
-
         public override void OnDelete()
         {
-            // No-op; Viewpoints are never deleted, only detached
+            // propagate
+            GetLocalPerformer().OnDelete();
         }
 
         protected override void SendCreateMessage(NetPeer netPeer)
@@ -74,7 +70,7 @@ namespace Holofunk.Perform
 
         protected override void SendDeleteMessage(NetPeer netPeer, bool isRequest)
         {
-            // don't do it!
+            // don't delete performers ever! they only disconnect, they never get deleted.
         }
 
         #endregion

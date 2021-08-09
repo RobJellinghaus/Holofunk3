@@ -63,6 +63,6 @@ namespace Holofunk.Loop
         /// Soon, broadcast the entire FFT, but this is for starters.
         /// </remarks>
         [BroadcastMethod]
-        void SetCurrentAmplitude(float min, float avg, float max);
+        void SetCurrentAmplitude(float min, float avg, float max, ulong timestamp);
     }
 }

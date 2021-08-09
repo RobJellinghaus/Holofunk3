@@ -18,6 +18,13 @@ namespace Holofunk.Loop
             public override string ToString() => $"{base.ToString()}{Loopie}";
         }
 
+        public class Delete : DeleteMessage
+        {
+            public Delete() : base() { }
+            public Delete(DistributedId id, bool isRequest) : base(id, isRequest) { }
+            public override string ToString() => $"{base.ToString()}{Id}";
+        }
+
         public class SetMute : ReliableMessage
         {
             public bool IsMuted { get; set; }
@@ -54,15 +61,17 @@ namespace Holofunk.Loop
             public float Min { get; set; }
             public float Avg { get; set; }
             public float Max { get; set; }
+            public ulong Timestamp { get; set; }
             public SetCurrentAmplitude() : base() { }
-            public SetCurrentAmplitude(DistributedId id, SerializedSocketAddress owner, float min, float avg, float max)
+            public SetCurrentAmplitude(DistributedId id, SerializedSocketAddress owner, float min, float avg, float max, ulong timestamp)
                 : base(id, owner)
             {
                 Min = min;
                 Avg = avg;
                 Max = max;
+                Timestamp = timestamp;
             }
-            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentAmplitude(Min, Avg, Max);
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentAmplitude(Min, Avg, Max, Timestamp);
         }
 
         // TODO: refactor this for actual sharing with the other Register methods

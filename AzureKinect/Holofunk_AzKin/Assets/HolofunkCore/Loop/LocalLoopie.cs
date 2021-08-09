@@ -34,6 +34,14 @@ namespace Holofunk.Loop
         /// </summary>
         private float minAmplitude, avgAmplitude, maxAmplitude;
 
+        /// <summary>
+        /// The highest timestamp received so far.
+        /// </summary>
+        /// <remarks>
+        /// We don't worry about 64 bit overflow even at 48Khz timing rate.
+        /// </remarks>
+        private ulong maxTimestamp;
+
         private Vector3 lastViewpointPosition = Vector3.zero;
 
         internal void Initialize(Loopie loopie)
@@ -67,7 +75,11 @@ namespace Holofunk.Loop
             if (SoundManager.Instance != null)
             {
                 NowSoundSignalInfo signalInfo = NowSoundTrackAPI.SignalInfo(trackId);
-                ((DistributedLoopie)DistributedObject).SetCurrentAmplitude(signalInfo.Min, signalInfo.Avg, signalInfo.Max);
+                ((DistributedLoopie)DistributedObject).SetCurrentAmplitude(
+                    signalInfo.Min, 
+                    signalInfo.Avg, 
+                    signalInfo.Max, 
+                    (ulong)(long)Clock.Instance.AudioNow.Time);
             }
 
             if (avgAmplitude > 0f)
@@ -159,11 +171,16 @@ namespace Holofunk.Loop
             }
         }
 
-        public void SetCurrentAmplitude(float min, float avg, float max)
+        public void SetCurrentAmplitude(float min, float avg, float max, ulong timestamp)
         {
-            minAmplitude = min;
-            avgAmplitude = avg;
-            maxAmplitude = max;
+            // ignore out of order timestamps
+            if (timestamp > maxTimestamp)
+            {
+                maxTimestamp = timestamp;
+                minAmplitude = min;
+                avgAmplitude = avg;
+                maxAmplitude = max;
+            }
         }
 
         #endregion

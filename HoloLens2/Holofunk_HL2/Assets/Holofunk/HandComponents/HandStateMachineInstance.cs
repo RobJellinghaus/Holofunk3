@@ -168,7 +168,7 @@ namespace Holofunk.HandComponents
 
                     handController.touchedLoopieAction = loopie =>
                     {
-                        HoloDebug.Log($"Mute touchedLoopieAction: loopie {loopie.Id}, IsMuted {loopie.GetLoopie().IsMuted}");
+                        HoloDebug.Log($"HandStateMachineInstance.Mute.TouchedLoopieAction: loopie {loopie.Id}, IsMuted {loopie.GetLoopie().IsMuted}");
                         // the first loopie touched, if it's a double-mute, puts us into delete mode
                         if (!deletingTouchedLoopies.HasValue)
                         {
@@ -184,12 +184,13 @@ namespace Holofunk.HandComponents
                             {
                                 if (loopie.GetLoopie().IsMuted)
                                 {
+                                    HoloDebug.Log($"HandStateMachineInstance.Mute.TouchedLoopieAction: Deleting loopie {loopie.Id}");
                                     loopie.Delete();
                                 }
                             }
                             else
                             {
-                                HoloDebug.Log($"Setting loopie to mute: {loopie.Id}");
+                                HoloDebug.Log($"HandStateMachineInstance.Mute.TouchedLoopieAction: Setting loopie to mute: {loopie.Id}");
                                 loopie.SetMute(true);
                             }
                         }

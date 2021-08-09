@@ -55,32 +55,30 @@ namespace Holofunk.Loop
         public void FinishRecording() =>
             RouteReliableMessage(isRequest => new FinishRecording(Id, isRequest: !IsOwner));
 
-        public void SetCurrentAmplitude(float min, float avg, float max) =>
-            RouteBroadcastMessage(new SetCurrentAmplitude(Id, new SerializedSocketAddress(OwningPeer), min, avg, max));
+        public void SetCurrentAmplitude(float min, float avg, float max, ulong timestamp) =>
+            RouteBroadcastMessage(new SetCurrentAmplitude(Id, new SerializedSocketAddress(OwningPeer), min, avg, max, timestamp));
 
         #endregion
 
         #region DistributedState
 
-        public override void Delete()
-        {
-            // No-op; Viewpoints are never deleted, they just leave the system
-        }
-
         public override void OnDelete()
         {
-            // No-op; Viewpoints are never deleted, only detached
+            HoloDebug.Log($"DistributedLoopie.OnDelete: Deleting {Id}");
+            // propagate locally
+            GetLocalLoopie().OnDelete();
         }
 
         protected override void SendCreateMessage(NetPeer netPeer)
         {
-            HoloDebug.Log($"Sending Loopie.Create for id {Id} to peer {netPeer.EndPoint} with loopie {GetLoopie()}");
+            HoloDebug.Log($"DistributedLoopie.SendCreateMessage: Sending Loopie.Create for id {Id} to peer {netPeer.EndPoint} with loopie {GetLoopie()}");
             Host.SendReliableMessage(new Create(Id, GetLoopie()), netPeer);
         }
 
         protected override void SendDeleteMessage(NetPeer netPeer, bool isRequest)
         {
-            // don't do it!
+            HoloDebug.Log($"DistributedLoopie.SendDeleteMessage: Sending Loopie.Delete for id {Id} to peer {netPeer.EndPoint} with loopie {GetLoopie()}");
+            Host.SendReliableMessage(new Delete(Id, isRequest), netPeer);
         }
 
         #endregion
