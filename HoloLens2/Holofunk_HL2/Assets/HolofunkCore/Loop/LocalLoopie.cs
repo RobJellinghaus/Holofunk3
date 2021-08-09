@@ -97,13 +97,13 @@ namespace Holofunk.Loop
         }
 
         /// <summary>
-        /// Increase value by 1/3 of its remaining distance from 1.
+        /// Increase value by 2/3 of its remaining distance from 1.
         /// </summary>
         private float Increase(float value)
         {
             Core.Contract.Requires(value >= 0 && value <= 1, "value >= 0 && value <= 1");
 
-            return value + ((1f - value) / 2f);
+            return value + ((1f - value) * (2/3f));
         }
 
         #endregion

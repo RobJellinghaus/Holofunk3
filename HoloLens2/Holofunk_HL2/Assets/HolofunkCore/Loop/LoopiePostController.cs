@@ -27,6 +27,8 @@ namespace Holofunk.Loop
 
         public void Update()
         {
+            allTouchedLoopieList.Clear();
+
             foreach (LocalPerformer localPerformer in
                 DistributedObjectFactory.FindComponentInstances<LocalPerformer>(
                     DistributedObjectFactory.DistributedType.Performer, includeActivePrototype: true))

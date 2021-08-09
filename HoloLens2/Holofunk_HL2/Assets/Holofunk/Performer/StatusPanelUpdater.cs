@@ -10,6 +10,7 @@ using Microsoft.MixedReality.Toolkit;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace Holofunk.Perform
@@ -78,17 +79,24 @@ namespace Holofunk.Perform
 
         private void ShowLoopieDistanceInTextPanel(TextMesh textMesh, Player player, LocalPerformer localPerformer)
         {
-            LocalLoopie firstLoopie = DistributedObjectFactory.FindFirstInstanceComponent<LocalLoopie>(
-                DistributedObjectFactory.DistributedType.Loopie);
+            LocalLoopie firstLoopie = DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
+                DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false).FirstOrDefault();
             if (firstLoopie == null)
             {
-                textMesh.text = "No loopies yet";
+                textMesh.text = $@"
+player.PlayerId: {player.PlayerId}
+player.Initialized: {player.PlayerId.IsInitialized}
+
+No loopies yet";
             }
             else
             {
                 Vector3 handPos = localPerformer.GetPerformer().RightHandPosition;
                 Vector3 loopiePos = firstLoopie.transform.position;
                 textMesh.text = $@"
+player.PlayerId: {player.PlayerId}
+player.Initialized: {player.PlayerId.IsInitialized}
+
 Hand position: {handPos}
 Loopie position: {loopiePos}
 Distance: {Vector3.Distance(handPos, loopiePos)}";

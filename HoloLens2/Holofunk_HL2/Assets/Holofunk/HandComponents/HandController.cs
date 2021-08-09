@@ -218,7 +218,7 @@ namespace Holofunk.HandComponents
             {
                 previouslyTouchedLoopieIds.Clear();
                 previouslyTouchedLoopieIds.AddRange(touchedLoopieIds);
-                // TODO: add debug spam here if necessary
+                HoloDebug.Log($"Updating {handSide} touched loopies: prior [{string.Join(", ", previouslyTouchedLoopieIds)}], current [{string.Join(", ", touchedLoopieIds)}]");
             }
         }
 
