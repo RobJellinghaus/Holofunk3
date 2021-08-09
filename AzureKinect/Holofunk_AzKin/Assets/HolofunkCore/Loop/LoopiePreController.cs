@@ -19,7 +19,7 @@ namespace Holofunk.Loop
         {
             foreach (LocalLoopie localLoopie in
                 DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
-                    DistributedObjectFactory.DistributedType.Loopie))
+                    DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
             {
                 localLoopie.IsTouched = false;
             }

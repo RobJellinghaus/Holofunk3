@@ -29,7 +29,7 @@ namespace Holofunk.Loop
         {
             foreach (LocalPerformer localPerformer in
                 DistributedObjectFactory.FindComponentInstances<LocalPerformer>(
-                    DistributedObjectFactory.DistributedType.Performer))
+                    DistributedObjectFactory.DistributedType.Performer, includeActivePrototype: true))
             {
                 uint[] touchedLoopieIds = localPerformer.GetPerformer().TouchedLoopieIdList;
                 allTouchedLoopieList.AddRange(touchedLoopieIds.Select(id => new DistributedId(id)));
@@ -37,7 +37,7 @@ namespace Holofunk.Loop
 
             foreach (LocalLoopie localLoopie in
                 DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
-                    DistributedObjectFactory.DistributedType.Loopie))
+                    DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
             {
                 if (allTouchedLoopieList.Contains(localLoopie.DistributedObject.Id))
                 {
