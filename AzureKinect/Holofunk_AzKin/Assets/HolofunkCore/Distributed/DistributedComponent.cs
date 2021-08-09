@@ -129,7 +129,10 @@ namespace Holofunk.Distributed
                 Host.SendToProxies(message);
 
                 // ...and update the local object.
-                message.Invoke(LocalObject);
+                if (LocalObject != null)
+                {
+                    message.Invoke(LocalObject);
+                }
             }
             else
             {

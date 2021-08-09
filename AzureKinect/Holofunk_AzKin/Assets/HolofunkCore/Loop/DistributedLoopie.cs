@@ -36,7 +36,7 @@ namespace Holofunk.Loop
 
         public override ILocalObject LocalObject => GetLocalLoopie();
 
-        private LocalLoopie GetLocalLoopie() => gameObject.GetComponent<LocalLoopie>();
+        private LocalLoopie GetLocalLoopie() => gameObject == null ? null : gameObject.GetComponent<LocalLoopie>();
 
         /// <summary>
         /// Get the loopie state.
