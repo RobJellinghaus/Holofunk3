@@ -138,6 +138,9 @@ namespace Holofunk.Loop
 
                 NowSoundGraphAPI.DeleteTrack(trackId);
             }
+
+            // and we blow ourselves awaaaay
+            Destroy(this.gameObject);
         }
 
         public void SetMute(bool isMuted)
