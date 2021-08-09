@@ -62,6 +62,6 @@ namespace Holofunk.Core
         /// <summary>
         /// The radius of the hand, in meters.
         /// </summary>
-        public static readonly float HandRadius = 0.1f; // 10 cm = 4 inches. Pretty big but let's start there
+        public static readonly float HandRadius = 0.15f; // 10 cm = 4 inches. Pretty big but let's start there
     }
 }

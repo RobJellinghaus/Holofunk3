@@ -92,11 +92,6 @@ namespace Holofunk.Viewpoint
 
         #region Standard meta-operations
 
-        public override void Delete()
-        {
-            // No-op; Viewpoints are never deleted, they just leave the system
-        }
-
         public override void OnDelete()
         {
             // No-op; Viewpoints are never deleted, only detached
