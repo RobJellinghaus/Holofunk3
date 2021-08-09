@@ -105,7 +105,7 @@ namespace Holofunk.Perform
                     _leftHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown)),
                 RightHandPose = new HandPose(
                     _rightHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown)),
-                TouchedLoopieIdList = touchedLoopieIdList.Cast<uint>().ToArray()
+                TouchedLoopieIdList = touchedLoopieIdList.Select(id => id.Value).ToArray()
             };
 
             DistributedPerformer performerPrototype =

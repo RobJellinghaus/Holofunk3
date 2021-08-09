@@ -19,12 +19,12 @@ namespace Distributed.State
         {
             public int Compare(DistributedId x, DistributedId y)
             {
-                return x.value.CompareTo(y.value);
+                return x.Value.CompareTo(y.Value);
             }
             public static Comparer Instance = new Comparer();
         }
 
-        private uint value;
+        public readonly uint Value;
 
         public DistributedId(uint value)
         {
@@ -33,18 +33,16 @@ namespace Distributed.State
                 throw new ArgumentException("DistributedId value 0 is not valid (reserved for default/uninitialized)");
             }
 
-            this.value = value;
+            this.Value = value;
         }
 
-        public bool IsInitialized => value > 0;
+        public bool IsInitialized => Value > 0;
 
         public static implicit operator DistributedId(uint value) => new DistributedId((byte)value);
 
-        public static explicit operator uint(DistributedId id) => id.value;
-
         public override string ToString()
         {
-            return $"#{value}";
+            return $"#{Value}";
         }
 
         public static void RegisterWith(NetPacketProcessor packetProcessor)
@@ -54,7 +52,7 @@ namespace Distributed.State
 
         public static void Serialize(NetDataWriter writer, DistributedId id)
         {
-            writer.Put(id.value);
+            writer.Put(id.Value);
         }
 
         public static DistributedId Deserialize(NetDataReader reader)
@@ -75,12 +73,12 @@ namespace Distributed.State
         public override bool Equals(object obj)
         {
             return obj is DistributedId id &&
-                   value == id.value;
+                   Value == id.Value;
         }
 
         public override int GetHashCode()
         {
-            return -1584136870 + value.GetHashCode();
+            return -1584136870 + Value.GetHashCode();
         }
     }
 }

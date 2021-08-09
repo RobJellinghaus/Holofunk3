@@ -102,13 +102,16 @@ namespace Holofunk.HandComponents
 
         internal void ApplyToTouchedLoopies(Action<DistributedLoopie> action)
         {
-            foreach (LocalLoopie localLoopie in
-                DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
-                    DistributedObjectFactory.DistributedType.Loopie))
+            if (action != null)
             {
-                if (touchedLoopieIds.Contains(localLoopie.DistributedObject.Id))
+                foreach (LocalLoopie localLoopie in
+                    DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
+                        DistributedObjectFactory.DistributedType.Loopie))
                 {
-                    action((DistributedLoopie)localLoopie.DistributedObject);
+                    if (touchedLoopieIds.Contains(localLoopie.DistributedObject.Id))
+                    {
+                        action((DistributedLoopie)localLoopie.DistributedObject);
+                    }
                 }
             }
         }
