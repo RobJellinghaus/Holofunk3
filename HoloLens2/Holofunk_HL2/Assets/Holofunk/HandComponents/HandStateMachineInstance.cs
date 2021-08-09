@@ -1,5 +1,6 @@
 ﻿/// Copyright by Rob Jellinghaus. All rights reserved.
 
+using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Hand;
 using Holofunk.Loop;
@@ -157,13 +158,11 @@ namespace Holofunk.HandComponents
                 pointingMuteUnmute,
                 (evt, handController) =>
                 {
-                    // handController.PushGameObject(handController.spriteContainer.transform.Find("MuteCircle").gameObject);
-
                     // initialize whether we are deleting the loopies we touch
                     Option<bool> deletingTouchedLoopies = Option<bool>.None;
 
                     // Collection of loopies that makes sure we don't flip loopies back and forth between states.
-                    HashSet<DistributedLoopie> toggledLoopies = new HashSet<DistributedLoopie>();
+                    HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
                     handController.touchedLoopieAction = loopie =>
                     {
@@ -173,9 +172,9 @@ namespace Holofunk.HandComponents
                             deletingTouchedLoopies = loopie.GetLoopie().IsMuted;
                         }
 
-                        if (!toggledLoopies.Contains(loopie))
+                        if (!toggledLoopies.Contains(loopie.Id))
                         {
-                            toggledLoopies.Add(loopie); // loopity doo, I've got another puzzle for you
+                            toggledLoopies.Add(loopie.Id); // loopity doo, I've got another puzzle for you
 
                             // we know it has a value now
                             if (deletingTouchedLoopies.Value)
@@ -203,14 +202,13 @@ namespace Holofunk.HandComponents
                 pointingMuteUnmute,
                 (evt, handController) =>
                 {
-                    //handController.PushGameObject(handController.spriteContainer.transform.Find("UnmuteCircle").gameObject);
-                    HashSet<DistributedLoopie> toggledLoopies = new HashSet<DistributedLoopie>();
+                    HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
                     handController.touchedLoopieAction = loopie =>
                     {
-                        if (!toggledLoopies.Contains(loopie))
+                        if (!toggledLoopies.Contains(loopie.Id))
                         {
-                            toggledLoopies.Add(loopie); // loopity doo, I've got another puzzle for you
+                            toggledLoopies.Add(loopie.Id); // loopity doo, I've got another puzzle for you
                             loopie.SetMute(false);
                         }
                     };

@@ -7,10 +7,6 @@ using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using NowSoundLib;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Holofunk.Loop
@@ -91,6 +87,11 @@ namespace Holofunk.Loop
             if (IsTouched)
             {
                 color = new Color(Increase(color.r), Increase(color.g), Increase(color.b), Increase(color.a));
+            }
+            if (GetLoopie().IsMuted)
+            {
+                float average = (color.r + color.g + color.b) / 3;
+                color = new Color(average, average, average, color.a);
             }
 
             transform.GetChild(0).GetComponent<Renderer>().material.color = color;
