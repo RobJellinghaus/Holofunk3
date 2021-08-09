@@ -154,6 +154,7 @@ namespace Holofunk.HandComponents
                 (evt, handController) => { });
 
             AddTransition(stateMachine, armed, HandPoseEvent.Pointing1, pointingMuteUnmute);
+            AddTransition(stateMachine, initial, HandPoseEvent.Pointing1, pointingMuteUnmute);
 
             HandState mute = new HandState(
                 "mute",
@@ -173,6 +174,7 @@ namespace Holofunk.HandComponents
                         if (!deletingTouchedLoopies.HasValue)
                         {
                             deletingTouchedLoopies = loopie.GetLoopie().IsMuted;
+                            HoloDebug.Log($"HandStateMachine.Mute.TouchedLoopieAction: deletingTouchedLoopies {deletingTouchedLoopies.Value}");
                         }
 
                         if (!toggledLoopies.Contains(loopie.Id))
