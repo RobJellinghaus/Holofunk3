@@ -130,6 +130,7 @@ namespace Holofunk.Loop
 
         public void SetMute(bool isMuted)
         {
+            HoloDebug.Log($"LocalLoopie.SetMute: id {DistributedObject.Id}, isMuted {isMuted}");
             loopie.IsMuted = isMuted;
         }
 

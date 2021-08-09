@@ -43,20 +43,11 @@ namespace Holofunk.Loop
         /// </summary>
         public Loopie GetLoopie() => GetLocalLoopie().GetLoopie();
 
-        /// <summary>
-        /// Set whether the loopie is muted.
-        /// </summary>
-        [ReliableMethod]
         public void SetMute(bool isMuted) => 
             RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
 
-        /// <summary>
-        /// Set whether the loopie is muted.
-        /// </summary>
-        [ReliableMethod]
         public void SetVolume(float volume) =>
             RouteReliableMessage(isRequest => new SetVolume(Id, isRequest: !IsOwner, volume: volume));
-
 
         public void SetViewpointPosition(Vector3 viewpointPosition) =>
             RouteReliableMessage(isRequest => new SetViewpointPosition(Id, isRequest: !IsOwner, viewpointPosition: viewpointPosition));

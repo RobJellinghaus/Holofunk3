@@ -213,13 +213,28 @@ namespace Holofunk.HandComponents
 
             touchedLoopieIds.Sort(DistributedId.Comparer.Instance);
 
-            if (previouslyTouchedLoopieIds.Count != touchedLoopieIds.Count
-                || !previouslyTouchedLoopieIds.SequenceEqual(touchedLoopieIds))
+            if (!EqualLists(previouslyTouchedLoopieIds, touchedLoopieIds))
             {
                 previouslyTouchedLoopieIds.Clear();
                 previouslyTouchedLoopieIds.AddRange(touchedLoopieIds);
                 HoloDebug.Log($"Updating {handSide} touched loopies: prior [{string.Join(", ", previouslyTouchedLoopieIds)}], current [{string.Join(", ", touchedLoopieIds)}]");
             }
+        }
+
+        private bool EqualLists(List<DistributedId> list1, List<DistributedId> list2)
+        {
+            if (list1.Count != list2.Count)
+            {
+                return false;
+            }
+            for (int i = 0; i < list1.Count; i++)
+            {
+                if (list1[i] != list2[i])
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private HandPoseValue HandPose(ref Performer performer) => handSide == Side.Left 

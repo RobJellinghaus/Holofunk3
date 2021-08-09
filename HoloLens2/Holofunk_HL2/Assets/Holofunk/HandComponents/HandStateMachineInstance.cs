@@ -153,6 +153,8 @@ namespace Holofunk.HandComponents
                 (evt, handController) => { },
                 (evt, handController) => { });
 
+            AddTransition(stateMachine, armed, HandPoseEvent.Pointing1, pointingMuteUnmute);
+
             HandState mute = new HandState(
                 "mute",
                 pointingMuteUnmute,
@@ -166,6 +168,7 @@ namespace Holofunk.HandComponents
 
                     handController.touchedLoopieAction = loopie =>
                     {
+                        HoloDebug.Log($"Mute touchedLoopieAction: loopie {loopie.Id}, IsMuted {loopie.GetLoopie().IsMuted}");
                         // the first loopie touched, if it's a double-mute, puts us into delete mode
                         if (!deletingTouchedLoopies.HasValue)
                         {
@@ -186,6 +189,7 @@ namespace Holofunk.HandComponents
                             }
                             else
                             {
+                                HoloDebug.Log($"Setting loopie to mute: {loopie.Id}");
                                 loopie.SetMute(true);
                             }
                         }

@@ -24,9 +24,9 @@ namespace Holofunk.Perform
 
         private bool showDistanceStatistics = false;
 
-        private bool showRightHandProperties = false;
+        private bool showRightHandProperties = true;
 
-        private bool showLoopieDistance = true;
+        private bool showLoopieDistance = false;
 
         // Update is called once per frame
         public void Update()
