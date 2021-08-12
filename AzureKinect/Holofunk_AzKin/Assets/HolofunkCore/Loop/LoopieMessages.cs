@@ -74,6 +74,20 @@ namespace Holofunk.Loop
             public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentAmplitude(Min, Avg, Max, Timestamp);
         }
 
+        public class SetCurrentWaveform : BroadcastMessage
+        {
+            public float[] Buckets { get; set; }
+            public ulong Timestamp { get; set; }
+            public SetCurrentWaveform() : base() { }
+            public SetCurrentWaveform(DistributedId id, SerializedSocketAddress owner, float[] buckets, ulong timestamp)
+                : base(id, owner)
+            {
+                Buckets = buckets;
+                Timestamp = timestamp;
+            }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentWaveform(Buckets, Timestamp);
+        }
+
         // TODO: refactor this for actual sharing with the other Register methods
         public static void Register(DistributedHost.ProxyCapability proxyCapability)
         {
@@ -87,6 +101,7 @@ namespace Holofunk.Loop
             Registrar.RegisterReliableMessage<SetViewpointPosition, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<FinishRecording, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterBroadcastMessage<SetCurrentAmplitude, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterBroadcastMessage<SetCurrentWaveform, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
         }
     }
 }

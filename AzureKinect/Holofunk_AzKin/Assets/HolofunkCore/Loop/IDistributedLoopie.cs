@@ -59,10 +59,13 @@ namespace Holofunk.Loop
         /// <summary>
         /// Broadcast the current amplitude of this Loopie.
         /// </summary>
-        /// <remarks>
-        /// Soon, broadcast the entire FFT, but this is for starters.
-        /// </remarks>
         [BroadcastMethod]
         void SetCurrentAmplitude(float min, float avg, float max, ulong timestamp);
+
+        /// <summary>
+        /// Broadcast the current waveform of this Loopie.
+        /// </summary>
+        [BroadcastMethod]
+        void SetCurrentWaveform(float[] buckets, ulong timestamp);
     }
 }
