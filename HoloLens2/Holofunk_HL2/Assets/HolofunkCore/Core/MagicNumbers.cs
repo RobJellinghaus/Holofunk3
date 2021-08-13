@@ -57,6 +57,24 @@ namespace Holofunk.Core
         #region Loopies
 
         /// <summary>
+        /// Minimum scale factor for loopies at minimum volume. (Max scale factor is always 1)
+        /// </summary>
+        /// <remarks>
+        /// For frequency displays, this is the scale at minimum volume.
+        /// </remarks>
+        internal const float MinVolumeScale = 0.3f;
+
+        /// <summary>
+        /// Scale factor by which to multiply the raw volume to get a loopie scale lerp value.
+        /// </summary>
+        /// <remarks>
+        /// Note that this factor is itself lerped from 0 volume (this) to 1 volume (1),
+        /// so that max volume still equals max scale (rather than some lower-than-max volume
+        /// equaling max scale, as would be the case if this weren't itself lerped).
+        /// </remarks>
+        internal const float LerpVolumeScaleFactor = 5;
+
+        /// <summary>
         /// Minimum loopie scale for minimum amplitude.
         /// </summary>
         public static readonly float MinLoopieScale = 0.6f;

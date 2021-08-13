@@ -233,15 +233,20 @@ namespace Holofunk.Loop
             {
                 ulong timestamp = (ulong)(long)Clock.Instance.AudioNow.Time;
 
-                // we broadcast three timestamped packets per frame per loopie:
-                // - the signal info (overall volume)
-                // - the track ifno
+                // we broadcast two timestamped packets per frame per loopie:
+                // - the signal and track info
+                // - the waveform info
+
                 NowSoundSignalInfo signalInfo = NowSoundTrackAPI.SignalInfo(trackId);
                 TrackInfo trackInfo = NowSoundTrackAPI.Info(trackId);
-
                 ((DistributedLoopie)DistributedObject).SetCurrentInfo(
                     new SignalInfoPacket(signalInfo),
                     new TrackInfoPacket(trackInfo),
+                    timestamp);
+
+                NowSoundTrackAPI.GetFrequencies(trackId, frequencyBins);
+                ((DistributedLoopie)DistributedObject).SetCurrentWaveform(
+                    frequencyBins,
                     timestamp);
             }
         }
@@ -276,6 +281,99 @@ namespace Holofunk.Loop
             }
 
             transform.GetChild(0).GetComponent<Renderer>().material.color = color;
+
+            // get the max value -- these can be anything, typically from <1 for almost inaudible up to 100 - 400 for quite loud.
+            // Intensity values seem greater at lower frequencies.  So we just scale everything to the maximum in this histogram.
+            // TODO: also scale by volume for total size?
+            float maxFrequencyValue = 0;
+            for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
+            {
+                if (float.IsNaN(frequencyBins[i]))
+                {
+                    // We don't even try to deal with any NaNs, which evidently happen only when the loop is just starting.
+                    return;
+                }
+
+                if (frequencyBins[i] < MagicNumbers.FrequencyBinMinValue)
+                {
+                    // ignore very tiny bins; very tiny max values will blow up when normalizing
+                    continue;
+                }
+
+                maxFrequencyValue = Mathf.Max(maxFrequencyValue, frequencyBins[i]);
+            }
+
+            for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
+            {
+                Color discColor = FrequencyBinColor(i);
+                if (maxFrequencyValue == 0)
+                {
+                    Vector3 newLocalScale = new Vector3(
+                        originalBandShapeLocalScale.x * MagicNumbers.MinVolumeScale,
+                        originalBandShapeLocalScale.y,
+                        originalBandShapeLocalScale.z * MagicNumbers.MinVolumeScale);
+
+                    frequencyBandShapes[i].transform.localScale = newLocalScale;
+
+                    discColor.a = MagicNumbers.FrequencyShapeMinAlpha;
+                }
+                else
+                {
+                    // TODO: fundamentally restructure ALL OF THIS to do proper RMS calculation or something
+
+                    Core.Contract.Assert(!float.IsNaN(signalInfo.Avg));
+
+                    // first, normalize to max
+                    float normalizedValue = frequencyBins[i] / maxFrequencyValue;
+                    Core.Contract.Assert(!float.IsNaN(normalizedValue));
+
+                    // now, lerp multiplicatively to increase the size of small values
+                    float boostedValue = normalizedValue * Mathf.Lerp(MagicNumbers.LerpVolumeScaleFactor, 1, normalizedValue);
+                    Core.Contract.Assert(!float.IsNaN(boostedValue));
+
+                    // now, multiply by some proportion of the volume
+                    float volumeScaledValue = boostedValue * (signalInfo.Avg * Mathf.Lerp(MagicNumbers.LerpVolumeScaleFactor, 1, normalizedValue));
+                    Core.Contract.Assert(!float.IsNaN(volumeScaledValue));
+
+                    // now, lerp from a baseline value to ensure zero volume isn't invisible
+                    float flooredValue = Mathf.Lerp(MagicNumbers.MinVolumeScale, 1, volumeScaledValue);
+                    Core.Contract.Assert(!float.IsNaN(flooredValue));
+
+                    // now, look up what the value was last time
+                    float lastFlooredValue = scaledBins[i];
+                    Core.Contract.Assert(!float.IsNaN(lastFlooredValue));
+
+                    float decayedValue = lastFlooredValue - ((lastFlooredValue - flooredValue) * MagicNumbers.BinValueDecay);
+                    Core.Contract.Assert(!float.IsNaN(decayedValue));
+
+                    float targetValue = Mathf.Max(flooredValue, decayedValue);
+                    Core.Contract.Assert(!float.IsNaN(targetValue));
+
+                    Vector3 newLocalScale = new Vector3(
+                        originalBandShapeLocalScale.x * targetValue,
+                        originalBandShapeLocalScale.y,
+                        originalBandShapeLocalScale.z * targetValue);
+                    scaledBins[i] = targetValue;
+
+                    frequencyBandShapes[i].transform.localScale = newLocalScale;
+
+                    discColor.a = Mathf.Lerp(MagicNumbers.FrequencyShapeMinAlpha, MagicNumbers.FrequencyShapeMaxAlpha, boostedValue);
+                }
+
+                // now update the color.
+
+                if (IsTouched)
+                {
+                    discColor = new Color(Increase(discColor.r), Increase(discColor.g), Increase(discColor.b), Increase(discColor.a));
+                }
+                if (GetLoopie().IsMuted)
+                {
+                    float average = (discColor.r + discColor.g + discColor.b) / 3;
+                    discColor = new Color(average, average, average, discColor.a);
+                }
+
+                frequencyBandShapes[i].GetComponent<Renderer>().material.color = discColor;
+            }
         }
 
         /// <summary>
