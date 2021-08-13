@@ -61,9 +61,12 @@ namespace Holofunk.Distributed
             Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetMatrix4x4);
 
             // Holofunk ID types
+            // TODO: package dependency is backwards here, need some kind of top package to capture all the uses
+            // without introducing a package cycle like this
             Host.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
             Host.RegisterType(UserId.Serialize, UserId.Deserialize);
             Host.RegisterType(AudioInput.Serialize, AudioInput.Deserialize);
+            Host.RegisterType(TrackInfoPacket.Serialize, TrackInfoPacket.Deserialize);
 
             // Holofunk struct types
             Host.RegisterType<Player>();

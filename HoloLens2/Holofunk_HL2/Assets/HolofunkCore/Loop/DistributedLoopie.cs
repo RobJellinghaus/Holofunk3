@@ -3,6 +3,7 @@
 using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
+using Holofunk.Sound;
 using LiteNetLib;
 using UnityEngine;
 using static Holofunk.Loop.LoopieMessages;
@@ -55,8 +56,11 @@ namespace Holofunk.Loop
         public void FinishRecording() =>
             RouteReliableMessage(isRequest => new FinishRecording(Id, isRequest: !IsOwner));
 
-        public void SetCurrentAmplitude(float min, float avg, float max, ulong timestamp) =>
-            RouteBroadcastMessage(new SetCurrentAmplitude(Id, new SerializedSocketAddress(OwningPeer), min, avg, max, timestamp));
+        public void SetCurrentInfo(SignalInfoPacket signalInfo, TrackInfoPacket trackInfo, ulong timestamp) =>
+            RouteBroadcastMessage(new SetCurrentInfo(Id, new SerializedSocketAddress(OwningPeer), signalInfo, trackInfo, timestamp));
+
+        public void SetCurrentWaveform(float[] frequencyBins, ulong timestamp) =>
+            RouteBroadcastMessage(new SetCurrentWaveform(Id, new SerializedSocketAddress(OwningPeer), frequencyBins, timestamp));
 
         #endregion
 

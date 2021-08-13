@@ -1,12 +1,7 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
-using Holofunk.Distributed;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Holofunk.Sound;
 using UnityEngine;
 
 namespace Holofunk.Loop
@@ -60,12 +55,12 @@ namespace Holofunk.Loop
         /// Broadcast the current amplitude of this Loopie.
         /// </summary>
         [BroadcastMethod]
-        void SetCurrentAmplitude(float min, float avg, float max, ulong timestamp);
+        void SetCurrentInfo(SignalInfoPacket signalInfoPacket, TrackInfoPacket trackInfoPacket, ulong timestamp);
 
         /// <summary>
         /// Broadcast the current waveform of this Loopie.
         /// </summary>
         [BroadcastMethod]
-        void SetCurrentWaveform(float[] buckets, ulong timestamp);
+        void SetCurrentWaveform(float[] frequencyBins, ulong timestamp);
     }
 }

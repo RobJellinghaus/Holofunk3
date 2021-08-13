@@ -33,17 +33,22 @@ namespace Holofunk.Loop
         private TrackId trackId;
 
         /// <summary>
-        /// The current amplitude; broadcast from one proxy to all others.
+        /// The current overall information about the signal (e.g. amplitude).
         /// </summary>
-        private float minAmplitude, avgAmplitude, maxAmplitude;
+        private NowSoundSignalInfo signalInfo;
 
         /// <summary>
-        /// The highest amplitude timestamp received so far.
+        /// The current overall information about the track.
+        /// </summary>
+        private TrackInfo trackInfo;
+
+        /// <summary>
+        /// The highest info timestamp received so far.
         /// </summary>
         /// <remarks>
         /// We don't worry about 64 bit overflow even at 48Khz timing rate.
         /// </remarks>
-        private ulong maxAmplitudeTimestamp;
+        private ulong maxInfoTimestamp;
 
         /// <summary>
         /// The highest waveform timestamp received so far.
@@ -84,6 +89,11 @@ namespace Holofunk.Loop
         /// </summary>
         private Vector3 originalBandShapeLocalScale;
 
+        /// <summary>
+        /// The last known TrackInfo about this track.
+        /// </summary>
+        private TrackInfo lastTrackInfo;
+
         #endregion
 
         #region MonoBehaviour
@@ -119,7 +129,7 @@ namespace Holofunk.Loop
             // So audio frequency, visual color, and in-world height in the stack all correlate.
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
-                GameObject disc = InstantiateShape(Shape.Cylinder.ToString());
+                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.Cylinder, transform.GetChild(0));
                 disc.transform.localPosition = new Vector3(0, i * MagicNumbers.FrequencyDiscVerticalDistance, 0);
                 Vector3 localScale = disc.transform.localScale;
                 // TODO: magic constant for x/z (e.g. width, since x/z symmetrical) scale
@@ -151,29 +161,16 @@ namespace Holofunk.Loop
                 1);
         }
 
-        private GameObject InstantiateShape(string shapeName)
-        {
-            // get the ShapeContainer
-            GameObject shapeContainer = GameObject.Find("ShapeContainer");
-            GameObject prototypeShape = shapeContainer.transform.Find(shapeName).gameObject;
-
-            Core.Contract.Assert(prototypeShape != null);
-
-            // clone the shape and put the clone at this Loopie's position
-            GameObject shape = Instantiate(prototypeShape, transform.GetChild(0)); // child 0 is the ShapeContainer for this Loopie
-            shape.transform.localPosition = Vector3.zero;
-            return shape;
-        }
-
         public void Update()
         {
-            // Update the controllers displaying what measure it is.
-            UpdateMeasureControllers();
+            UpdateSoundData();
 
             UpdateHeldLoopiePosition();
 
-            UpdateSoundData();
+            // Now that track info has been updated, update the controllers displaying what measure it is.
+            UpdateMeasureControllers();
 
+            // Now that the loopie underlying data is fully updated for this frame, update the loopie's appearance.
             UpdateLoopieAppearance();
         }
 
@@ -191,7 +188,7 @@ namespace Holofunk.Loop
                 // we need another beatMeasureController.
                 BeatMeasureController lastBeatMeasureController = beatMeasureControllers[beatMeasureControllers.Count - 1];
                 GameObject newBeatMeasureControllerGameObject = Instantiate(lastBeatMeasureController.gameObject, transform);
-                newBeatMeasureControllerGameObject.name = $"BeatMeasureController#{++s_beatMeasureControllerTotalCount}";
+                newBeatMeasureControllerGameObject.name = $"BeatMeasureController#{transform.childCount}";
                 BeatMeasureController newBeatMeasureController = newBeatMeasureControllerGameObject.GetComponent<BeatMeasureController>();
                 newBeatMeasureController.startingMeasure = beatMeasureControllers.Count;
                 newBeatMeasureController.audioTrack = trackId;
@@ -234,12 +231,18 @@ namespace Holofunk.Loop
         {
             if (SoundManager.Instance != null)
             {
+                ulong timestamp = (ulong)(long)Clock.Instance.AudioNow.Time;
+
+                // we broadcast three timestamped packets per frame per loopie:
+                // - the signal info (overall volume)
+                // - the track ifno
                 NowSoundSignalInfo signalInfo = NowSoundTrackAPI.SignalInfo(trackId);
-                ((DistributedLoopie)DistributedObject).SetCurrentAmplitude(
-                    signalInfo.Min,
-                    signalInfo.Avg,
-                    signalInfo.Max,
-                    (ulong)(long)Clock.Instance.AudioNow.Time);
+                TrackInfo trackInfo = NowSoundTrackAPI.Info(trackId);
+
+                ((DistributedLoopie)DistributedObject).SetCurrentInfo(
+                    new SignalInfoPacket(signalInfo),
+                    new TrackInfoPacket(trackInfo),
+                    timestamp);
             }
         }
 
@@ -248,10 +251,10 @@ namespace Holofunk.Loop
         /// </summary>
         private void UpdateLoopieAppearance()
         {
-            if (avgAmplitude > 0f)
+            if (signalInfo.Avg > 0f)
             {
                 float delta = MagicNumbers.MaxLoopieScale - MagicNumbers.MinLoopieScale;
-                float scale = MagicNumbers.MinLoopieScale + avgAmplitude * delta * MagicNumbers.LoopieAmplitudeBias;
+                float scale = MagicNumbers.MinLoopieScale + signalInfo.Avg * delta * MagicNumbers.LoopieAmplitudeBias;
                 // and clamp in case bias sends us over
                 scale = Math.Max(scale, MagicNumbers.MaxLoopieScale);
                 transform.localScale = new Vector3(scale, scale, scale);
@@ -345,25 +348,24 @@ namespace Holofunk.Loop
             }
         }
 
-        public void SetCurrentAmplitude(float min, float avg, float max, ulong timestamp)
+        public void SetCurrentInfo(SignalInfoPacket signalInfo, TrackInfoPacket trackInfo, ulong timestamp)
         {
             // ignore out of order timestamps
-            if (timestamp > maxAmplitudeTimestamp)
+            if (timestamp > maxInfoTimestamp)
             {
-                maxAmplitudeTimestamp = timestamp;
-                minAmplitude = min;
-                avgAmplitude = avg;
-                maxAmplitude = max;
+                this.signalInfo = signalInfo.Value;
+                this.trackInfo = trackInfo.Value;
+                maxInfoTimestamp = timestamp;
             }
         }
 
-        public void SetCurrentWaveform(float[] buckets, ulong timestamp)
+        public void SetCurrentWaveform(float[] frequencyBins, ulong timestamp)
         {
             // ignore out of order timestamps
             if (timestamp > maxWaveformTimestamp)
             {
                 maxWaveformTimestamp = timestamp;
-                Buckets = buckets;
+                frequencyBins.CopyTo(this.frequencyBins, 0);
             }
         }
 

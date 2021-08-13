@@ -7,6 +7,8 @@ namespace Holofunk.Core
     /// </summary>
     public static class MagicNumbers
     {
+        #region Motion sensing
+
         /// <summary>
         /// Number of frames over which to average, when smoothing positions.
         /// </summary>
@@ -19,6 +21,15 @@ namespace Holofunk.Core
         /// In practice when looking right at the sensor the collinearity is over 0.99, so 0.90 is fairly safe.
         /// </remarks>
         public static readonly float MinimumHeadViewpointAlignment = 0.90f;
+
+        /// <summary>
+        /// The radius of the hand, in meters.
+        /// </summary>
+        public static readonly float HandRadius = 0.15f; // 10 cm = 4 inches. Pretty big but let's start there
+
+        #endregion
+
+        #region FFT
 
         /// <summary>
         /// 2048 is enough to resolve down to about two octaves below middle C (e.g. 65 Hz).
@@ -41,6 +52,10 @@ namespace Holofunk.Core
         /// </summary>
         public static readonly int CentralFrequencyBin = 10;
 
+        #endregion
+
+        #region Loopies
+
         /// <summary>
         /// Minimum loopie scale for minimum amplitude.
         /// </summary>
@@ -60,8 +75,62 @@ namespace Holofunk.Core
         public static readonly float LoopieAmplitudeBias = 10.0f;
 
         /// <summary>
-        /// The radius of the hand, in meters.
+        /// The horizontal separation between measure indicators.
         /// </summary>
-        public static readonly float HandRadius = 0.15f; // 10 cm = 4 inches. Pretty big but let's start there
+        public static readonly float BeatMeasureSeparation = 0.03f;
+
+        /// <summary>
+        /// The scale of each frequency disc's height, relative to the original scale of its shape.
+        /// </summary>
+        public static readonly float FrequencyDiscHeightScaleFactor = 0.13f;
+
+        /// <summary>
+        /// The scale of each frequency disc's width, relative to the original scale of its shape.
+        /// </summary>
+        public static readonly float FrequencyDiscWidthScaleFactor = 1.9f;
+
+        /// <summary>
+        /// The vertical distance apart to place each frequency disc.
+        /// </summary>
+        public static readonly float FrequencyDiscVerticalDistance = 0.011f;
+
+        /// <summary>
+        /// The minimum value below which frequency bins will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Since frequency intensity values swing widely between frequency bands, and lower frequencies tend to have higher
+        /// intensity values even at what seems like the same subjective volume, it's challenging to correlate absolute
+        /// frequency intensity values to absolute visual scale or even subjective volume.  But heuristically we want to
+        /// avoid "twitching" at volumes that seem quite low but that produce high variance.  So we clamp values lower than
+        /// this to zero, as a crude low-pass filter.
+        /// </remarks>
+        public static readonly float FrequencyBinMinValue = 10f;
+
+        /// <summary>
+        /// The minimum hue value to use for the frequency shapes.
+        /// </summary>
+        public static readonly float FrequencyShapeMinHue = 0;
+
+        /// <summary>
+        /// The maximum hue value to use.
+        /// </summary>
+        public static readonly float FrequencyShapeMaxHue = 0.8f;
+
+        /// <summary>
+        /// Most transparent alpha value for minimal frequency shape.
+        /// </summary>
+        public static readonly float FrequencyShapeMinAlpha = 0.1f;
+
+        /// <summary>
+        /// Least transparent alpha value for maximal frequency shape.
+        /// </summary>
+        public static readonly float FrequencyShapeMaxAlpha = 0.9f;
+
+        /// <summary>
+        /// The ratio by which a scaled bin value should decay towards its expected lower value.
+        /// </summary>
+        public static readonly float BinValueDecay = 0.3f;
+
+        #endregion
     }
 }

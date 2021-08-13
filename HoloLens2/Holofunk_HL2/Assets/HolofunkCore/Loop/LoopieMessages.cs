@@ -3,6 +3,7 @@
 using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
+using Holofunk.Sound;
 using LiteNetLib;
 using UnityEngine;
 
@@ -56,22 +57,34 @@ namespace Holofunk.Loop
             public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).FinishRecording();
         }
 
-        public class SetCurrentAmplitude : BroadcastMessage
+        public class SetCurrentInfo : BroadcastMessage
         {
-            public float Min { get; set; }
-            public float Avg { get; set; }
-            public float Max { get; set; }
+            public SignalInfoPacket SignalInfo { get; set; }
+            public TrackInfoPacket TrackInfo { get; set; }
             public ulong Timestamp { get; set; }
-            public SetCurrentAmplitude() : base() { }
-            public SetCurrentAmplitude(DistributedId id, SerializedSocketAddress owner, float min, float avg, float max, ulong timestamp)
+            public SetCurrentInfo() : base() { }
+            public SetCurrentInfo(DistributedId id, SerializedSocketAddress owner, SignalInfoPacket signalInfo, TrackInfoPacket trackInfo, ulong timestamp)
                 : base(id, owner)
             {
-                Min = min;
-                Avg = avg;
-                Max = max;
+                SignalInfo = signalInfo;
+                TrackInfo = trackInfo;
                 Timestamp = timestamp;
             }
-            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentAmplitude(Min, Avg, Max, Timestamp);
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentInfo(SignalInfo, TrackInfo, Timestamp);
+        }
+
+        public class SetCurrentWaveform : BroadcastMessage
+        {
+            public float[] FrequencyBins { get; set; }
+            public ulong Timestamp { get; set; }
+            public SetCurrentWaveform() : base() { }
+            public SetCurrentWaveform(DistributedId id, SerializedSocketAddress owner, float[] frequencyBins, ulong timestamp)
+                : base(id, owner)
+            {
+                FrequencyBins = frequencyBins;
+                Timestamp = timestamp;
+            }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentWaveform(FrequencyBins, Timestamp);
         }
 
         // TODO: refactor this for actual sharing with the other Register methods
@@ -86,7 +99,8 @@ namespace Holofunk.Loop
             Registrar.RegisterReliableMessage<SetVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<SetViewpointPosition, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<FinishRecording, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
-            Registrar.RegisterBroadcastMessage<SetCurrentAmplitude, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterBroadcastMessage<SetCurrentInfo, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterBroadcastMessage<SetCurrentWaveform, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
         }
     }
 }

@@ -131,6 +131,31 @@ namespace NowSoundLib
             LastSampleTime = pinvokeTrackInfo.LastSampleTime;
             Pan = pinvokeTrackInfo.Pan;
         }
+
+        public TrackInfo(
+            Duration<AudioSample> duration,
+            Duration<Beat> durationInBeats,
+            ContinuousDuration<Second> exactDuration,
+            bool isTrackLooping,
+            Time<AudioSample> lastSampleTime,
+            ContinuousDuration<Beat> localClockBeat,
+            Duration<AudioSample> localClockTime,
+            float pan,
+            Time<AudioSample> startTime,
+            ContinuousDuration<Beat> startTimeInBeats
+            )
+        {
+            Duration = duration;
+            DurationInBeats = durationInBeats;
+            ExactDuration = exactDuration;
+            IsTrackLooping = isTrackLooping;
+            LastSampleTime = lastSampleTime;
+            LocalClockBeat = localClockBeat;
+            LocalClockTime = localClockTime;
+            Pan = pan;
+            StartTime = startTime;
+            StartTimeInBeats = startTimeInBeats;
+        }
     };
 
     // The states of a NowSound graph.
