@@ -372,9 +372,7 @@ namespace Distributed.State
         #region Managing DistributedObjects
 
         public void RegisterWith(Action<DistributedHost.ProxyCapability> registrar)
-        {
-            registrar(new ProxyCapability(this));
-        }
+            => registrar(new ProxyCapability(this));
 
         /// <summary>
         /// Get the next owner ID for this DistributedPeer.

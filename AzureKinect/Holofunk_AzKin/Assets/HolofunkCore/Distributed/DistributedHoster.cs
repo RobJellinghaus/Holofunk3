@@ -63,7 +63,13 @@ namespace Holofunk.Distributed
             // Sound ID types
             // TPDP: Holofunk.Sound registration class
             Host.RegisterType(AudioInput.Serialize, AudioInput.Deserialize);
+            Host.RegisterType(SignalInfoPacket.Serialize, SignalInfoPacket.Deserialize);
             Host.RegisterType(TrackInfoPacket.Serialize, TrackInfoPacket.Deserialize);
+
+            // Distributed data types
+            Host.RegisterWith(LoopieMessages.RegisterTypes);
+            Host.RegisterWith(PerformerMessages.RegisterTypes);
+            Host.RegisterWith(ViewpointMessages.RegisterTypes);
 
             // Distributed message types
             Host.RegisterWith(LoopieMessages.Register);

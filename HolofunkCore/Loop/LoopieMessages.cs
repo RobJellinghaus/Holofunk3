@@ -87,12 +87,15 @@ namespace Holofunk.Loop
             public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentWaveform(FrequencyBins, Timestamp);
         }
 
-        // TODO: refactor this for actual sharing with the other Register methods
-        public static void Register(DistributedHost.ProxyCapability proxyCapability)
+        public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType(LoopieId.Serialize, LoopieId.Deserialize);
             proxyCapability.RegisterType<Loopie>();
+        }
 
+        // TODO: refactor this for actual sharing with the other Register methods
+        public static void Register(DistributedHost.ProxyCapability proxyCapability)
+        {
             Registrar.RegisterCreateMessage<Create, DistributedLoopie, LocalLoopie, IDistributedLoopie>(
                 proxyCapability,
                 DistributedObjectFactory.DistributedType.Loopie,

@@ -25,12 +25,15 @@ namespace Holofunk.Viewpoint
             public override void Invoke(IDistributedInterface target) => ((IDistributedViewpoint)target).UpdatePlayer(Player);
         }
 
-        public static void Register(DistributedHost.ProxyCapability proxyCapability)
+        public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
             proxyCapability.RegisterType(UserId.Serialize, UserId.Deserialize);
             proxyCapability.RegisterType<Player>();
+        }
 
+        public static void Register(DistributedHost.ProxyCapability proxyCapability)
+        {
             Registrar.RegisterCreateMessage<Create, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
                 proxyCapability,
                 DistributedObjectFactory.DistributedType.Viewpoint,

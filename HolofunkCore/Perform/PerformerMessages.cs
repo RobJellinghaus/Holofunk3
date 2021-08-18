@@ -25,10 +25,13 @@ namespace Holofunk.Perform
             public override void Invoke(IDistributedInterface target) => ((IDistributedPerformer)target).UpdatePerformer(Performer);
         }
 
-        public static void Register(DistributedHost.ProxyCapability proxyCapability)
+        public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType<Performer>();
+        }
 
+        public static void Register(DistributedHost.ProxyCapability proxyCapability)
+        {
             Registrar.RegisterCreateMessage<Create, DistributedPerformer, LocalPerformer, IDistributedPerformer>(
                 proxyCapability,
                 DistributedObjectFactory.DistributedType.Performer,
