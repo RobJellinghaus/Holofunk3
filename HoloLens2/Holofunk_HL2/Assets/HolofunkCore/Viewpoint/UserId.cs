@@ -1,11 +1,8 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using Distributed.State;
 using LiteNetLib.Utils;
-using System.Net;
-using System.Net.Sockets;
 
-namespace Holofunk.Distributed
+namespace Holofunk.Viewpoint
 {
     /// <summary>
     /// The identifier of a user from the Kinect's point of view.

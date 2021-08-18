@@ -2,10 +2,8 @@
 
 using Distributed.State;
 using LiteNetLib.Utils;
-using System.Net;
-using System.Net.Sockets;
 
-namespace Holofunk.Distributed
+namespace Holofunk.Viewpoint
 {
     /// <summary>
     /// The 1-based identifier of a player in a Viewpoint.

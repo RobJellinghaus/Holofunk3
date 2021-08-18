@@ -90,6 +90,9 @@ namespace Holofunk.Loop
         // TODO: refactor this for actual sharing with the other Register methods
         public static void Register(DistributedHost.ProxyCapability proxyCapability)
         {
+            proxyCapability.RegisterType(LoopieId.Serialize, LoopieId.Deserialize);
+            proxyCapability.RegisterType<Loopie>();
+
             Registrar.RegisterCreateMessage<Create, DistributedLoopie, LocalLoopie, IDistributedLoopie>(
                 proxyCapability,
                 DistributedObjectFactory.DistributedType.Loopie,

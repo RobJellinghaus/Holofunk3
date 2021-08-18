@@ -27,6 +27,10 @@ namespace Holofunk.Viewpoint
 
         public static void Register(DistributedHost.ProxyCapability proxyCapability)
         {
+            proxyCapability.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
+            proxyCapability.RegisterType(UserId.Serialize, UserId.Deserialize);
+            proxyCapability.RegisterType<Player>();
+
             Registrar.RegisterCreateMessage<Create, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
                 proxyCapability,
                 DistributedObjectFactory.DistributedType.Viewpoint,

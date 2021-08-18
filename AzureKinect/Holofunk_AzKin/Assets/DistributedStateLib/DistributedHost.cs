@@ -105,19 +105,22 @@ namespace Distributed.State
             {
                 Host = host;
             }
-            public void AddProxy(NetPeer netPeer, IDistributedObject newProxy)
-            {
-                Host.AddProxy(new SerializedSocketAddress(netPeer), newProxy);
-            }
+            public void AddProxy(NetPeer netPeer, IDistributedObject newProxy) 
+                => Host.AddProxy(new SerializedSocketAddress(netPeer), newProxy);
+
             public void SubscribeReusable<TMessage, TUserData>(Action<TMessage, TUserData> action)
                 where TMessage : class, new()
-            {
-                Host.SubscribeReusable(action);
-            }
+                => Host.SubscribeReusable(action);
+
             public void OnDelete(NetPeer netPeer, DistributedId id, bool isRequest)
-            {
-                Host.OnDelete(netPeer, id, isRequest);
-            }
+                => Host.OnDelete(netPeer, id, isRequest);
+
+            public void RegisterType<T>(Action<NetDataWriter, T> serializer, Func<NetDataReader, T> deserializer)
+                => Host.RegisterType(serializer, deserializer);
+
+            public void RegisterType<T>()
+                where T : struct, INetSerializable
+                => Host.RegisterType<T>();
         }
 
         #endregion

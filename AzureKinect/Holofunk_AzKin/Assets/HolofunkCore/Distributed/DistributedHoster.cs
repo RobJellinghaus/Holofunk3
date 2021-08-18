@@ -60,23 +60,15 @@ namespace Holofunk.Distributed
             Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetVector4);
             Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetMatrix4x4);
 
-            // Holofunk ID types
-            // TODO: package dependency is backwards here, need some kind of top package to capture all the uses
-            // without introducing a package cycle like this
-            Host.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
-            Host.RegisterType(UserId.Serialize, UserId.Deserialize);
+            // Sound ID types
+            // TPDP: Holofunk.Sound registration class
             Host.RegisterType(AudioInput.Serialize, AudioInput.Deserialize);
             Host.RegisterType(TrackInfoPacket.Serialize, TrackInfoPacket.Deserialize);
 
-            // Holofunk struct types
-            Host.RegisterType<Player>();
-            Host.RegisterType<Performer>();
-            Host.RegisterType<Loopie>();
-
             // Distributed message types
-            Host.RegisterWith(ViewpointMessages.Register);
-            Host.RegisterWith(PerformerMessages.Register);
             Host.RegisterWith(LoopieMessages.Register);
+            Host.RegisterWith(PerformerMessages.Register);
+            Host.RegisterWith(ViewpointMessages.Register);
 
             Instance = this;
 

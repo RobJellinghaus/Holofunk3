@@ -27,6 +27,8 @@ namespace Holofunk.Perform
 
         public static void Register(DistributedHost.ProxyCapability proxyCapability)
         {
+            proxyCapability.RegisterType<Performer>();
+
             Registrar.RegisterCreateMessage<Create, DistributedPerformer, LocalPerformer, IDistributedPerformer>(
                 proxyCapability,
                 DistributedObjectFactory.DistributedType.Performer,
