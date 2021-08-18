@@ -20,25 +20,25 @@ namespace Holofunk.Loop
         /// <summary>
         /// Cached list to avoid reallocating per frame.
         /// </summary>
-        private List<DistributedId> allTouchedLoopieList = new List<DistributedId>();
+        private HashSet<DistributedId> allTouchedLoopieSet = new HashSet<DistributedId>();
 
         public void Update()
         {
-            allTouchedLoopieList.Clear();
+            allTouchedLoopieSet.Clear();
 
             foreach (LocalPerformer localPerformer in
                 DistributedObjectFactory.FindComponentInstances<LocalPerformer>(
                     DistributedObjectFactory.DistributedType.Performer, includeActivePrototype: true))
             {
                 uint[] touchedLoopieIds = localPerformer.GetPerformer().TouchedLoopieIdList;
-                allTouchedLoopieList.AddRange(touchedLoopieIds.Select(id => new DistributedId(id)));
+                allTouchedLoopieSet.UnionWith(touchedLoopieIds.Select(id => new DistributedId(id)));
             }
 
             foreach (LocalLoopie localLoopie in
                 DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
                     DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
             {
-                if (allTouchedLoopieList.Contains(localLoopie.DistributedObject.Id))
+                if (allTouchedLoopieSet.Contains(localLoopie.DistributedObject.Id))
                 {
                     localLoopie.IsTouched = true;
                 }
