@@ -113,7 +113,7 @@ namespace Holofunk.Loop
 
             beatMeasureControllers = new List<BeatMeasureController>();
             beatMeasureControllers.Add(transform.GetChild(1).GetComponent<BeatMeasureController>());
-            beatMeasureControllers[0].audioTrack = trackId;
+            beatMeasureControllers[0].localLoopie = this;
         }
 
         private void InstantiateFrequencyBandShapes()
@@ -179,11 +179,9 @@ namespace Holofunk.Loop
         /// </summary>
         private void UpdateMeasureControllers()
         {
-            TrackInfo trackTimeInfo = NowSoundTrackAPI.Info(trackId);
-
             // Did we advance to a new measure?
             // If so, make a new BeatMeasureController and move the existing ones to the left.
-            if ((int)trackTimeInfo.DurationInBeats > beatMeasureControllers.Count * Clock.Instance.BeatsPerMeasure)
+            if ((int)trackInfo.DurationInBeats > beatMeasureControllers.Count * Clock.Instance.BeatsPerMeasure)
             {
                 // we need another beatMeasureController.
                 BeatMeasureController lastBeatMeasureController = beatMeasureControllers[beatMeasureControllers.Count - 1];
@@ -191,7 +189,7 @@ namespace Holofunk.Loop
                 newBeatMeasureControllerGameObject.name = $"BeatMeasureController#{transform.childCount}";
                 BeatMeasureController newBeatMeasureController = newBeatMeasureControllerGameObject.GetComponent<BeatMeasureController>();
                 newBeatMeasureController.startingMeasure = beatMeasureControllers.Count;
-                newBeatMeasureController.audioTrack = trackId;
+                newBeatMeasureController.localLoopie = this;
 
                 beatMeasureControllers.Add(newBeatMeasureController);
 
@@ -385,6 +383,8 @@ namespace Holofunk.Loop
 
             return value + ((1f - value) * (2/3f));
         }
+
+        public TrackInfo TrackInfo => trackInfo;
 
         #endregion
 

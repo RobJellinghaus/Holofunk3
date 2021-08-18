@@ -11,7 +11,7 @@ namespace Holofunk.Loop
         [Tooltip("Starting measure")]
         public int startingMeasure;
 
-        public TrackId audioTrack;
+        public LocalLoopie localLoopie;
 
         private SpriteRenderer[] hollowQuarterCircles;
         private SpriteRenderer[] filledQuarterCircles;
@@ -33,14 +33,8 @@ namespace Holofunk.Loop
         // Update is called once per frame
         void Update()
         {
-            if (audioTrack == TrackId.Undefined)
-            {
-                // we are just the template object; do nothing
-                return;
-            }
-
-            // Get the current info
-            TrackInfo trackInfo = NowSoundTrackAPI.Info(audioTrack);
+            // local copy of struct
+            TrackInfo trackInfo = localLoopie.TrackInfo;
 
             // How many beats long is the audio track?
             Duration<Beat> trackDuration = trackInfo.DurationInBeats;
