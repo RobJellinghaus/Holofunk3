@@ -168,7 +168,8 @@ namespace Holofunk.Loop
             UpdateHeldLoopiePosition();
 
             // Now that track info has been updated, update the controllers displaying what measure it is.
-            UpdateMeasureControllers();
+            // TODO: figure out how to have a remote clock that is synced sufficiently well
+            // UpdateMeasureControllers();
 
             // Now that the loopie underlying data is fully updated for this frame, update the loopie's appearance.
             UpdateLoopieAppearance();
