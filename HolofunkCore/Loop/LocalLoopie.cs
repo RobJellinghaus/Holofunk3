@@ -130,6 +130,7 @@ namespace Holofunk.Loop
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
                 GameObject disc = ShapeContainer.InstantiateShape(ShapeType.Cylinder, transform.GetChild(0));
+                disc.SetActive(true);
                 disc.transform.localPosition = new Vector3(0, i * MagicNumbers.FrequencyDiscVerticalDistance, 0);
                 Vector3 localScale = disc.transform.localScale;
                 // TODO: magic constant for x/z (e.g. width, since x/z symmetrical) scale
