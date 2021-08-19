@@ -19,6 +19,8 @@ namespace Holofunk.Loop
         // Use this for initialization
         void Start()
         {
+            return; // TODO: actually run
+
             hollowQuarterCircles = new SpriteRenderer[Clock.Instance.BeatsPerMeasure];
             filledQuarterCircles = new SpriteRenderer[Clock.Instance.BeatsPerMeasure];
             for (int i = 0; i < Clock.Instance.BeatsPerMeasure; i++)
@@ -33,6 +35,8 @@ namespace Holofunk.Loop
         // Update is called once per frame
         void Update()
         {
+            return; // TODO: actually run
+
             // local copy of struct
             TrackInfo trackInfo = localLoopie.TrackInfo;
 
