@@ -264,23 +264,6 @@ namespace Holofunk.Loop
                 transform.localScale = new Vector3(scale, scale, scale);
             }
 
-            // get the color of the prototype loopie
-            LocalLoopie prototypeLocalLoopie = DistributedObjectFactory.FindPrototypeComponent<LocalLoopie>(
-                DistributedObjectFactory.DistributedType.Loopie);
-
-            Color color = prototypeLocalLoopie.transform.GetChild(0).GetComponent<Renderer>().material.color;
-            if (IsTouched)
-            {
-                color = new Color(Increase(color.r), Increase(color.g), Increase(color.b), Increase(color.a));
-            }
-            if (GetLoopie().IsMuted)
-            {
-                float average = (color.r + color.g + color.b) / 3;
-                color = new Color(average, average, average, color.a);
-            }
-
-            transform.GetChild(0).GetComponent<Renderer>().material.color = color;
-
             // get the max value -- these can be anything, typically from <1 for almost inaudible up to 100 - 400 for quite loud.
             // Intensity values seem greater at lower frequencies.  So we just scale everything to the maximum in this histogram.
             // TODO: also scale by volume for total size?
