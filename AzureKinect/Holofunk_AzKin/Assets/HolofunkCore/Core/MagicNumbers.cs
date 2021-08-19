@@ -100,7 +100,7 @@ namespace Holofunk.Core
         /// <summary>
         /// The scale of each frequency disc's height, relative to the original scale of its shape.
         /// </summary>
-        public static readonly float FrequencyDiscHeightScaleFactor = 0.13f;
+        public static readonly float FrequencyDiscHeightScaleFactor = 0.1f;
 
         /// <summary>
         /// The scale of each frequency disc's width, relative to the original scale of its shape.
@@ -110,7 +110,7 @@ namespace Holofunk.Core
         /// <summary>
         /// The vertical distance apart to place each frequency disc.
         /// </summary>
-        public static readonly float FrequencyDiscVerticalDistance = 0.011f;
+        public static readonly float FrequencyDiscVerticalDistance = 0.008f;
 
         /// <summary>
         /// The minimum value below which frequency bins will be ignored.
