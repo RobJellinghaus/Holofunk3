@@ -461,6 +461,18 @@ namespace Holofunk.Loop
         /// </summary>
         /// <remarks>
         /// This is not distributed state; it is purely local, and moreover is recomputed every frame.
+        /// 
+        /// This is specifically recomputed as a result of the script execution order. On every frame:
+        /// - LoopiePreController sets IsTouched of all LocalLoopies to false.
+        /// - PerformerPreController sets the performer's list of touched loopies to empty.
+        /// - HandController (both of them) set their own internal list of touched loopies.
+        /// - PerformerPostController collects the loopies touched by each hand and updates the touched loopie list.
+        /// - LoopiePostController updates the IsTouched field of all loopies.
+        /// 
+        /// (Note that the distributed IsTouched state is updated by propagating the performer's
+        /// touched loopie list. In other words, on the Azure Kinect side, there is only the LoopiePreController
+        /// and LoopiePostController, and they work solely off the proxy Performer state which is updated via
+        /// the network.)
         /// </remarks>
         public bool IsTouched { get; set; }
 
