@@ -35,14 +35,14 @@ namespace Holofunk.Viewpoint
         /// this index is semantically meaningless and only used for iterating over currently known players.
         /// </remarks>
         [LocalMethod]
-        Player GetPlayer(int index);
+        PlayerState GetPlayer(int index);
 
         /// <summary>
         /// Try to get the player with this ID.
         /// </summary>
         /// <param name="playerId">The player ID to look for.</param>
         [LocalMethod]
-        bool TryGetPlayer(PlayerId playerId, out Player player);
+        bool TryGetPlayer(PlayerId playerId, out PlayerState player);
 
         /// <summary>
         /// Update the given player.
@@ -53,7 +53,7 @@ namespace Holofunk.Viewpoint
         /// nulled out.
         /// </remarks>
         [ReliableMethod]
-        void UpdatePlayer(Player playerToUpdate);
+        void UpdatePlayer(PlayerState playerToUpdate);
 
         /// <summary>
         /// Get the viewpoint-to-local matrix.

@@ -23,7 +23,7 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// We keep the players list completely unsorted for now.
         /// </summary>
-        private List<Player> players = new List<Player>();
+        private List<PlayerState> players = new List<PlayerState>();
 
         /// <summary>
         /// Get the count of currently known Players.
@@ -32,12 +32,12 @@ namespace Holofunk.Viewpoint
 
         public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedViewpoint>();
 
-        internal void Initialize(Player[] playerArray) => players.AddRange(playerArray);
+        internal void Initialize(PlayerState[] playerArray) => players.AddRange(playerArray);
 
         /// <summary>
         /// Internal method for use by Create message.
         /// </summary>
-        internal Player[] PlayersAsArray => players.ToArray();
+        internal PlayerState[] PlayersAsArray => players.ToArray();
 
         #region IDistributedViewpoint
 
@@ -49,7 +49,7 @@ namespace Holofunk.Viewpoint
         /// Note that the index of the player here has nothing to do with the PlayerId field of the player;
         /// this index is semantically meaningless and only used for iterating over currently known players.
         /// </remarks>
-        public Player GetPlayer(int index)
+        public PlayerState GetPlayer(int index)
         {
             Contract.Requires(index >= 0);
             Contract.Requires(index < PlayerCount);
@@ -60,18 +60,18 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// Try to get the player with a given Id.
         /// </summary>
-        public bool TryGetPlayer(PlayerId playerId, out Player player)
+        public bool TryGetPlayer(PlayerId playerId, out PlayerState player)
         {
             for (int i = 0; i < players.Count; i++)
             {
-                Player p = players[i];
+                PlayerState p = players[i];
                 if (p.PlayerId == playerId)
                 {
                     player = p;
                     return true;
                 }
             }
-            player = default(Player);
+            player = default(PlayerState);
             return false;
         }
 
@@ -88,7 +88,7 @@ namespace Holofunk.Viewpoint
         /// There is no way to delete a player, but a player object can be marked untracked and have its fields
         /// nulled out (except for player ID).
         /// </remarks>
-        public void UpdatePlayer(Player playerToUpdate)
+        public void UpdatePlayer(PlayerState playerToUpdate)
         {
             Core.HoloDebug.Log($"UpdatePlayer: updating player {playerToUpdate.PlayerId} with performer host address {playerToUpdate.PerformerHostAddress}");
             for (int i = 0; i < PlayerCount; i++)
@@ -112,12 +112,12 @@ namespace Holofunk.Viewpoint
         /// This is used for acquiring the viewpoint-to-local matrices, since these are not defined
         /// unless the current performer is recognized.
         /// </remarks>
-        private Player GetLocalPlayer()
+        private PlayerState GetLocalPlayer()
         {
             // If we are the viewpoint host then there is no local player.
             if (DistributedObject.IsOwner)
             {
-                return default(Player);
+                return default(PlayerState);
             }
 
             // what is our current host?
@@ -125,7 +125,7 @@ namespace Holofunk.Viewpoint
             // do we have a player that has been recognized as being from here?
             for (int i = 0; i < PlayerCount; i++)
             {
-                Player p = GetPlayer(i);
+                PlayerState p = GetPlayer(i);
                 if (p.PerformerHostAddress == hostAddress)
                 {
                     // found it!
@@ -134,7 +134,7 @@ namespace Holofunk.Viewpoint
             }
 
             // didn't found it
-            return default(Player);
+            return default(PlayerState);
         }
 
         public Matrix4x4 ViewpointToLocalMatrix()
@@ -145,7 +145,7 @@ namespace Holofunk.Viewpoint
             }
             else
             {
-                Player localPlayer = GetLocalPlayer();
+                PlayerState localPlayer = GetLocalPlayer();
                 if (localPlayer.PlayerId.IsInitialized)
                 {
                     return localPlayer.ViewpointToPerformerMatrix;
@@ -165,7 +165,7 @@ namespace Holofunk.Viewpoint
             }
             else
             {
-                Player localPlayer = GetLocalPlayer();
+                PlayerState localPlayer = GetLocalPlayer();
                 if (localPlayer.PlayerId.IsInitialized)
                 {
                     return localPlayer.PerformerToViewpointMatrix;

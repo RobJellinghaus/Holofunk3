@@ -65,12 +65,12 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// Get the player with a given index.
         /// </summary>
-        public Player GetPlayer(int index) => GetLocalViewpoint().GetPlayer(index);
+        public PlayerState GetPlayer(int index) => GetLocalViewpoint().GetPlayer(index);
 
         /// <summary>
         /// Try to get the player with this ID.
         /// </summary>
-        public bool TryGetPlayer(PlayerId playerId, out Player player) => GetLocalViewpoint().TryGetPlayer(playerId, out player);
+        public bool TryGetPlayer(PlayerId playerId, out PlayerState player) => GetLocalViewpoint().TryGetPlayer(playerId, out player);
 
         /// <summary>
         /// Update the given player.
@@ -81,7 +81,7 @@ namespace Holofunk.Viewpoint
         /// nulled out.
         /// </remarks>
         [ReliableMethod]
-        public void UpdatePlayer(Player playerToUpdate) => RouteReliableMessage(isRequest => new UpdatePlayer(Id, isRequest, playerToUpdate));
+        public void UpdatePlayer(PlayerState playerToUpdate) => RouteReliableMessage(isRequest => new UpdatePlayer(Id, isRequest, playerToUpdate));
 
         public Matrix4x4 ViewpointToLocalMatrix() => GetLocalViewpoint().ViewpointToLocalMatrix();
 

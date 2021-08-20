@@ -12,16 +12,16 @@ namespace Holofunk.Viewpoint
     {
         public class Create : CreateMessage
         {
-            public Player[] Players { get; set; }
+            public PlayerState[] Players { get; set; }
             public Create() : base() { }
-            public Create(DistributedId id, Player[] players) : base(id) { Players = players; }
+            public Create(DistributedId id, PlayerState[] players) : base(id) { Players = players; }
         }
 
         public class UpdatePlayer : ReliableMessage
         {
-            public Player Player { get; set; }
+            public PlayerState Player { get; set; }
             public UpdatePlayer() : base() { }
-            public UpdatePlayer(DistributedId id, bool isRequest, Player player) : base(id, isRequest) { Player = player; }
+            public UpdatePlayer(DistributedId id, bool isRequest, PlayerState player) : base(id, isRequest) { Player = player; }
             public override void Invoke(IDistributedInterface target) => ((IDistributedViewpoint)target).UpdatePlayer(Player);
         }
 
@@ -29,7 +29,7 @@ namespace Holofunk.Viewpoint
         {
             proxyCapability.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
             proxyCapability.RegisterType(UserId.Serialize, UserId.Deserialize);
-            proxyCapability.RegisterType<Player>();
+            proxyCapability.RegisterType<PlayerState>();
         }
 
         public static void Register(DistributedHost.ProxyCapability proxyCapability)

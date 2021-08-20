@@ -19,7 +19,7 @@ namespace Holofunk.Viewpoint
     /// <remarks>
     /// If a joint is not currently tracked, all values for that joint will be zero.
     /// </remarks>
-    public struct Player : INetSerializable
+    public struct PlayerState : INetSerializable
     {
         /// <summary>
         /// Player identifier from the Viewpoint.

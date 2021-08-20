@@ -34,12 +34,12 @@ namespace Holofunk.Viewpoint
                 int playerIndex = PlayerIndex;
                 bool tracked = kinectManager.IsUserDetected(playerIndex);
                 DistributedViewpoint distributedViewpoint = TheViewpoint.Instance;
-                Player currentPlayer;
+                PlayerState currentPlayer;
                 distributedViewpoint.TryGetPlayer(new PlayerId((byte)(playerIndex + 1)), out currentPlayer);
 
                 if (!tracked)
                 {
-                    currentPlayer = new Player()
+                    currentPlayer = new PlayerState()
                     {
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         Tracked = false,
@@ -68,7 +68,7 @@ namespace Holofunk.Viewpoint
                     rightHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight));
 
                     // Keep the performer host address and the performer-to-viewpoint transform, if known.
-                    currentPlayer = new Player()
+                    currentPlayer = new PlayerState()
                     {
                         Tracked = true,
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
