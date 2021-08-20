@@ -26,6 +26,7 @@ namespace Holofunk.Distributed
         {
             Loopie,
             Performer,
+            SoundClock,
             SoundEffect,
             Viewpoint,
         }

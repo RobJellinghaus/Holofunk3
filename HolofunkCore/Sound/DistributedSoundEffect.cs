@@ -86,7 +86,7 @@ namespace Holofunk.Sound
         protected override void SendCreateMessage(NetPeer netPeer)
         {
             HoloDebug.Log($"Sending SoundEffectMessages.Create for id {Id} to peer {netPeer.EndPoint}");
-            Host.SendReliableMessage(new Create(Id, PluginId, PluginName, PluginProgramId, ProgramName), netPeer);
+            Host.SendReliableMessage(new CreateSoundEffect(Id, PluginId, PluginName, PluginProgramId, ProgramName), netPeer);
         }
 
         protected override void SendDeleteMessage(NetPeer netPeer, bool isRequest)

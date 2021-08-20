@@ -74,6 +74,18 @@ namespace NowSoundLib
             BeatsPerMinute = pinvokeTimeInfo.BeatsPerMinute;
             BeatInMeasure = pinvokeTimeInfo.BeatInMeasure;
         }
+
+        internal TimeInfo(
+            float beatsInMeasure,
+            float beatsPerMinute,
+            ContinuousDuration<Beat> exactBeat,
+            Time<AudioSample> timeInSamples)
+        {
+            BeatInMeasure = beatsInMeasure;
+            BeatsPerMinute = beatsPerMinute;
+            ExactBeat = exactBeat;
+            TimeInSamples = timeInSamples;
+        }
     };
 
     // Information about a track's time in NowSound terms.

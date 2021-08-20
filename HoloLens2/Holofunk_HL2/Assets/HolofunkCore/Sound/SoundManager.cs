@@ -210,7 +210,7 @@ namespace Holofunk.Sound
 
             // initialize the last audio time
             TimeInfo time = NowSoundGraphAPI.TimeInfo();
-            lastAudioTime = time.TimeInSamples;
+            lastAudioTime = time.Value.TimeInSamples;
 
             // Initialize plugins!
             // Now let's scan!
@@ -365,7 +365,7 @@ namespace Holofunk.Sound
             {
                 // lastAudioTime has been initialized, so the graph must be running, so it's safe to call GetTimeInfo()
 
-                Clock.Instance.UpdateFromAudioGraph(timeInfo.TimeInSamples);
+                Clock.Instance.UpdateFromAudioGraph(timeInfo.Value.TimeInSamples);
 
                 // TODO: and update the text
 
