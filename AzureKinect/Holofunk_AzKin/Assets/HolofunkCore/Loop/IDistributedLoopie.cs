@@ -55,7 +55,7 @@ namespace Holofunk.Loop
         /// Broadcast the current amplitude of this Loopie.
         /// </summary>
         [BroadcastMethod]
-        void SetCurrentInfo(SignalInfoPacket signalInfoPacket, TrackInfoPacket trackInfoPacket, ulong timestamp);
+        void SetCurrentInfo(SignalInfo signalInfoPacket, TrackInfo trackInfoPacket, ulong timestamp);
 
         /// <summary>
         /// Broadcast the current waveform of this Loopie.

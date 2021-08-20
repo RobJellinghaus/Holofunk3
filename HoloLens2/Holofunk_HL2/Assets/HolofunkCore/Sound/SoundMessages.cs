@@ -37,8 +37,8 @@ namespace Holofunk.Viewpoint
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType(AudioInputId.Serialize, AudioInputId.Deserialize);
-            proxyCapability.RegisterType(SignalInfoPacket.Serialize, SignalInfoPacket.Deserialize);
-            proxyCapability.RegisterType(TrackInfoPacket.Serialize, TrackInfoPacket.Deserialize);
+            proxyCapability.RegisterType(SignalInfo.Serialize, SignalInfo.Deserialize);
+            proxyCapability.RegisterType(TrackInfo.Serialize, TrackInfo.Deserialize);
         }
 
         public static void Register(DistributedHost.ProxyCapability proxyCapability)

@@ -7,21 +7,21 @@ using System;
 namespace Holofunk.Sound
 {
     /// <summary>
-    /// ID of an audio input, suitable for distribution.
+    /// Information about an audio signal, for amplitude/rendering purposes.
     /// </summary>
     /// <remarks>
-    /// Wraps the NowSoundLib TimeInfo type.
+    /// Wraps the NowSoundLib SignalInfo type.
     /// </remarks>
-    public struct SignalInfoPacket
+    public struct SignalInfo
     {
         private NowSoundSignalInfo value;
 
-        public SignalInfoPacket(NowSoundSignalInfo value)
+        public SignalInfo(NowSoundSignalInfo value)
         {
             this.value = value;
         }
 
-        public static implicit operator SignalInfoPacket(NowSoundSignalInfo value) => new SignalInfoPacket(value);
+        public static implicit operator SignalInfo(NowSoundSignalInfo value) => new SignalInfo(value);
 
         public NowSoundSignalInfo Value => value;
 
@@ -30,14 +30,14 @@ namespace Holofunk.Sound
             packetProcessor.RegisterNestedType(Serialize, Deserialize);
         }
 
-        public static void Serialize(NetDataWriter writer, SignalInfoPacket signalInfoPacket)
+        public static void Serialize(NetDataWriter writer, SignalInfo signalInfoPacket)
         {
             writer.Put(signalInfoPacket.Value.Avg);
             writer.Put(signalInfoPacket.Value.Max);
             writer.Put(signalInfoPacket.Value.Min);
         }
 
-        public static SignalInfoPacket Deserialize(NetDataReader reader)
+        public static SignalInfo Deserialize(NetDataReader reader)
         {
             NowSoundSignalInfo signalInfo = new NowSoundSignalInfo()
             {
@@ -46,22 +46,22 @@ namespace Holofunk.Sound
                 Min = reader.GetFloat()
             };
 
-            return new SignalInfoPacket(signalInfo);
+            return new SignalInfo(signalInfo);
         }
 
-        public static bool operator ==(SignalInfoPacket left, SignalInfoPacket right)
+        public static bool operator ==(SignalInfo left, SignalInfo right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(SignalInfoPacket left, SignalInfoPacket right)
+        public static bool operator !=(SignalInfo left, SignalInfo right)
         {
             return !(left == right);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is SignalInfoPacket id
+            return obj is SignalInfo id
                    && Value.Avg == id.Value.Avg
                    && Value.Max == id.Value.Max
                    && Value.Min == id.Value.Min;

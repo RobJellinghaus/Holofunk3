@@ -133,16 +133,16 @@ namespace Holofunk.Sound
             // Verify this large structure is serialized and deserialized correctly.
             TrackInfo trackInfo = NowSoundTrackAPI.GetStaticTrackInfo();
 
-            Contract.Assert(trackInfo.IsTrackLooping);
-            Contract.Assert(trackInfo.StartTime == 2);
-            Contract.Assert((float)trackInfo.StartTimeInBeats == 3);
-            Contract.Assert(trackInfo.Duration == 4);
-            Contract.Assert(trackInfo.DurationInBeats == 5);
-            Contract.Assert((float)trackInfo.ExactDuration == 6);
-            Contract.Assert(trackInfo.LocalClockTime == 7);
-            Contract.Assert((float)trackInfo.LocalClockBeat == 8);
-            Contract.Assert(trackInfo.LastSampleTime == 9);
-            Contract.Assert(trackInfo.Pan == 10);
+            Contract.Assert(trackInfo.Value.IsTrackLooping);
+            Contract.Assert(trackInfo.Value.StartTime == 2);
+            Contract.Assert((float)trackInfo.Value.StartTimeInBeats == 3);
+            Contract.Assert(trackInfo.Value.Duration == 4);
+            Contract.Assert(trackInfo.Value.DurationInBeats == 5);
+            Contract.Assert((float)trackInfo.Value.ExactDuration == 6);
+            Contract.Assert(trackInfo.Value.LocalClockTime == 7);
+            Contract.Assert((float)trackInfo.Value.LocalClockBeat == 8);
+            Contract.Assert(trackInfo.Value.LastSampleTime == 9);
+            Contract.Assert(trackInfo.Value.Pan == 10);
 
             // If InitializeClock has not been called, then we need to update the Clock ourselves.
             if (Clock.PossiblyNullInstance == null)

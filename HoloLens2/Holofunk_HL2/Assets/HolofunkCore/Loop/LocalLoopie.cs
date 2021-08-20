@@ -40,7 +40,7 @@ namespace Holofunk.Loop
         /// <summary>
         /// The current overall information about the track.
         /// </summary>
-        private TrackInfo trackInfo;
+        private NowSoundLib.TrackInfo trackInfo;
 
         /// <summary>
         /// The highest info timestamp received so far.
@@ -92,7 +92,7 @@ namespace Holofunk.Loop
         /// <summary>
         /// The last known TrackInfo about this track.
         /// </summary>
-        private TrackInfo lastTrackInfo;
+        private NowSoundLib.TrackInfo lastTrackInfo;
 
         #endregion
 
@@ -238,10 +238,10 @@ namespace Holofunk.Loop
                 // - the waveform info
 
                 NowSoundSignalInfo signalInfo = NowSoundTrackAPI.SignalInfo(trackId);
-                TrackInfo trackInfo = NowSoundTrackAPI.Info(trackId);
+                NowSoundLib.TrackInfo trackInfo = NowSoundTrackAPI.Info(trackId);
                 ((DistributedLoopie)DistributedObject).SetCurrentInfo(
-                    new SignalInfoPacket(signalInfo),
-                    new TrackInfoPacket(trackInfo),
+                    new SignalInfo(signalInfo),
+                    new Sound.TrackInfo(trackInfo),
                     timestamp);
 
                 NowSoundTrackAPI.GetFrequencies(trackId, frequencyBins);
@@ -369,7 +369,7 @@ namespace Holofunk.Loop
             return value + ((1f - value) * (2/3f));
         }
 
-        public TrackInfo TrackInfo => trackInfo;
+        public NowSoundLib.TrackInfo TrackInfo => trackInfo;
 
         #endregion
 
@@ -431,7 +431,7 @@ namespace Holofunk.Loop
             }
         }
 
-        public void SetCurrentInfo(SignalInfoPacket signalInfo, TrackInfoPacket trackInfo, ulong timestamp)
+        public void SetCurrentInfo(SignalInfo signalInfo, Sound.TrackInfo trackInfo, ulong timestamp)
         {
             // ignore out of order timestamps
             if (timestamp > maxInfoTimestamp)

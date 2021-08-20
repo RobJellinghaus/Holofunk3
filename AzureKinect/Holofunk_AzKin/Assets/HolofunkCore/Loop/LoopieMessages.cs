@@ -59,11 +59,11 @@ namespace Holofunk.Loop
 
         public class SetCurrentInfo : BroadcastMessage
         {
-            public SignalInfoPacket SignalInfo { get; set; }
-            public TrackInfoPacket TrackInfo { get; set; }
+            public SignalInfo SignalInfo { get; set; }
+            public TrackInfo TrackInfo { get; set; }
             public ulong Timestamp { get; set; }
             public SetCurrentInfo() : base() { }
-            public SetCurrentInfo(DistributedId id, SerializedSocketAddress owner, SignalInfoPacket signalInfo, TrackInfoPacket trackInfo, ulong timestamp)
+            public SetCurrentInfo(DistributedId id, SerializedSocketAddress owner, SignalInfo signalInfo, TrackInfo trackInfo, ulong timestamp)
                 : base(id, owner)
             {
                 SignalInfo = signalInfo;

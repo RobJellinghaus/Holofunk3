@@ -56,7 +56,7 @@ namespace Holofunk.Loop
         public void FinishRecording() =>
             RouteReliableMessage(isRequest => new FinishRecording(Id, isRequest: !IsOwner));
 
-        public void SetCurrentInfo(SignalInfoPacket signalInfo, TrackInfoPacket trackInfo, ulong timestamp) =>
+        public void SetCurrentInfo(SignalInfo signalInfo, TrackInfo trackInfo, ulong timestamp) =>
             RouteBroadcastMessage(new SetCurrentInfo(Id, new SerializedSocketAddress(OwningPeer), signalInfo, trackInfo, timestamp));
 
         public void SetCurrentWaveform(float[] frequencyBins, ulong timestamp) =>

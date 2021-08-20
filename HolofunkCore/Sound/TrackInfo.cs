@@ -2,30 +2,29 @@
 
 using LiteNetLib.Utils;
 using NowSoundLib;
-using System;
 
 namespace Holofunk.Sound
 {
     /// <summary>
-    /// ID of an audio input, suitable for distribution.
+    /// Information about an audio track, serializably.
     /// </summary>
     /// <remarks>
-    /// Wraps the NowSoundLib TimeInfo type.
+    /// Wraps the NowSoundLib TrackInfo type.
     /// </remarks>
-    public struct TrackInfoPacket
+    public struct TrackInfo
     {
-        private TrackInfo value;
+        private NowSoundLib.TrackInfo value;
 
-        public TrackInfoPacket(TrackInfo value)
+        public TrackInfo(NowSoundLib.TrackInfo value)
         {
             this.value = value;
         }
 
         public bool IsInitialized => value.StartTime != 0;
 
-        public static implicit operator TrackInfoPacket(TrackInfo value) => new TrackInfoPacket(value);
+        public static implicit operator TrackInfo(NowSoundLib.TrackInfo value) => new TrackInfo(value);
 
-        public TrackInfo Value => value;
+        public NowSoundLib.TrackInfo Value => value;
 
         public override string ToString()
         {
@@ -37,23 +36,23 @@ namespace Holofunk.Sound
             packetProcessor.RegisterNestedType(Serialize, Deserialize);
         }
 
-        public static void Serialize(NetDataWriter writer, TrackInfoPacket trackInfoPacket)
+        public static void Serialize(NetDataWriter writer, TrackInfo trackInfo)
         {
-            writer.Put(trackInfoPacket.Value.Duration);
-            writer.Put(trackInfoPacket.Value.DurationInBeats);
-            writer.Put((float)trackInfoPacket.Value.ExactDuration);
-            writer.Put(trackInfoPacket.Value.IsTrackLooping);
-            writer.Put((long)trackInfoPacket.Value.LastSampleTime);
-            writer.Put((float)trackInfoPacket.Value.LocalClockBeat);
-            writer.Put(trackInfoPacket.Value.LocalClockTime);
-            writer.Put(trackInfoPacket.Value.Pan);
-            writer.Put((long)trackInfoPacket.Value.StartTime);
-            writer.Put((float)trackInfoPacket.Value.StartTimeInBeats);
+            writer.Put(trackInfo.Value.Duration);
+            writer.Put(trackInfo.Value.DurationInBeats);
+            writer.Put((float)trackInfo.Value.ExactDuration);
+            writer.Put(trackInfo.Value.IsTrackLooping);
+            writer.Put((long)trackInfo.Value.LastSampleTime);
+            writer.Put((float)trackInfo.Value.LocalClockBeat);
+            writer.Put(trackInfo.Value.LocalClockTime);
+            writer.Put(trackInfo.Value.Pan);
+            writer.Put((long)trackInfo.Value.StartTime);
+            writer.Put((float)trackInfo.Value.StartTimeInBeats);
         }
 
-        public static TrackInfoPacket Deserialize(NetDataReader reader)
+        public static TrackInfo Deserialize(NetDataReader reader)
         {
-            TrackInfo trackInfo = new TrackInfo(
+            NowSoundLib.TrackInfo trackInfo = new NowSoundLib.TrackInfo(
                 duration: reader.GetLong(),
                 durationInBeats: reader.GetLong(),
                 exactDuration: reader.GetFloat(),
@@ -65,22 +64,22 @@ namespace Holofunk.Sound
                 startTime: reader.GetLong(),
                 startTimeInBeats: reader.GetFloat());
 
-            return new TrackInfoPacket(trackInfo);
+            return new TrackInfo(trackInfo);
         }
 
-        public static bool operator ==(TrackInfoPacket left, TrackInfoPacket right)
+        public static bool operator ==(TrackInfo left, TrackInfo right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(TrackInfoPacket left, TrackInfoPacket right)
+        public static bool operator !=(TrackInfo left, TrackInfo right)
         {
             return !(left == right);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is TrackInfoPacket id
+            return obj is TrackInfo id
                    && Value.Duration == id.Value.Duration
                    && Value.DurationInBeats == id.Value.DurationInBeats
                    && (float)Value.ExactDuration == (float)id.Value.ExactDuration // note: loses units :-P TODO: proper ContinuousDuration equality
