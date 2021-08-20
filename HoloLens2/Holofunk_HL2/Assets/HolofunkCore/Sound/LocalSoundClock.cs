@@ -1,9 +1,6 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
-using LiteNetLib.Utils;
-using NowSoundLib;
-using System;
 using UnityEngine;
 
 namespace Holofunk.Sound
@@ -20,6 +17,8 @@ namespace Holofunk.Sound
         #region ILocalSoundClock
 
         public TimeInfo TimeInfo { get; private set; }
+
+        public void Update(TimeInfo timeInfo) => TimeInfo = timeInfo;
 
         public void OnDelete()
         {

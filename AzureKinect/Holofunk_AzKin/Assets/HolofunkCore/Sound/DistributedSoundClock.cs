@@ -31,6 +31,8 @@ namespace Holofunk.Sound
 
         public TimeInfo TimeInfo => GetLocalSoundClock().TimeInfo;
 
+        public void Update(TimeInfo timeInfo) => GetLocalSoundClock().Update(timeInfo);
+
         private LocalSoundClock GetLocalSoundClock() => gameObject.GetComponent<LocalSoundClock>();
 
         #endregion

@@ -16,5 +16,11 @@ namespace Holofunk.Sound
         /// The time info for the clock.
         /// </summary>
         public TimeInfo TimeInfo { get; }
+
+        /// <summary>
+        /// Update the time info
+        /// </summary>
+        [ReliableMethod]
+        public void Update(TimeInfo timeInfo);
     }
 }

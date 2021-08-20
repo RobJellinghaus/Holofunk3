@@ -1,10 +1,7 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
-using Holofunk.Core;
 using Holofunk.Distributed;
-using LiteNetLib;
-using UnityEngine;
 
 namespace Holofunk.Viewpoint
 {

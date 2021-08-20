@@ -1,11 +1,8 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
-using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Sound;
-using LiteNetLib;
-using UnityEngine;
 
 namespace Holofunk.Viewpoint
 {
@@ -51,6 +48,20 @@ namespace Holofunk.Viewpoint
             }
         }
 
+        /// <summary>
+        /// Update a SoundClock.
+        /// </summary>
+        /// <remarks>
+        /// TODO: consider some generic state abstraction to make all this create plumbing be shared.
+        /// </remarks>
+        public class UpdateSoundClock : ReliableMessage
+        {
+            public TimeInfo TimeInfo { get; set; }
+            public UpdateSoundClock() : base() { }
+            public UpdateSoundClock(DistributedId id, bool isRequest, TimeInfo timeInfo) : base(id, isRequest) { TimeInfo = timeInfo; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedSoundClock)target).Update(TimeInfo);
+        }
+
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType(AudioInputId.Serialize, AudioInputId.Deserialize);
@@ -73,6 +84,9 @@ namespace Holofunk.Viewpoint
                 proxyCapability,
                 DistributedObjectFactory.DistributedType.SoundClock,
                 (local, message) => local.Initialize(message.TimeInfo));
+
+            Registrar.RegisterReliableMessage<UpdateSoundClock, DistributedSoundClock, LocalSoundClock, IDistributedSoundClock>(
+                proxyCapability);
         }
     }
 }
