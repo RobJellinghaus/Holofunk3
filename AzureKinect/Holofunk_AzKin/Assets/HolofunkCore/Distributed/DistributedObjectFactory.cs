@@ -24,9 +24,10 @@ namespace Holofunk.Distributed
         /// </summary>
         public enum DistributedType
         {
-            Viewpoint,
-            Performer,
             Loopie,
+            Performer,
+            SoundEffect,
+            Viewpoint,
         }
 
         /// <summary>
