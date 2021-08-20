@@ -55,38 +55,10 @@ namespace Holofunk.Sound
         /// </summary>
         private readonly List<string> _pluginInstanceDescriptionStrings = new List<string>();
 
-        private bool _soundInitialized = false;
-
         /// <summary>
         /// Are we currently recording output audio into a file?
         /// </summary>
         private bool _isRecordingToFile = false;
-
-        /// <summary>
-        /// If true, it's this controller's responsibility to update _theClock.
-        /// </summary>
-        /// <remarks>
-        /// This happens if we are not running under UWP and if we are simulating the audio clock via Unity update loop.
-        /// </remarks>
-        private bool shouldUpdateClock;
-
-        /// <summary>
-        /// If !shouldUpdateClock, then we track the last audio time and advance the clock by the difference.
-        /// </summary>
-        private Time<AudioSample> lastAudioTime;
-
-        /// <summary>
-        /// The fractional samples left over from the last time we advanced the time.
-        /// </summary>
-        /// <remarks>
-        /// This prevents round-off error with advancing the clock. e.g. if we are at 48Khz sample rate and we happen
-        /// to always have a remainingTIme of (say) 100.4 samples, then simply rounding down deltaTime would result in
-        /// always ignoring the fractional sample, which would soon start drifting from realtime.  Instead, we advance
-        /// the clock by 100 samples and save the .4 of a sample in this field; the next time, we will add it to the
-        /// deltaTime value giving 100.8 (100 samples output and .8 stored here), and the time after that 101.2, resulting
-        /// in 101 samples output and .2 stored back here.
-        /// </remarks>
-        private float remainingFractionalSample;
 
         #endregion
 
@@ -196,13 +168,8 @@ namespace Holofunk.Sound
             // TODO: use GUI for device selection again
             // NowSoundGraphAPI.InitializeDeviceInputs(0);
 
-            NowSoundGraphInfo graphInfo = NowSoundGraphAPI.Info();
-
+            // NowSoundGraphInfo graphInfo = NowSoundGraphAPI.Info();
             // Contract.Assert(graphInfo.InputDeviceCount == 2);
-
-            // initialize the last audio time
-            TimeInfo time = NowSoundGraphAPI.TimeInfo();
-            lastAudioTime = time.Value.TimeInSamples;
 
             // Initialize plugins!
             // Now let's scan!
@@ -274,8 +241,6 @@ namespace Holofunk.Sound
                         programName);
                 }
             }
-
-            _soundInitialized = true;
         }
 
         IEnumerator WaitForGraphStateCoroutine(NowSoundGraphState expectedState)
