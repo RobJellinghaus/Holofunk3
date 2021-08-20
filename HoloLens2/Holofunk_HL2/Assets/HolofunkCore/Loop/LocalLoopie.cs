@@ -22,7 +22,7 @@ namespace Holofunk.Loop
         /// <summary>
         /// The state of this Loopie, in distributed terms.
         /// </summary>
-        private Loopie loopie;
+        private LoopieState loopie;
 
         /// <summary>
         /// If there is a SoundManager, and we created a track, this is its ID.
@@ -380,9 +380,9 @@ namespace Holofunk.Loop
         /// <summary>
         /// Get the loopie's state.
         /// </summary>
-        public Loopie GetLoopie() => loopie;
+        public LoopieState GetLoopie() => loopie;
 
-        internal void Initialize(Loopie loopie)
+        internal void Initialize(LoopieState loopie)
         {
             this.loopie = loopie;
         }

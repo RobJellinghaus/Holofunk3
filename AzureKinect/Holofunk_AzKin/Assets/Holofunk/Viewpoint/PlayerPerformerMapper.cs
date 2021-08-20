@@ -164,7 +164,7 @@ namespace Holofunk.Viewpoint
                             {
                                 DistributedPerformer thePerformer = TheViewpoint.GetPerformer(0);
                                 // is their hand open?
-                                Performer performance = thePerformer.GetPerformer();
+                                PerformerState performance = thePerformer.GetPerformer();
 
                                 if (performance.LeftHandPose == HandPoseValue.Opened
                                     || performance.RightHandPose == HandPoseValue.Opened)

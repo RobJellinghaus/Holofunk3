@@ -12,20 +12,18 @@ namespace Holofunk.Sound
     /// <remarks>
     /// Wraps the NowSoundLib AudioInputId type.
     /// </remarks>
-    public struct AudioInput
+    public struct AudioInputId
     {
-        private AudioInputId value;
+        private NowSoundLib.AudioInputId value;
 
-        public AudioInput(AudioInputId value)
+        public AudioInputId(NowSoundLib.AudioInputId value)
         {
             this.value = value;
         }
 
-        public bool IsInitialized => value != AudioInputId.AudioInputUndefined;
+        public bool IsInitialized => value != NowSoundLib.AudioInputId.AudioInputUndefined;
 
-        public static implicit operator AudioInput(AudioInputId value) => new AudioInput(value);
-
-        public AudioInputId Value => value;
+        public NowSoundLib.AudioInputId Value => value;
 
         public override string ToString()
         {
@@ -37,23 +35,23 @@ namespace Holofunk.Sound
             packetProcessor.RegisterNestedType(Serialize, Deserialize);
         }
 
-        public static void Serialize(NetDataWriter writer, AudioInput audioInput) => writer.Put((int)audioInput.Value);
+        public static void Serialize(NetDataWriter writer, AudioInputId audioInput) => writer.Put((int)audioInput.Value);
 
-        public static AudioInput Deserialize(NetDataReader reader) => new AudioInput((AudioInputId)reader.GetInt());
+        public static AudioInputId Deserialize(NetDataReader reader) => new AudioInputId((NowSoundLib.AudioInputId)reader.GetInt());
 
-        public static bool operator ==(AudioInput left, AudioInput right)
+        public static bool operator ==(AudioInputId left, AudioInputId right)
         {
             return left.Equals(right);
         }
 
-        public static bool operator !=(AudioInput left, AudioInput right)
+        public static bool operator !=(AudioInputId left, AudioInputId right)
         {
             return !(left == right);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is AudioInput id &&
+            return obj is AudioInputId id &&
                    value == id.value;
         }
 

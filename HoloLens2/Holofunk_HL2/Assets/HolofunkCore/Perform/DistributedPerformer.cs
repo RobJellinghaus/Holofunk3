@@ -39,7 +39,7 @@ namespace Holofunk.Perform
         /// <summary>
         /// Get the performer.
         /// </summary>
-        public Performer GetPerformer() => GetLocalPerformer().GetPerformer();
+        public PerformerState GetPerformer() => GetLocalPerformer().GetPerformer();
 
         /// <summary>
         /// Update the given player.
@@ -50,7 +50,7 @@ namespace Holofunk.Perform
         /// nulled out.
         /// </remarks>
         [ReliableMethod]
-        public void UpdatePerformer(Performer performer) => RouteReliableMessage(isRequest => new UpdatePerformer(Id, isRequest, performer));
+        public void UpdatePerformer(PerformerState performer) => RouteReliableMessage(isRequest => new UpdatePerformer(Id, isRequest, performer));
 
         #endregion
 

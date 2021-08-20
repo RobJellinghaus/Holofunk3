@@ -18,12 +18,12 @@ namespace Holofunk.Loop
     /// Also note that the amplitude (current loudness) of the loopie is broadcast "ephemerally"
     /// from one proxy to all instances, and isn't part of the "persistent" distributed state of the loopie.
     /// </remarks>
-    public struct Loopie : INetSerializable
+    public struct LoopieState : INetSerializable
     {
         /// <summary>
         /// The audio input to start recording from.
         /// </summary>
-        public AudioInput AudioInput { get; set; }
+        public AudioInputId AudioInput { get; set; }
 
         /// <summary>
         /// The position of the loopie, in viewpoint coordinates.
@@ -42,7 +42,7 @@ namespace Holofunk.Loop
 
         public void Deserialize(NetDataReader reader)
         {
-            AudioInput = AudioInput.Deserialize(reader);
+            AudioInput = AudioInputId.Deserialize(reader);
             ViewpointPosition = reader.GetVector3();
             IsMuted = reader.GetBool();
             Volume = reader.GetFloat();
@@ -50,7 +50,7 @@ namespace Holofunk.Loop
 
         public void Serialize(NetDataWriter writer)
         {
-            AudioInput.Serialize(writer, AudioInput);
+            AudioInputId.Serialize(writer, AudioInput);
             writer.Put(ViewpointPosition);
             writer.Put(IsMuted);
             writer.Put(Volume);

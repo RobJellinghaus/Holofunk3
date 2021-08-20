@@ -13,9 +13,9 @@ namespace Holofunk.Loop
     {
         public class Create : CreateMessage
         {
-            public Loopie Loopie { get; set; }
+            public LoopieState Loopie { get; set; }
             public Create() : base() { }
-            public Create(DistributedId id, Loopie loopie) : base(id) { Loopie = loopie; }
+            public Create(DistributedId id, LoopieState loopie) : base(id) { Loopie = loopie; }
             public override string ToString() => $"{base.ToString()}{Loopie}";
         }
 
@@ -90,7 +90,7 @@ namespace Holofunk.Loop
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType(LoopieId.Serialize, LoopieId.Deserialize);
-            proxyCapability.RegisterType<Loopie>();
+            proxyCapability.RegisterType<LoopieState>();
         }
 
         // TODO: refactor this for actual sharing with the other Register methods

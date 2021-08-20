@@ -12,7 +12,7 @@ namespace Holofunk.Sound
     {
         public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedSoundEffect>();
 
-        internal void Initialize(int pluginId, string pluginName, int pluginProgramId, string programName)
+        internal void Initialize(PluginId pluginId, string pluginName, PluginProgramId pluginProgramId, string programName)
         {
             PluginId = pluginId;
             PluginName = pluginName;
@@ -22,11 +22,11 @@ namespace Holofunk.Sound
 
         #region ILocalSoundEffect
 
-        public int PluginId { get; private set; }
+        public PluginId PluginId { get; private set; }
 
         public string PluginName { get; private set; }
 
-        public int PluginProgramId { get; private set; }
+        public PluginProgramId PluginProgramId { get; private set; }
 
         public string ProgramName { get; private set; }
 

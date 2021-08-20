@@ -12,22 +12,22 @@ namespace Holofunk.Perform
     {
         public class Create : CreateMessage
         {
-            public Performer Performer { get; set; }
+            public PerformerState Performer { get; set; }
             public Create() : base() { }
-            public Create(DistributedId id, Performer performer) : base(id) { Performer = performer; }
+            public Create(DistributedId id, PerformerState performer) : base(id) { Performer = performer; }
         }
 
         public class UpdatePerformer : ReliableMessage
         {
-            public Performer Performer { get; set; }
+            public PerformerState Performer { get; set; }
             public UpdatePerformer() : base() { }
-            public UpdatePerformer(DistributedId id, bool isRequest, Performer performer) : base(id, isRequest) { Performer = performer; }
+            public UpdatePerformer(DistributedId id, bool isRequest, PerformerState performer) : base(id, isRequest) { Performer = performer; }
             public override void Invoke(IDistributedInterface target) => ((IDistributedPerformer)target).UpdatePerformer(Performer);
         }
 
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
-            proxyCapability.RegisterType<Performer>();
+            proxyCapability.RegisterType<PerformerState>();
         }
 
         public static void Register(DistributedHost.ProxyCapability proxyCapability)

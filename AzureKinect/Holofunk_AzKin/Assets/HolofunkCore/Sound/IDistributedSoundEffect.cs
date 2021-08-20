@@ -18,7 +18,7 @@ namespace Holofunk.Sound
         /// <summary>
         /// The ID of the plugin for this effect.
         /// </summary>
-        public int PluginId { get; }
+        public PluginId PluginId { get; }
 
         /// <summary>
         /// The name of the plugin implementing this effect.
@@ -28,7 +28,7 @@ namespace Holofunk.Sound
         /// <summary>
         /// The program ID within this plugin for this effect.
         /// </summary>
-        public int PluginProgramId { get; }
+        public PluginProgramId PluginProgramId { get; }
 
         /// <summary>
         /// The name of the program implementing this effect.

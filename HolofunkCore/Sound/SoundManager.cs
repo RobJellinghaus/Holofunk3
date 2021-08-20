@@ -214,6 +214,7 @@ namespace Holofunk.Sound
 
             // Initialize plugins!
             // Now let's scan!
+            // TODO: make this something that could actually ship (environment variable???)
             NowSoundGraphAPI.AddPluginSearchPath(@"C:\Program Files\Steinberg\VSTPlugins");
             NowSoundGraphAPI.AddPluginSearchPath(@"C:\Program Files\VSTPlugins");
 
@@ -228,7 +229,7 @@ namespace Holofunk.Sound
 
             for (int pluginIndex = 1; pluginIndex <= pluginCount; pluginIndex++)
             {
-                NowSoundGraphAPI.PluginName((PluginId)pluginIndex, buffer);
+                NowSoundGraphAPI.PluginName((NowSoundLib.PluginId)pluginIndex, buffer);
                 string pluginName = buffer.ToString();
                 Debug.Log($"Plugin #{pluginIndex}: '{pluginName}'");
                 _plugins.Add(pluginName);
@@ -238,18 +239,19 @@ namespace Holofunk.Sound
 
                 Debug.Log($"    Calling LoadPluginPrograms...");
 
-                string presetPath = $@"C:\git\holofunk2\presets\{pluginName}";
+                // TODO: gaaaah make this something that could ship
+                string presetPath = $@"C:\git\holofunk3\azurekinect\presets\{pluginName}";
                 if (Directory.Exists(presetPath))
                 {
-                    NowSoundGraphAPI.LoadPluginPrograms((PluginId)pluginIndex, presetPath);
+                    NowSoundGraphAPI.LoadPluginPrograms((NowSoundLib.PluginId)pluginIndex, presetPath);
 
                     yield return WaitForGraphState(NowSoundGraphState.GraphRunning);
 
-                    int programCount = NowSoundGraphAPI.PluginProgramCount((PluginId)pluginIndex);
+                    int programCount = NowSoundGraphAPI.PluginProgramCount((NowSoundLib.PluginId)pluginIndex);
                     Debug.Log($"    {programCount} programs loaded.");
                     for (int programIndex = 1; programIndex <= programCount; programIndex++)
                     {
-                        NowSoundGraphAPI.PluginProgramName((PluginId)pluginIndex, (ProgramId)programIndex, buffer);
+                        NowSoundGraphAPI.PluginProgramName((NowSoundLib.PluginId)pluginIndex, (ProgramId)programIndex, buffer);
                         string programName = buffer.ToString();
                         programs.Add(programName);
                         Debug.Log($"    Program #{programIndex}: '{programName}'");
@@ -257,6 +259,28 @@ namespace Holofunk.Sound
                 }
 
                 _pluginPrograms.Add(programs);
+            }
+
+            // and create all the sound effect objects!
+            for (int i = 0; i < _plugins.Count; i++)
+            {
+                int pluginId = i + 1;
+                string pluginName = _plugins[i];
+
+                for (int j = 0; j < _pluginPrograms[i].Count; j++)
+                {
+                    int pluginProgramId = j + 1;
+                    string programName = _pluginPrograms[i][j];
+
+                    // Create distributed sound effect instance to disseminate knowledge of this effect.
+                    // We only need to create it; it will get propagated and added to the scene graph, so we
+                    // don't have to retain the return value.
+                    DistributedSoundEffect.Create(
+                        new PluginId((NowSoundLib.PluginId)pluginId),
+                        pluginName,
+                        new PluginProgramId((ProgramId)pluginProgramId),
+                        programName);
+                }
             }
 
             _soundInitialized = true;
@@ -292,7 +316,7 @@ namespace Holofunk.Sound
         {
             string s;
             {
-                int effectCount = NowSoundGraphAPI.GetInputPluginInstanceCount(audioInputId);
+                int effectCount = NowSoundGraphAPI.GetInputPluginInstanceCount(audioInputId.Value);
                 if (effectCount == 0)
                 {
                     s = "(none)";
@@ -302,41 +326,18 @@ namespace Holofunk.Sound
                     List<string> programs = new List<string>();
                     for (int i = 0; i < effectCount; i++)
                     {
-                        PluginInstanceInfo pluginInstanceInfo = NowSoundGraphAPI.GetInputPluginInstanceInfo(audioInputId, (PluginInstanceIndex)(i + 1));
+                        PluginInstanceInfo pluginInstanceInfo = NowSoundGraphAPI.GetInputPluginInstanceInfo(audioInputId.Value, (PluginInstanceIndex)(i + 1));
                         programs.Add(_pluginPrograms[(int)pluginInstanceInfo.NowSoundPluginId - 1][(int)pluginInstanceInfo.NowSoundProgramId - 1]);
                     }
                     s = string.Join(", ", programs);
                 }
             }
-            _pluginInstanceDescriptionStrings[(int)audioInputId - 1] = s;
+            _pluginInstanceDescriptionStrings[(int)audioInputId.Value - 1] = s;
         }
 
         void Update()
         {
             TimeInfo timeInfo = NowSoundGraphAPI.TimeInfo();
-            if (_soundInitialized)
-            {
-                /*
-                // for now co-opt TheText to display time info
-                int pluginCount = NowSoundGraphAPI.PluginCount();
-                GUIController.Instance.Text1 =
-                    $@"{timeInfo.BeatsPerMinute} BPM - {(int)timeInfo.ExactBeat} total beats - measure beat #{(timeInfo.BeatInMeasure):0.##}
-#1 FX: {_pluginInstanceDescriptionStrings[0]} - #2 FX: {_pluginInstanceDescriptionStrings[1]}";
-                */
-            }
-
-            // Call OnPreUpdate on all Loopies.
-            // We can't use ExecuteEventOnChildren for this because the loopies aren't actually children of the LoopieContainer,
-            // since this puts them in the wrong transform for easy world space manipulation.
-            // So we hack it with the LoopieController's static Loopie collection.
-            /*
-            LoopieController.PreUpdateAllLoopies();
-            // However, the diegetic canvas lets us PreUpdate just fine.
-            preUpdateEventExecutor.ExecuteEventOnChildren(
-                GameObject.Find(HolofunkGUIStateMachine.UIContainer),
-                false,
-                (child, state) => child.OnPreUpdate());
-            */
 
             // If there is no external clock, then use deltaTime to update this clock, taking care not to drop fractional samples.
             if (shouldUpdateClock)
@@ -375,14 +376,6 @@ namespace Holofunk.Sound
             // Update the value of UnityNow; this will be the value for all other Update()s in this cycle.
             Clock.Instance.SynchronizeUnityTimeWithAudioTime();
 
-            /*
-            // TODO: remove this
-            // Temporary: put in an actual wall-clock clock
-            DateTime dateTimeNow = DateTime.Now;
-            // TODO: this could be horribly garbagey, let's see
-            KinectManager.Instance.calibrationText.text = string.Format("{0}:{1}:{2}.{3}", dateTimeNow.Hour, dateTimeNow.Minute, dateTimeNow.Second, dateTimeNow.Millisecond);
-            */
-
             // pick up any log messages
             WriteAllLogMessagesToUnityDebugConsole();
         }
@@ -399,25 +392,27 @@ namespace Holofunk.Sound
 
         public void StartRecording()
         {
-            Contract.Requires(!IsRecordingToFile);
+            if (!IsRecordingToFile)
+            {
+                string myDocumentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string recordingsPath = Path.Combine(myDocumentsPath, "HolofunkRecordings");
+                Directory.CreateDirectory(recordingsPath);
 
-            string myDocumentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string recordingsPath = Path.Combine(myDocumentsPath, "HolofunkRecordings");
-            Directory.CreateDirectory(recordingsPath);
+                DateTime now = DateTime.Now;
+                string recordingFile = Path.Combine(recordingsPath, now.ToString("yyyyMMdd_HHmmss.wav"));
 
-            DateTime now = DateTime.Now;
-            string recordingFile = Path.Combine(recordingsPath, now.ToString("yyyyMMdd_HHmmss.wav"));
-
-            _isRecordingToFile = true;
-            NowSoundGraphAPI.StartRecording(recordingFile);
+                _isRecordingToFile = true;
+                NowSoundGraphAPI.StartRecording(recordingFile);
+            }
         }
 
         public void StopRecording()
         {
-            Contract.Requires(IsRecordingToFile);
-
-            _isRecordingToFile = false;
-            NowSoundGraphAPI.StopRecording();
+            if (IsRecordingToFile)
+            {
+                _isRecordingToFile = false;
+                NowSoundGraphAPI.StopRecording();
+            }
         }
 
         #endregion

@@ -42,7 +42,7 @@ namespace Holofunk.Loop
         /// <summary>
         /// Get the loopie state.
         /// </summary>
-        public Loopie GetLoopie() => GetLocalLoopie().GetLoopie();
+        public LoopieState GetLoopie() => GetLocalLoopie().GetLoopie();
 
         public void SetMute(bool isMuted) => 
             RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
@@ -110,9 +110,9 @@ namespace Holofunk.Loop
             LocalLoopie localLoopie = distributedLoopie.GetLocalLoopie();
 
             // First set up the Loopie state in distributed terms.
-            localLoopie.Initialize(new Loopie
+            localLoopie.Initialize(new LoopieState
             {
-                AudioInput = new Sound.AudioInput(NowSoundLib.AudioInputId.AudioInput1),
+                AudioInput = new Sound.AudioInputId(NowSoundLib.AudioInputId.AudioInput1),
                 ViewpointPosition = viewpointPosition,
                 IsMuted = false,
                 Volume = 0.7f

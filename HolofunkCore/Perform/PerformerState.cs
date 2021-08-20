@@ -14,7 +14,7 @@ namespace Holofunk.Perform
     /// <remarks>
     /// If a joint is not currently tracked, all values for that joint will be zero.
     /// </remarks>
-    public struct Performer : INetSerializable
+    public struct PerformerState : INetSerializable
     {
         /// <summary>
         /// The position of the head, in performer coordinates.

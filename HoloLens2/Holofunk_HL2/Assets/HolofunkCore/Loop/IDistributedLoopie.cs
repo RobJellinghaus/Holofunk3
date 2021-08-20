@@ -24,7 +24,7 @@ namespace Holofunk.Loop
         /// The state of the Loopie.
         /// </summary>
         [LocalMethod]
-        Loopie GetLoopie();
+        LoopieState GetLoopie();
 
         /// <summary>
         /// Move the loopie in space.

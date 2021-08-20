@@ -23,11 +23,11 @@ namespace Holofunk.Perform
         /// <summary>
         /// We keep the players list completely unsorted for now.
         /// </summary>
-        private Performer performer;
+        private PerformerState performer;
 
         public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedPerformer>();
 
-        internal void Initialize(Performer performer)
+        internal void Initialize(PerformerState performer)
         {
             this.performer = performer;
         }
@@ -35,7 +35,7 @@ namespace Holofunk.Perform
         /// <summary>
         /// Get the (singular) performer.
         /// </summary>
-        public Performer GetPerformer() => performer;
+        public PerformerState GetPerformer() => performer;
 
         public void OnDelete()
         {
@@ -45,7 +45,7 @@ namespace Holofunk.Perform
         /// <summary>
         /// Update the performer.
         /// </summary>
-        public void UpdatePerformer(Performer performer)
+        public void UpdatePerformer(PerformerState performer)
         {
             this.performer = performer;
         }

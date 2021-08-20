@@ -23,11 +23,11 @@ namespace Holofunk.Perform
         /// <summary>
         /// The state of the Performer.
         /// </summary>
-        Performer GetPerformer();
+        PerformerState GetPerformer();
 
         /// <summary>
         /// Update the performer.
         /// </summary>
-        void UpdatePerformer(Performer performer);
+        void UpdatePerformer(PerformerState performer);
     }
 }
