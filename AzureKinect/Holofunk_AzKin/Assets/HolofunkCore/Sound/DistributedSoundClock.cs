@@ -11,6 +11,10 @@ namespace Holofunk.Sound
 {
     public class DistributedSoundClock : DistributedComponent, IDistributedSoundClock
     {
+        private static DistributedSoundClock theInstance = null;
+
+        public static DistributedSoundClock Instance => theInstance;
+
         #region MonoBehaviours
 
         public void Start()
@@ -21,6 +25,14 @@ namespace Holofunk.Sound
             {
                 InitializeOwner();
             }
+
+            if (gameObject.activeSelf)
+            {
+                // this is a live one, activate ourselves.
+                // should only ever happen once (either locally created owner, or live proxy)
+                Core.Contract.Assert(theInstance == null);
+                theInstance = this;
+            }
         }
 
         #endregion
@@ -30,6 +42,11 @@ namespace Holofunk.Sound
         public override ILocalObject LocalObject => GetLocalSoundClock();
 
         public TimeInfo TimeInfo => GetLocalSoundClock().TimeInfo;
+
+        /// <summary>
+        /// Beats per measure hardcoded to 4 for now. TODO: make this changeable
+        /// </summary>
+        public int BeatsPerMeasure => 4;
 
         public void Update(TimeInfo timeInfo) => GetLocalSoundClock().Update(timeInfo);
 
@@ -52,22 +69,22 @@ namespace Holofunk.Sound
         public static GameObject Create(TimeInfo timeInfo)
         {
             GameObject prototypeEffect = DistributedObjectFactory.FindPrototypeContainer(
-                DistributedObjectFactory.DistributedType.SoundEffect);
+                DistributedObjectFactory.DistributedType.SoundClock);
             GameObject localContainer = DistributedObjectFactory.FindLocalhostInstanceContainer(
-                DistributedObjectFactory.DistributedType.SoundEffect);
+                DistributedObjectFactory.DistributedType.SoundClock);
 
             GameObject newEffect = Instantiate(prototypeEffect, localContainer.transform);
-            // it will be inactive but that's actually good, it saves update cycles
+            newEffect.SetActive(true);
             DistributedSoundClock distributedClock = newEffect.GetComponent<DistributedSoundClock>();
             LocalSoundClock localEffect = distributedClock.GetLocalSoundClock();
 
-            // First set up the Loopie state in distributed terms.
+            // First, consume the initial state.
             localEffect.Initialize(timeInfo);
 
             // Then enable the distributed behavior.
             distributedClock.InitializeOwner();
 
-            // And finally set the loopie name.
+            // And finally set the name.
             newEffect.name = $"{distributedClock.Id}";
 
             return newEffect;

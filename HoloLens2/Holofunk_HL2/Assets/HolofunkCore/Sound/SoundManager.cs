@@ -144,16 +144,8 @@ namespace Holofunk.Sound
             Contract.Assert(trackInfo.Value.LastSampleTime == 9);
             Contract.Assert(trackInfo.Value.Pan == 10);
 
-            // If InitializeClock has not been called, then we need to update the Clock ourselves.
-            if (Clock.PossiblyNullInstance == null)
-            {
-                new Clock(beatsPerMinute: 90f, beatsPerMeasure: 4, inputChannelCount: 2); // initializes Clock.Instance
-
-                // audio clock is good
-                shouldUpdateClock = false;
-            }
-
-            // InstantiatePlayerControllers();
+            // Create the local clock.
+            GameObject clockObject = DistributedSoundClock.Create(new TimeInfo(new NowSoundLib.TimeInfo(4, 90f, 0, 0)));
 
             StartCoroutine(InitializeAudioGraph());
         }
@@ -339,42 +331,14 @@ namespace Holofunk.Sound
         {
             TimeInfo timeInfo = NowSoundGraphAPI.TimeInfo();
 
-            // If there is no external clock, then use deltaTime to update this clock, taking care not to drop fractional samples.
-            if (shouldUpdateClock)
+            if (currentAudioGraphState == NowSoundGraphState.GraphRunning)
             {
-                float samples = Time.deltaTime * Clock.SampleRateHz;
-                int truncatedSamples = (int)(samples + float.Epsilon); // add Float.Epsilon in case of 1.9999999-type cases
-                float fractionalSample = samples - truncatedSamples;
-                Contract.Assert(fractionalSample >= 0);
-
-                int sampleCount = truncatedSamples;
-
-                remainingFractionalSample += fractionalSample;
-                if (remainingFractionalSample >= 1f)
-                {
-                    int extraSamples = (int)remainingFractionalSample;
-                    sampleCount += extraSamples;
-                    remainingFractionalSample = remainingFractionalSample - extraSamples;
-                    Contract.Assert(remainingFractionalSample >= 0f);
-                    Contract.Assert(remainingFractionalSample < 1f);
-                }
-
-                Clock.Instance.AdvanceFromUnity(sampleCount);
-            }
-            else if (currentAudioGraphState == NowSoundGraphState.GraphRunning)
-            {
-                // lastAudioTime has been initialized, so the graph must be running, so it's safe to call GetTimeInfo()
-
-                Clock.Instance.UpdateFromAudioGraph(timeInfo.Value.TimeInSamples);
-
-                // TODO: and update the text
+                // update the distributed clock instance
+                DistributedSoundClock.Instance.Update(timeInfo);
 
                 // ... and call the bogus hacked MessageTick() method
                 NowSoundGraphAPI.MessageTick();
             }
-
-            // Update the value of UnityNow; this will be the value for all other Update()s in this cycle.
-            Clock.Instance.SynchronizeUnityTimeWithAudioTime();
 
             // pick up any log messages
             WriteAllLogMessagesToUnityDebugConsole();

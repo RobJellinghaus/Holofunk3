@@ -1,14 +1,8 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using com.rfilkov.kinect;
-using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Sound;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Holofunk.Viewpoint
@@ -32,7 +26,7 @@ namespace Holofunk.Viewpoint
             else
             {
                 SoundManager sm = SoundManager.Instance;
-                kinectManager.statusInfoText.text = $"AudioNow: {Clock.Instance.AudioNow}";
+                kinectManager.statusInfoText.text = $"AudioNow: {DistributedSoundClock.Instance?.TimeInfo.Value.TimeInSamples}";
             }
         }
     }

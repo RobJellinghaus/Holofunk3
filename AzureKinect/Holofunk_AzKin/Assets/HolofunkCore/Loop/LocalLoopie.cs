@@ -168,12 +168,16 @@ namespace Holofunk.Loop
             UpdateHeldLoopiePosition();
 
             // Now that track info has been updated, update the controllers displaying what measure it is.
-            // TODO: figure out how to have a remote clock that is synced sufficiently well
-            // UpdateMeasureControllers();
+            UpdateMeasureControllers();
 
             // Now that the loopie underlying data is fully updated for this frame, update the loopie's appearance.
             UpdateLoopieAppearance();
         }
+
+        /// <summary>
+        /// 4/4 time right now. TODO: allow changing time signature
+        /// </summary>
+        private readonly static int BeatsPerMeasure = 4;
 
         /// <summary>
         /// Update (and possibly add to) the BeatMeasureControllers.
@@ -182,7 +186,7 @@ namespace Holofunk.Loop
         {
             // Did we advance to a new measure?
             // If so, make a new BeatMeasureController and move the existing ones to the left.
-            if ((int)trackInfo.DurationInBeats > beatMeasureControllers.Count * Clock.Instance.BeatsPerMeasure)
+            if ((int)trackInfo.DurationInBeats > beatMeasureControllers.Count * BeatsPerMeasure)
             {
                 // we need another beatMeasureController.
                 BeatMeasureController lastBeatMeasureController = beatMeasureControllers[beatMeasureControllers.Count - 1];
@@ -230,7 +234,7 @@ namespace Holofunk.Loop
         {
             if (SoundManager.Instance != null)
             {
-                ulong timestamp = (ulong)(long)Clock.Instance.AudioNow.Time;
+                ulong timestamp = (ulong)(long)DistributedSoundClock.Instance.TimeInfo.Value.TimeInSamples;
 
                 // we broadcast two timestamped packets per frame per loopie:
                 // - the signal and track info
