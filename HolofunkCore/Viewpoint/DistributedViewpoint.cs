@@ -20,7 +20,7 @@ namespace Holofunk.Viewpoint
     {
         private static DistributedViewpoint theViewpoint;
 
-        public static DistributedViewpoint TheViewpoint => theViewpoint;
+        public static DistributedViewpoint Instance => theViewpoint;
 
         public static void InitializeTheViewpoint(DistributedViewpoint viewpoint)
         {

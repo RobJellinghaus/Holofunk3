@@ -32,5 +32,15 @@ namespace Holofunk.Menu
         /// </summary>
         [ReliableMethod]
         void SetSelection(MenuItemId topSelectedItemId, MenuItemId subSelectedItemId);
+
+        /// <summary>
+        /// Invoke the action associated with the currently selected (sub)menu item.
+        /// </summary>
+        /// <remarks>
+        /// This will only be invoked on the host which owns the menu, which is good as that is the only
+        /// host which defines any actions in the menu structure.
+        /// </remarks>
+        [LocalMethod]
+        void InvokeSelectedAction();
     }
 }

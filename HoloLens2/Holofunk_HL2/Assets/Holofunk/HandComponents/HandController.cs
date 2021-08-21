@@ -163,10 +163,10 @@ namespace Holofunk.HandComponents
             UpdateHandState(currentHandPose, ref performer);
 
             // Update the loopie's position while the user is holding it.
-            if (currentlyHeldLoopie != null && DistributedViewpoint.TheViewpoint != null)
+            if (currentlyHeldLoopie != null && DistributedViewpoint.Instance != null)
             {
                 Vector3 performerHandPosition = HandPosition(ref performer);
-                Matrix4x4 localToViewpointMatrix = DistributedViewpoint.TheViewpoint.LocalToViewpointMatrix();
+                Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
                 if (localToViewpointMatrix != Matrix4x4.zero)
                 {
                     Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
@@ -287,7 +287,7 @@ namespace Holofunk.HandComponents
         {
             Holofunk.Core.Contract.Requires(currentlyHeldLoopie == null);
 
-            if (DistributedViewpoint.TheViewpoint == null)
+            if (DistributedViewpoint.Instance == null)
             {
                 HoloDebug.Log("No DistributedViewpoint.TheViewpoint; can't create loopie");
                 return;
@@ -297,7 +297,7 @@ namespace Holofunk.HandComponents
 
             // performer space hand position
             Vector3 performerHandPosition = HandPosition(ref performer);
-            Matrix4x4 localToViewpointMatrix = DistributedViewpoint.TheViewpoint.LocalToViewpointMatrix();
+            Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
             Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
 
             GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition);

@@ -38,6 +38,16 @@ namespace Holofunk.HandComponents
 
         private HandPoseEvent(HandPoseEvent other) { _value = other._value; _isCaptured = true; }
 
+        public static bool operator ==(HandPoseEvent l, HandPoseEvent r)
+        {
+            return l._value == r._value && l.IsCaptured == r.IsCaptured;
+        }
+
+        public static bool operator !=(HandPoseEvent l, HandPoseEvent r)
+        {
+            return l._value != r._value || l.IsCaptured != r.IsCaptured;
+        }
+
         internal static HandPoseEvent Opened { get { return new HandPoseEvent(HandPoseValue.Opened); } }
         internal static HandPoseEvent Closed { get { return new HandPoseEvent(HandPoseValue.Closed); } }
         internal static HandPoseEvent Pointing1 { get { return new HandPoseEvent(HandPoseValue.PointingIndex); } }
@@ -64,6 +74,21 @@ namespace Holofunk.HandComponents
         public override string ToString()
         {
             return Value.ToString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is HandPoseEvent @event &&
+                   _value == @event._value &&
+                   _isCaptured == @event._isCaptured;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 1793886979;
+            hashCode = hashCode * -1521134295 + _value.GetHashCode();
+            hashCode = hashCode * -1521134295 + _isCaptured.GetHashCode();
+            return hashCode;
         }
     }
 

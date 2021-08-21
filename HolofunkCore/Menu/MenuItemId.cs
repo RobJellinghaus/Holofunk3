@@ -28,6 +28,18 @@ namespace Holofunk.Menu
 
         public int Value => value;
 
+        /// <summary>
+        /// Get this ID as a zero-based index.
+        /// </summary>
+        public int AsIndex
+        {
+            get
+            {
+                Core.Contract.Assert(IsInitialized);
+                return value - 1;
+            }
+        }
+
         public override string ToString() => $"#{value}";
 
         public static bool operator ==(MenuItemId left, MenuItemId right) => left.Equals(right);

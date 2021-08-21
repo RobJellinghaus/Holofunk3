@@ -13,6 +13,7 @@ namespace Holofunk.HandComponents
     /// </summary>
     /// <remarks>
     /// The LocalMenu component manages rendering of the menu; this component manages the interaction.
+    /// This component exists in the menu prototype in the HL2 application.
     /// </remarks>
     public class MenuController : MonoBehaviour
     {
@@ -22,9 +23,10 @@ namespace Holofunk.HandComponents
         HandController _handController;
 
         /// <summary>
-        /// The menu.
+        /// The menu this controller controls is expected to be a sibling component in the same menu
+        /// prototype game object.
         /// </summary>
-        DistributedMenu _menu;
+        private DistributedMenu Menu => GetComponent<DistributedMenu>();
 
         /// <summary>
         /// Initialize a newly instantiated MenuController.
@@ -34,22 +36,21 @@ namespace Holofunk.HandComponents
         /// <param name="rootPosition">The world space position the menu tree is being popped up at.</param>
         /// <param name="rootRelativePosition">The position of this (possibly multiply nested) child relative to
         /// the root of the whole menu tree; None if this is the root menu.</param>
-        public void Initialize(
-            HandController handController,
-            DistributedMenu menu)
+        public void Initialize(HandController handController)
         {
+            Contract.Assert(Menu != null);
+
             _handController = handController;
-            _menu = menu;
         }
 
         void Update()
         {
-            // first, find the hand 
+            // Find the hand.
             PerformerState performer = _handController.DistributedPerformer.GetPerformer();
             Vector3 handPosition = _handController.HandPosition(ref performer);
 
-            // First, find the closest item.
-            Option<(int, MenuItemId)> closestItem = ((LocalMenu)_menu.LocalObject).GetClosestMenuItemIfAny(handPosition);
+            // Find the closest item.
+            Option<(int, MenuItemId)> closestItem = ((LocalMenu)Menu.LocalObject).GetClosestMenuItemIfAny(handPosition);
 
             if (!closestItem.HasValue)
             {
@@ -62,8 +63,8 @@ namespace Holofunk.HandComponents
             // OK, so we have a closest menu item after all.
             // If the depth of the closest item is 0, then the sub-menu is now unselected;
             // if the depth of the closest item is 1, then the sub-menu is still selected.
-            MenuItemId priorTopSelectedItem = _menu.MenuState.TopSelectedItem;
-            MenuItemId priorSubSelectedItem = _menu.MenuState.SubSelectedItem;
+            MenuItemId priorTopSelectedItem = Menu.MenuState.TopSelectedItem;
+            MenuItemId priorSubSelectedItem = Menu.MenuState.SubSelectedItem;
 
             MenuItemId newTopSelectedItem = closestItem.Value.Item1 == 0 ? closestItem.Value.Item2 : priorTopSelectedItem;
             MenuItemId newSubSelectedItem = closestItem.Value.Item1 == 0 ? default(MenuItemId) : closestItem.Value.Item2;
@@ -74,7 +75,7 @@ namespace Holofunk.HandComponents
             if (priorTopSelectedItem != newTopSelectedItem
                 || priorSubSelectedItem != newSubSelectedItem)
             {
-                _menu.SetSelection(newTopSelectedItem, newSubSelectedItem);
+                Menu.SetSelection(newTopSelectedItem, newSubSelectedItem);
             }
         }
     }

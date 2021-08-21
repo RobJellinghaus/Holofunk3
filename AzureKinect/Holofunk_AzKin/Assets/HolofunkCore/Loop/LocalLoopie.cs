@@ -217,9 +217,9 @@ namespace Holofunk.Loop
             // move to viewpoint position if viewpoint position moved (and/or viewpoint matrix came back)
             if (lastViewpointPosition != loopie.ViewpointPosition)
             {
-                if (DistributedViewpoint.TheViewpoint != null)
+                if (DistributedViewpoint.Instance != null)
                 {
-                    Matrix4x4 viewpointToLocalMatrix = DistributedViewpoint.TheViewpoint.ViewpointToLocalMatrix();
+                    Matrix4x4 viewpointToLocalMatrix = DistributedViewpoint.Instance.ViewpointToLocalMatrix();
                     Vector3 localLoopiePosition = viewpointToLocalMatrix.MultiplyPoint(loopie.ViewpointPosition);
                     lastViewpointPosition = loopie.ViewpointPosition;
 

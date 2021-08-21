@@ -62,10 +62,34 @@ namespace Holofunk.Menu
 
         public void SetSelection(MenuItemId topSelectedItem, MenuItemId subSelectedItem)
         {
+            // If toplevel item is not initialized, then sub item must also be not initialized.
+            Core.Contract.Assert(topSelectedItem.IsInitialized ? true : !subSelectedItem.IsInitialized);
+
             MenuState currentState = MenuState;
             currentState.TopSelectedItem = topSelectedItem;
             currentState.SubSelectedItem = subSelectedItem;
             menuState = currentState;
+        }
+
+        public void InvokeSelectedAction()
+        {
+            MenuState state = MenuState;
+            if (!state.TopSelectedItem.IsInitialized)
+            {
+                // was nothing to do
+                return;
+            }
+
+            // ok top item is known initialized. get its structure entry
+            Action action = menuStructure.Action(state.TopSelectedItem);
+
+            if (state.SubSelectedItem.IsInitialized)
+            {
+                MenuStructure childStructure = menuStructure.Child(state.TopSelectedItem);
+                action = childStructure.Action(state.SubSelectedItem);
+            }
+
+            action();
         }
 
         public void OnDelete()

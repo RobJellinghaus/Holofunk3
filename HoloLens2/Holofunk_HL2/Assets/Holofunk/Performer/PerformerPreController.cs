@@ -39,7 +39,7 @@ namespace Holofunk.Perform
             ourPlayer = default(PlayerState);
             if (localViewpoint != null)
             {
-                if (DistributedViewpoint.TheViewpoint == null)
+                if (DistributedViewpoint.Instance == null)
                 {
                     DistributedViewpoint.InitializeTheViewpoint(localViewpoint.GetComponent<DistributedViewpoint>());
                 }
