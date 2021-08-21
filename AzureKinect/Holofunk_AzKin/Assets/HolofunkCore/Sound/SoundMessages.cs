@@ -54,12 +54,12 @@ namespace Holofunk.Viewpoint
         /// <remarks>
         /// TODO: consider some generic state abstraction to make all this create plumbing be shared.
         /// </remarks>
-        public class UpdateSoundClock : ReliableMessage
+        public class UpdateSoundClockTimeInfo : ReliableMessage
         {
             public TimeInfo TimeInfo { get; set; }
-            public UpdateSoundClock() : base() { }
-            public UpdateSoundClock(DistributedId id, bool isRequest, TimeInfo timeInfo) : base(id, isRequest) { TimeInfo = timeInfo; }
-            public override void Invoke(IDistributedInterface target) => ((IDistributedSoundClock)target).Update(TimeInfo);
+            public UpdateSoundClockTimeInfo() : base() { }
+            public UpdateSoundClockTimeInfo(DistributedId id, bool isRequest, TimeInfo timeInfo) : base(id, isRequest) { TimeInfo = timeInfo; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedSoundClock)target).UpdateTimeInfo(TimeInfo);
         }
 
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
@@ -85,7 +85,7 @@ namespace Holofunk.Viewpoint
                 DistributedObjectFactory.DistributedType.SoundClock,
                 (local, message) => local.Initialize(message.TimeInfo));
 
-            Registrar.RegisterReliableMessage<UpdateSoundClock, DistributedSoundClock, LocalSoundClock, IDistributedSoundClock>(
+            Registrar.RegisterReliableMessage<UpdateSoundClockTimeInfo, DistributedSoundClock, LocalSoundClock, IDistributedSoundClock>(
                 proxyCapability);
         }
     }

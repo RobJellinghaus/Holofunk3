@@ -116,8 +116,9 @@ namespace Holofunk.Sound
             Contract.Assert(trackInfo.Value.LastSampleTime == 9);
             Contract.Assert(trackInfo.Value.Pan == 10);
 
-            // Create the local clock.
-            GameObject clockObject = DistributedSoundClock.Create(new TimeInfo(new NowSoundLib.TimeInfo(4, 90f, 0, 0)));
+            // Create the distributed sound clock.
+            // Note that this initializes the DistributedSoundClock.Instance field.
+            DistributedSoundClock.Create(new TimeInfo(new NowSoundLib.TimeInfo(4, 90f, 0, 0)));
 
             StartCoroutine(InitializeAudioGraph());
         }
@@ -298,8 +299,8 @@ namespace Holofunk.Sound
 
             if (currentAudioGraphState == NowSoundGraphState.GraphRunning)
             {
-                // update the distributed clock instance
-                DistributedSoundClock.Instance.Update(timeInfo);
+                // update the distributed clock instance, which must exist
+                DistributedSoundClock.Instance.UpdateTimeInfo(timeInfo);
 
                 // ... and call the bogus hacked MessageTick() method
                 NowSoundGraphAPI.MessageTick();

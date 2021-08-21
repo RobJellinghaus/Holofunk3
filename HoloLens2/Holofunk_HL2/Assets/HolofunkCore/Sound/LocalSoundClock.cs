@@ -18,7 +18,7 @@ namespace Holofunk.Sound
 
         public TimeInfo TimeInfo { get; private set; }
 
-        public void Update(TimeInfo timeInfo) => TimeInfo = timeInfo;
+        public void UpdateTimeInfo(TimeInfo timeInfo) => TimeInfo = timeInfo;
 
         public void OnDelete()
         {

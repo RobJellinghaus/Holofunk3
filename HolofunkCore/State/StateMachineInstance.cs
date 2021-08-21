@@ -49,8 +49,6 @@ namespace Holofunk.StateMachines
         readonly List<State<TEvent>> _endList = new List<State<TEvent>>();
         readonly List<State<TEvent>> _pathDownList = new List<State<TEvent>>();
 
-        Moment m_lastTransitionMoment;
-
         public StateMachineInstance(TEvent initial, StateMachine<TEvent> machine, IModel initialModel)
         {
             _id = s_id++;
@@ -60,8 +58,6 @@ namespace Holofunk.StateMachines
 
             MoveTo(initial, machine.InitialState);
         }
-
-        public Moment LastTransitionMoment { get { return m_lastTransitionMoment; } set { m_lastTransitionMoment = value; } }
 
         // We are in state start.  We need to get to state end.
         // Do so by performing all the exit actions necessary to get up to the common parent of start and end,
@@ -168,23 +164,6 @@ namespace Holofunk.StateMachines
             Debug.WriteLine(exception.ToString());
             Debug.WriteLine(exception.StackTrace);
             Contract.Assert(false);
-        }
-
-        public void OnNext(TEvent value, Moment now)
-        {
-            // Find transition if any.
-            State<TEvent> destination = _machine.TransitionFrom(_machineState, value, _model);
-            if (destination != null) {
-                string transitionString = $"{_machineState} => {value} => {destination}";
-                _lastTransitionStrings.Add(transitionString);
-                if (_lastTransitionStrings.Count > TransitionsToKeep)
-                {
-                    _lastTransitionStrings.RemoveAt(0);
-                }
-                MoveTo(value, destination);
-            }
-
-            m_lastTransitionMoment = now;
         }
 
         public override string ToString() => $"StateMachineInstance[{_machineState}{(_lastTransitionStrings.Count > 0 ? "; " : "")}{string.Join($";{Environment.NewLine}", _lastTransitionStrings)}]";

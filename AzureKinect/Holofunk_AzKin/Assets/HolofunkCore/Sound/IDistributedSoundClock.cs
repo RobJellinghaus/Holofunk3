@@ -21,6 +21,6 @@ namespace Holofunk.Sound
         /// Update the time info
         /// </summary>
         [ReliableMethod]
-        public void Update(TimeInfo timeInfo);
+        public void UpdateTimeInfo(TimeInfo timeInfo);
     }
 }

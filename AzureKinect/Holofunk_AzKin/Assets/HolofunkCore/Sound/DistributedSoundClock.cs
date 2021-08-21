@@ -26,11 +26,8 @@ namespace Holofunk.Sound
                 InitializeOwner();
             }
 
-            if (gameObject.activeSelf)
+            if (gameObject.activeSelf && theInstance == null)
             {
-                // this is a live one, activate ourselves.
-                // should only ever happen once (either locally created owner, or live proxy)
-                Core.Contract.Assert(theInstance == null);
                 theInstance = this;
             }
         }
@@ -48,7 +45,7 @@ namespace Holofunk.Sound
         /// </summary>
         public int BeatsPerMeasure => 4;
 
-        public void Update(TimeInfo timeInfo) => GetLocalSoundClock().Update(timeInfo);
+        public void UpdateTimeInfo(TimeInfo timeInfo) => GetLocalSoundClock().UpdateTimeInfo(timeInfo);
 
         private LocalSoundClock GetLocalSoundClock() => gameObject.GetComponent<LocalSoundClock>();
 
@@ -83,6 +80,9 @@ namespace Holofunk.Sound
 
             // Then enable the distributed behavior.
             distributedClock.InitializeOwner();
+
+            // Set the static instance.
+            theInstance = distributedClock;
 
             // And finally set the name.
             newEffect.name = $"{distributedClock.Id}";
