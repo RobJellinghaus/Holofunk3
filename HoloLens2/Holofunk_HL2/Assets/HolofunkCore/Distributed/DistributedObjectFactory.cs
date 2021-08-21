@@ -25,6 +25,7 @@ namespace Holofunk.Distributed
         public enum DistributedType
         {
             Loopie,
+            Menu,
             Performer,
             SoundClock,
             SoundEffect,

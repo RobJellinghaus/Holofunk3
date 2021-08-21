@@ -37,7 +37,7 @@ namespace Holofunk.Loop
 
         public static void Serialize(NetDataWriter writer, LoopieId loopieId) => writer.Put(loopieId.value);
 
-        public static LoopieId Deserialize(NetDataReader reader) => new LoopieId(reader.GetByte());
+        public static LoopieId Deserialize(NetDataReader reader) => new LoopieId(reader.GetInt());
 
         public override bool Equals(object obj) => obj is LoopieId id && value == id.value;
 
