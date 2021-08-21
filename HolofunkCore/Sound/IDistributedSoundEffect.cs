@@ -18,21 +18,21 @@ namespace Holofunk.Sound
         /// <summary>
         /// The ID of the plugin for this effect.
         /// </summary>
-        public PluginId PluginId { get; }
+        PluginId PluginId { get; }
 
         /// <summary>
         /// The name of the plugin implementing this effect.
         /// </summary>
-        public string PluginName { get; }
+        string PluginName { get; }
 
         /// <summary>
         /// The program ID within this plugin for this effect.
         /// </summary>
-        public PluginProgramId PluginProgramId { get; }
+        PluginProgramId PluginProgramId { get; }
 
         /// <summary>
         /// The name of the program implementing this effect.
         /// </summary>
-        public string ProgramName { get; }
+        string ProgramName { get; }
     }
 }

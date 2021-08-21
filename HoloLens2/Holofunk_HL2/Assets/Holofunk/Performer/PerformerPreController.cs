@@ -18,14 +18,14 @@ namespace Holofunk.Perform
     /// </summary>
     public class PerformerPreController : MonoBehaviour
     {
-        private Player ourPlayer = default(Player);
+        private PlayerState ourPlayer = default(PlayerState);
         /// <summary>
         /// Get the state of our Player instance.
         /// </summary>
         /// <remarks>
         /// Returned by ref for efficiency, since Player is a large struct.
         /// </remarks>
-        public ref Player OurPlayer => ref ourPlayer;
+        public ref PlayerState OurPlayer => ref ourPlayer;
 
         // Update is called once per frame
         public void Update()
@@ -36,7 +36,7 @@ namespace Holofunk.Perform
             // TODO: handle multiple Players.
             LocalViewpoint localViewpoint = DistributedObjectFactory.FindFirstInstanceComponent<LocalViewpoint>(
                 DistributedObjectFactory.DistributedType.Viewpoint);
-            ourPlayer = default(Player);
+            ourPlayer = default(PlayerState);
             if (localViewpoint != null)
             {
                 if (DistributedViewpoint.TheViewpoint == null)

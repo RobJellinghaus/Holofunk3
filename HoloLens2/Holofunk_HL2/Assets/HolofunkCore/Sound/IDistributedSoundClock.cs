@@ -15,12 +15,12 @@ namespace Holofunk.Sound
         /// <summary>
         /// The time info for the clock.
         /// </summary>
-        public TimeInfo TimeInfo { get; }
+        TimeInfo TimeInfo { get; }
 
         /// <summary>
         /// Update the time info
         /// </summary>
         [ReliableMethod]
-        public void UpdateTimeInfo(TimeInfo timeInfo);
+        void UpdateTimeInfo(TimeInfo timeInfo);
     }
 }

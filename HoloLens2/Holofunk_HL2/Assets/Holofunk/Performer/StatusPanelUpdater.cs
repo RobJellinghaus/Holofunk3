@@ -42,7 +42,7 @@ namespace Holofunk.Perform
                 return;
             }
 
-            Player player = localViewpoint.PlayerCount > 0 ? localViewpoint.GetPlayer(0) : default(Player);
+            PlayerState player = localViewpoint.PlayerCount > 0 ? localViewpoint.GetPlayer(0) : default(PlayerState);
 
             // we know we have a Performer
             GameObject performerContainer = DistributedObjectFactory.FindPrototypeContainer(DistributedObjectFactory.DistributedType.Performer);
@@ -77,7 +77,7 @@ namespace Holofunk.Perform
             }
         }
 
-        private void ShowLoopieDistanceInTextPanel(TextMesh textMesh, Player player, LocalPerformer localPerformer)
+        private void ShowLoopieDistanceInTextPanel(TextMesh textMesh, PlayerState player, LocalPerformer localPerformer)
         {
             LocalLoopie firstLoopie = DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
                 DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false).FirstOrDefault();
@@ -103,7 +103,7 @@ Distance: {Vector3.Distance(handPos, loopiePos)}";
             }
         }
 
-        private void ShowRightHandPropertiesInTextPanel(TextMesh textMesh, Player player, LocalPerformer localPerformer)
+        private void ShowRightHandPropertiesInTextPanel(TextMesh textMesh, PlayerState player, LocalPerformer localPerformer)
         {
             HandPoseValue rightHandPose = localPerformer.GetPerformer().RightHandPose;
             HandController rightHandController = localPerformer
@@ -118,7 +118,7 @@ Right hand pose {rightHandPose}
 Right hand state {rightHandController.HandStateMachineInstanceString}";
         }
 
-        private static void ShowDistanceStatisticsInTextPanel(TextMesh text, Player p, LocalPerformer performer)
+        private static void ShowDistanceStatisticsInTextPanel(TextMesh text, PlayerState p, LocalPerformer performer)
         {
             Vector3 viewpointSensorPos = p.SensorPosition;
 
@@ -157,7 +157,7 @@ handPose {handPoseValue}";
             text.text = statusMessage;
         }
 
-        private static Player GetPlayer0(GameObject ic)
+        private static PlayerState GetPlayer0(GameObject ic)
         {
             if (ic != null)
             {
@@ -167,13 +167,13 @@ handPose {handPoseValue}";
                     LocalViewpoint localViewpoint = ic.transform.GetChild(0).GetComponent<LocalViewpoint>();
                     if (localViewpoint.PlayerCount > 0)
                     {
-                        Player player0 = localViewpoint.GetPlayer(0);
+                        PlayerState player0 = localViewpoint.GetPlayer(0);
                         return player0;
                     }
                 }
             }
 
-            return default(Player);
+            return default(PlayerState);
         }
     }
 }

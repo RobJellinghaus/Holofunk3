@@ -2,19 +2,29 @@
 
 using UnityEngine;
 
-namespace Holofunk.Loop
+namespace Holofunk.Shape
 {
     public enum ShapeType
     {
         /// <summary>
+        /// 0.1 m radius vertically thin cylinder
+        /// </summary>
+        Cylinder,
+
+        /// <summary>
+        /// Hollow circle sprite (0.1 m)
+        /// </summary>
+        HollowCircle,
+
+        /// <summary>
+        /// A menu item (0.05 m hollow circle w/text)
+        /// </summary>
+        MenuItem,
+
+        /// <summary>
         /// Simple 0.1 m sphere
         /// </summary>
         Sphere,
-        
-        /// <summary>
-        /// 0.1 m radius vertically thin cylinder
-        /// </summary>
-        Cylinder
     }
 
     public static class ShapeContainer

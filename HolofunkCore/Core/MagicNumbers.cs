@@ -150,5 +150,14 @@ namespace Holofunk.Core
         public static readonly float BinValueDecay = 0.3f;
 
         #endregion
+
+        #region Menus
+
+        /// <summary>
+        /// scale factor to apply to the distance of menu nodes
+        /// </summary>
+        public static readonly float MenuScale = 0.8f;
+
+        #endregion
     }
 }

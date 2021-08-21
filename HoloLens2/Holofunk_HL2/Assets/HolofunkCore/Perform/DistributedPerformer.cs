@@ -9,10 +9,10 @@ using static Holofunk.Perform.PerformerMessages;
 namespace Holofunk.Perform
 {
     /// <summary>
-    /// The distributed interface of a viewpoint in the current system.
+    /// The distributed version of a performer in a Holofunk session.
     /// </summary>
     /// <remarks>
-    /// Each HoloLens 2 host in a Holofunk system 
+    /// Each HoloLens 2 host in a Holofunk system owns one DistributedPerformer.
     /// </remarks>
     public class DistributedPerformer : DistributedComponent, IDistributedPerformer
     {

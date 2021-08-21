@@ -134,7 +134,7 @@ namespace Holofunk.HandComponents
         // Update is called once per frame
         void Update()
         {
-            Performer performer = DistributedPerformer.GetPerformer();
+            PerformerState performer = DistributedPerformer.GetPerformer();
 
             if (PerformerController.OurPlayer.PerformerHostAddress == default(SerializedSocketAddress))
             {
@@ -194,7 +194,7 @@ namespace Holofunk.HandComponents
         /// <summary>
         /// Update the local lists of loopies touched by this hand.
         /// </summary>
-        private void UpdateTouchedLoopies(ref Performer performer)
+        private void UpdateTouchedLoopies(ref PerformerState performer)
         {
             touchedLoopieIds.Clear();
 
@@ -237,11 +237,11 @@ namespace Holofunk.HandComponents
             return true;
         }
 
-        private HandPoseValue HandPose(ref Performer performer) => handSide == Side.Left 
+        public HandPoseValue HandPose(ref PerformerState performer) => handSide == Side.Left 
             ? performer.LeftHandPose 
             : performer.RightHandPose;
 
-        private Vector3 HandPosition(ref Performer performer) => handSide == Side.Left 
+        public Vector3 HandPosition(ref PerformerState performer) => handSide == Side.Left 
             ? performer.LeftHandPosition 
             : performer.RightHandPosition;
 
@@ -251,7 +251,7 @@ namespace Holofunk.HandComponents
         /// </summary>
         /// <param name="handPose">Current (smoothed) hand pose from the performer</param>
         /// <param name="performer">The actual performer, passed by ref for efficiency (no mutation please)</param>
-        private void UpdateHandState(HandPoseValue handPose, ref Performer performer)
+        private void UpdateHandState(HandPoseValue handPose, ref PerformerState performer)
         {
             HandPoseEvent handPoseEvent = HandPoseEvent.FromHandPose(handPose);
 
@@ -266,7 +266,7 @@ namespace Holofunk.HandComponents
                 // TODO: do we do an immediate OnNext? If not, then shouldn't we be setting lastHandPose to Unknown here?
                 if (handPose != HandPoseValue.Unknown)
                 {
-                    stateMachineInstance.OnNext(handPoseEvent, default(Moment));
+                    stateMachineInstance.OnNext(handPoseEvent);
                 }
             }
             else
@@ -275,7 +275,7 @@ namespace Holofunk.HandComponents
                 {
                     lastHandPose = handPose;
 
-                    stateMachineInstance.OnNext(handPoseEvent, default(Moment));
+                    stateMachineInstance.OnNext(handPoseEvent);
                 }
             }
         }
@@ -293,7 +293,7 @@ namespace Holofunk.HandComponents
                 return;
             }
 
-            Performer performer = DistributedPerformer.GetPerformer();
+            PerformerState performer = DistributedPerformer.GetPerformer();
 
             // performer space hand position
             Vector3 performerHandPosition = HandPosition(ref performer);

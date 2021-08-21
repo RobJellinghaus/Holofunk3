@@ -2,6 +2,7 @@
 
 using Distributed.State;
 using Holofunk.Core;
+using Holofunk.Shape;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using NowSoundLib;

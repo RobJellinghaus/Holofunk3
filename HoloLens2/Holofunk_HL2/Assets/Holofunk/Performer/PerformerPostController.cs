@@ -95,7 +95,7 @@ namespace Holofunk.Perform
             touchedLoopieIdList.AddRange(left.TouchedLoopieIds.Union(right.TouchedLoopieIds));
             touchedLoopieIdList.Sort(DistributedId.Comparer.Instance);
 
-            Performer performer = new Performer
+            PerformerState performer = new PerformerState
             {
                 LeftHandPosition = AverageLeftHandPos,
                 RightHandPosition = AverageRightHandPos,
