@@ -43,16 +43,17 @@ namespace Holofunk.Camera
         {
             // Look for a Viewpoint.
             DistributedViewpoint viewpoint = DistributedViewpoint.Instance;
-            if (viewpoint == null)
-            {
-                LastCameraPosition = Option<Vector3>.None;
-            }
-            else
+            LastCameraPosition = Option<Vector3>.None;
+
+            if (viewpoint != null)
             {
                 if (viewpoint.IsOwner)
                 {
                     // we want the viewpoint camera position
-                    LastCameraPosition = viewpoint.GetPlayer(0).SensorPosition;
+                    if (viewpoint.PlayerCount > 0)
+                    {
+                        LastCameraPosition = viewpoint.GetPlayer(0).SensorPosition;
+                    }
                 }
                 else
                 {
