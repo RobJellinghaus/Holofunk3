@@ -3,6 +3,7 @@
 using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Loop;
+using Holofunk.Menu;
 using Holofunk.Perform;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
@@ -61,15 +62,17 @@ namespace Holofunk.Distributed
             Host.RegisterType(SerializationExtensions.Put, SerializationExtensions.GetMatrix4x4);
 
             // Distributed data types
-            Host.RegisterWith(SoundMessages.RegisterTypes);
             Host.RegisterWith(LoopieMessages.RegisterTypes);
+            Host.RegisterWith(MenuMessages.RegisterTypes);
             Host.RegisterWith(PerformerMessages.RegisterTypes);
+            Host.RegisterWith(SoundMessages.RegisterTypes);
             Host.RegisterWith(ViewpointMessages.RegisterTypes);
 
             // Distributed message types; must be registered only after all types have been registered
-            Host.RegisterWith(SoundMessages.Register);
             Host.RegisterWith(LoopieMessages.Register);
+            Host.RegisterWith(MenuMessages.Register);
             Host.RegisterWith(PerformerMessages.Register);
+            Host.RegisterWith(SoundMessages.Register);
             Host.RegisterWith(ViewpointMessages.Register);
 
             Instance = this;

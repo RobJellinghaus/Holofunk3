@@ -46,6 +46,11 @@ namespace Holofunk.HandComponents
         void Update()
         {
             // Find the hand.
+            if (_handController.DistributedPerformer == null)
+            {
+                return;
+            }
+
             PerformerState performer = _handController.DistributedPerformer.GetPerformer();
             Vector3 handPosition = _handController.HandPosition(ref performer);
 

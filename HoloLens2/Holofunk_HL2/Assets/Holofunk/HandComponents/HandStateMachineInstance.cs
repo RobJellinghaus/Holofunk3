@@ -248,6 +248,7 @@ namespace Holofunk.HandComponents
                     handController.KeepTouchedLoopiesStable = true;
 
                     menuGameObject = CreateMenu(handController, MenuKinds.SoundEffects);
+                    menuGameObject.GetComponent<MenuController>().Initialize(handController);
                 },
                 (evt, handController) => {
                     // start paying attention to hand position again
@@ -370,6 +371,7 @@ namespace Holofunk.HandComponents
                     handController.IgnoreHandPositionForHandPose = true;
 
                     menuGameObject = CreateMenu(handController, MenuKinds.System);
+                    menuGameObject.GetComponent<MenuController>().Initialize(handController);
                 },
                 (evt, handController) => {
                     handController.IgnoreHandPositionForHandPose = false;
