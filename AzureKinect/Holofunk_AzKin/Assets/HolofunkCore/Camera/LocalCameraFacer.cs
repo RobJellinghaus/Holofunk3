@@ -20,7 +20,7 @@ namespace Holofunk.Camera
             {
                 Vector3 localCameraPosition = viewpoint.ViewpointToLocalMatrix()
                     .MultiplyPoint(viewpointCameraPosition.Value);
-                Vector3 localForwardDirection = (localCameraPosition - transform.position).normalized;
+                Vector3 localForwardDirection = (transform.position - localCameraPosition).normalized;
                 localForwardDirection.y = 0;
                 Quaternion rotation = Quaternion.LookRotation(localForwardDirection, Vector3.up);
 
