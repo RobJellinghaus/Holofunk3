@@ -525,8 +525,8 @@ namespace Holofunk.HandComponents
             // get the performer's head position
             Vector3 localHeadPosition = performerState.HeadPosition;
 
-            // we want a forward direction for the menu that orients it from unit Z towards localHeadPosition
-            Vector3 localHandToHeadDirection = (localHeadPosition - localHandPosition).normalized;
+            // default direction is BACKWARDS on Z so we actually want head facing towards hand vector
+            Vector3 localHandToHeadDirection = (localHandPosition - localHeadPosition).normalized;
 
             Vector3 viewpointHandPosition = DistributedViewpoint.Instance.LocalToViewpointMatrix()
                 .MultiplyPoint(localHandPosition);

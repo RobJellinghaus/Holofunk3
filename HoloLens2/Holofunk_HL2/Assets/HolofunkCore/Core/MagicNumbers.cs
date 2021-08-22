@@ -95,12 +95,12 @@ namespace Holofunk.Core
         /// <summary>
         /// The horizontal separation between measure indicators.
         /// </summary>
-        public static readonly float BeatMeasureSeparation = 0.03f;
+        public static readonly float BeatMeasureSeparation = 0.015f;
 
         /// <summary>
         /// The scale of each frequency disc's height, relative to the original scale of its shape.
         /// </summary>
-        public static readonly float FrequencyDiscHeightScaleFactor = 0.1f;
+        public static readonly float FrequencyDiscHeightScaleFactor = 0.05f;
 
         /// <summary>
         /// The scale of each frequency disc's width, relative to the original scale of its shape.
@@ -110,7 +110,7 @@ namespace Holofunk.Core
         /// <summary>
         /// The vertical distance apart to place each frequency disc.
         /// </summary>
-        public static readonly float FrequencyDiscVerticalDistance = 0.008f;
+        public static readonly float FrequencyDiscVerticalDistance = 0.006f;
 
         /// <summary>
         /// The minimum value below which frequency bins will be ignored.
@@ -156,7 +156,7 @@ namespace Holofunk.Core
         /// <summary>
         /// scale factor to apply to the distance of menu nodes
         /// </summary>
-        public static readonly float MenuScale = 0.8f;
+        public static readonly float MenuScale = 0.4f;
 
         #endregion
     }
