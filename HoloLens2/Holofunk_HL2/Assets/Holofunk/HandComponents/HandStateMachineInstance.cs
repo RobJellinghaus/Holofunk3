@@ -382,7 +382,9 @@ namespace Holofunk.HandComponents
                         menu.InvokeSelectedAction();
                     }
 
-                    UnityEngine.GameObject.Destroy(menuGameObject);
+                    // delete it in the distributed sense.
+                    // note that locally, this will synchronously destroy the game object
+                    menuGameObject.GetComponent<DistributedMenu>().Delete();
                 });
 
             AddTransition(stateMachine, armed, HandPoseEvent.Bloom, systemPopupMenu);

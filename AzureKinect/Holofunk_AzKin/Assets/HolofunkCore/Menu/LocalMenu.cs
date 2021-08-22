@@ -108,14 +108,6 @@ namespace Holofunk.Menu
 
         #region MonoBehaviour
 
-        public void Start()
-        {
-        }
-
-        private void InstantiateMenuObjects()
-        {
-        }
-
         /// <summary>
         /// Update the current menu and possibly submenu(s) to match current selection state.
         /// </summary>

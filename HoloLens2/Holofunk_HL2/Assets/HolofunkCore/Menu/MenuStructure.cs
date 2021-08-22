@@ -20,24 +20,15 @@ namespace Holofunk.Menu
         /// <summary>
         /// Count of menu items at this level.
         /// </summary>
-        public int Count { get; }
+        public int Count => items.Count;
 
         /// <summary>
         /// Get the menu item name at this index.
         /// </summary>
-        public string Name(MenuItemId id)
-        {
-            return items[id.AsIndex].Item1;
-        }
+        public string Name(MenuItemId id) => items[id.AsIndex].Item1;
 
-        public Action Action(MenuItemId id)
-        {
-            return items[id.AsIndex].Item2;
-        }
+        public Action Action(MenuItemId id) => items[id.AsIndex].Item2;
 
-        public MenuStructure Child(MenuItemId id)
-        {
-            return items[id.AsIndex].Item3;
-        }
+        public MenuStructure Child(MenuItemId id) => items[id.AsIndex].Item3;
     }
 }
