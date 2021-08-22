@@ -108,6 +108,21 @@ namespace Holofunk.Menu
 
         #region MonoBehaviour
 
+        public void Start()
+        {
+            if (DistributedViewpoint.Instance != null)
+            {
+                Matrix4x4 viewpointToLocalMatrix = DistributedViewpoint.Instance.ViewpointToLocalMatrix();
+                Vector3 localPosition = viewpointToLocalMatrix.MultiplyPoint(MenuState.ViewpointPosition);
+                Vector3 localForwardDirection = viewpointToLocalMatrix.MultiplyVector(MenuState.ViewpointForwardDirection);
+                Vector3 localUpDirection = Vector3.Cross(localForwardDirection, Vector3.up);
+                Quaternion localOrientation = Quaternion.LookRotation(localForwardDirection, localUpDirection);
+
+                transform.localPosition = localPosition;
+                transform.localRotation = localOrientation;
+            }
+        }
+
         /// <summary>
         /// Update the current menu and possibly submenu(s) to match current selection state.
         /// </summary>
