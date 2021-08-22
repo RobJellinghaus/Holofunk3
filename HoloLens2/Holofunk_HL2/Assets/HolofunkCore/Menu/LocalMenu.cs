@@ -2,6 +2,7 @@
 
 using Distributed.State;
 using Holofunk.Core;
+using Holofunk.Shape;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using NowSoundLib;
@@ -38,6 +39,11 @@ namespace Holofunk.Menu
         /// </summary>
         MenuStructure menuStructure;
 
+        /// <summary>
+        /// The diameter of a menu item.
+        /// </summary>
+        float itemDiameter;
+
         #endregion
 
         #region IDistributedMenu
@@ -45,6 +51,12 @@ namespace Holofunk.Menu
         public void Initialize(MenuState menuState)
         {
             this.menuState = menuState;
+
+            // get the prototype menu item... just to get the hand diameter?! :-P
+            // TODO: DO THIS ONCE IN LOCAL MENU, OR EVEN BETTER, LAZILY CACHE IN SHAPECONTAINER
+            GameObject hollowCircle = ShapeContainer.InstantiateShape(ShapeType.HollowCircle, transform);
+            itemDiameter = hollowCircle.GetComponent<SpriteRenderer>().size.x * hollowCircle.transform.localScale.x;
+            UnityEngine.Object.Destroy(hollowCircle);
 
             if (menuState.MenuKind.Value == MenuKinds.System)
             {
@@ -60,7 +72,7 @@ namespace Holofunk.Menu
             }
 
             // create the root menu level
-            menuLevels.Add(new MenuLevel(this, 0, menuStructure, Vector3.zero));
+            menuLevels.Add(new MenuLevel(this, Vector3.zero, itemDiameter, 0, menuStructure));
         }
 
         public MenuState MenuState => menuState;
@@ -158,7 +170,9 @@ namespace Holofunk.Menu
 
                     if (childMenuStructure != null && childMenuStructure.Count > 0)
                     {
-                        menuLevels.Add(new MenuLevel(this, 1, childMenuStructure, Vector3.zero));
+                        Vector3 parentLocalPosition = menuLevels[0].GetRelativePosition(
+                            Vector3.zero, MenuState.TopSelectedItem.AsIndex, itemDiameter);
+                        menuLevels.Add(new MenuLevel(this, parentLocalPosition, itemDiameter, 1, childMenuStructure));
                     }
                 }
 

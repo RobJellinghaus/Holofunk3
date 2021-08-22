@@ -32,7 +32,7 @@ namespace Holofunk.Menu
         /// <summary>
         /// The radius of the hollow circle (for menu item spacing).
         /// </summary>
-        float hollowCircleDiameter;
+        public float HollowCircleDiameter { get; private set; }
 
         /// <summary>
         /// The list of instantiated popup menu item game objects for this particular (sub)menu.
@@ -41,16 +41,6 @@ namespace Holofunk.Menu
         /// These are all children of this object's transform, and this object does hit tracking against this set.
         /// </remarks>
         List<GameObject> menuItemGameObjects = new List<GameObject>();
-
-        /// <summary>
-        /// The world space position of the root item.
-        /// </summary>
-        Vector3 rootPosition;
-
-        /// <summary>
-        /// Since each child menu's transform is parented by its parent menu, each child menu's local position is also.
-        /// </summary>
-        public Vector3 RootRelativePosition => menu.transform.localPosition - rootPosition;
 
         /// <summary>
         /// Initialize a newly instantiated MenuLevel.
@@ -62,39 +52,22 @@ namespace Holofunk.Menu
         /// the root of the whole menu tree; None if this is the root menu.</param>
         public MenuLevel(
             LocalMenu menu,
+            Vector3 parentLocalPosition,
+            float itemDiameter,
             int depth,
-            MenuStructure menuStructure,
-            Vector3 rootPosition,
-            Option<Vector3> rootRelativePosition = default)
+            MenuStructure menuStructure)
         {
             this.menu = menu;
             this.depth = depth;
             this.menuStructure = menuStructure;
-            this.rootPosition = rootPosition;
-
-            Vector3 localPosition;
-            if (rootRelativePosition.HasValue)
-            {
-                localPosition = rootPosition + rootRelativePosition.Value;
-            }
-            else
-            {
-                localPosition = rootPosition;
-            }
-
-            // get the prototype menu item... just to get the hand diameter?! :-P
-            // TODO: DO THIS ONCE IN LOCAL MENU, OR EVEN BETTER, LAZILY CACHE IN SHAPECONTAINER
-            GameObject hollowCircle = ShapeContainer.InstantiateShape(ShapeType.HollowCircle, menu.transform);
-            hollowCircleDiameter = hollowCircle.GetComponent<SpriteRenderer>().size.x * hollowCircle.transform.localScale.x;
-            UnityEngine.Object.Destroy(hollowCircle);
 
             for (int i = 0; i < menuStructure.Count; i++)
             {
-                Vector3 submenuRootRelativePosition = GetRelativePosition(i, hollowCircleDiameter);
+                Vector3 submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i, itemDiameter);
 
                 GameObject menuItemGameObject = ShapeContainer.InstantiateShape(ShapeType.MenuItem, menu.transform);
                 // position this relative to its parent
-                menuItemGameObject.transform.localPosition = submenuRootRelativePosition - RootRelativePosition;
+                menuItemGameObject.transform.localPosition = submenuRootRelativePosition;
 
                 //_logBuffer.Append($"  Created menu item {_menuModel[i].Label} at local position {menuItemGameObject.transform.localPosition} and global position {menuItemGameObject.transform.position}{Environment.NewLine}");
 
@@ -111,10 +84,10 @@ namespace Holofunk.Menu
         /// <summary>
         /// Get the position of the menu item with the given index, relative to the root position.
         /// </summary>
-        internal Vector3 GetRelativePosition(int index, float textureDiameter)
+        internal Vector3 GetRelativePosition(Vector3 parentLocalPosition, int index, float itemDiameter)
         {
             Contract.Requires(index < menuStructure.Count);
-            float scaledTextureDiameter = textureDiameter * MagicNumbers.MenuScale;
+            float scaledTextureDiameter = itemDiameter * MagicNumbers.MenuScale;
             if (depth == 0)
             {
                 // we are the root menu.  Handle 1-item and 2-item cases specially.
@@ -140,10 +113,10 @@ namespace Holofunk.Menu
             {
                 // First calculate the angle of this item relative to the root; this is now the starting angle
                 // for the submenu.
-                startingAngle = Math.Atan2(RootRelativePosition.x, RootRelativePosition.y);
+                startingAngle = Math.Atan2(parentLocalPosition.x, parentLocalPosition.y);
                 Contract.Assert(!double.IsNaN(startingAngle));
                 /// Now the distance.
-                double thisItemDistance = RootRelativePosition.magnitude;
+                double thisItemDistance = parentLocalPosition.magnitude;
 
                 // polygonRadius is the smallest circle that will fit all the items. But typically child menus
                 // have fewer items than needed to fill a circle of the next radius. So we want to know, assuming
