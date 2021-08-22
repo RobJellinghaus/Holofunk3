@@ -99,7 +99,7 @@ namespace Holofunk.Menu
                 //_logBuffer.Append($"  Created menu item {_menuModel[i].Label} at local position {menuItemGameObject.transform.localPosition} and global position {menuItemGameObject.transform.position}{Environment.NewLine}");
 
                 // set the text
-                TextMeshPro text = menuItemGameObject.transform.GetChild(0).GetComponent<TextMeshPro>();
+                TextMesh text = menuItemGameObject.transform.GetChild(0).GetComponent<TextMesh>();
                 text.text = menuStructure.Name(i + 1);
 
                 menuItemGameObjects.Add(menuItemGameObject);
