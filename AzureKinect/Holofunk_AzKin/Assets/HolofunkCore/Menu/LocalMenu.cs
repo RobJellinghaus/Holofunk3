@@ -116,8 +116,8 @@ namespace Holofunk.Menu
                 Matrix4x4 viewpointToLocalMatrix = DistributedViewpoint.Instance.ViewpointToLocalMatrix();
                 Vector3 localPosition = viewpointToLocalMatrix.MultiplyPoint(MenuState.ViewpointPosition);
                 Vector3 localForwardDirection = viewpointToLocalMatrix.MultiplyVector(MenuState.ViewpointForwardDirection);
-                Vector3 localUpDirection = Vector3.Cross(Vector3.up, localForwardDirection);
-                Quaternion localOrientation = Quaternion.LookRotation(localForwardDirection, localUpDirection);
+                // what if these are not orthogonal? let's try
+                Quaternion localOrientation = Quaternion.LookRotation(localForwardDirection, Vector3.up);
 
                 transform.localPosition = localPosition;
                 transform.localRotation = localOrientation;
