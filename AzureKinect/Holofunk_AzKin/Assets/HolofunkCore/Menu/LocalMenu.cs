@@ -151,7 +151,7 @@ namespace Holofunk.Menu
 
             if (MenuState.TopSelectedItem.IsInitialized)
             {
-                if (menuLevels.Count == 0)
+                if (menuLevels.Count == 1)
                 {
                     // maybe need to create submenu?
                     MenuStructure childMenuStructure = menuStructure.Child(menuState.TopSelectedItem);
