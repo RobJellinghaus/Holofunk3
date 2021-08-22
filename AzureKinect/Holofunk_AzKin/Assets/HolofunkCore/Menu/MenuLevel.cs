@@ -219,7 +219,7 @@ namespace Holofunk.Menu
         internal void ColorizeMenuItem(Option<int> originalSelectedMenuIndex, Color color)
         {
             menuItemGameObjects[originalSelectedMenuIndex.Value].GetComponent<SpriteRenderer>().material.color = color;
-            menuItemGameObjects[originalSelectedMenuIndex.Value].transform.GetChild(0).gameObject.GetComponent<TextMeshPro>().color = color;
+            menuItemGameObjects[originalSelectedMenuIndex.Value].transform.GetChild(0).gameObject.GetComponent<TextMesh>().color = color;
         }
     }
 }
