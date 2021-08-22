@@ -2,14 +2,17 @@
 
 using Holofunk.Sound;
 using System;
-using System.Collections.Generic;
+using Holofunk.Menu;
 
-namespace Holofunk.Menu
+namespace Holofunk.App
 {
     /// <summary>
     /// Creates MenuStructure corresponding to the system menu.
     /// </summary>
     /// <remarks>
+    /// This is in the Holofunk.App namespace because it refers to many different packages to implement its,
+    /// functionality, and we want the Holofunk.Menu namespace to not include all these other dependencies.
+    /// 
     /// The actions populating this structure will be null if the arguments to CreateSystemMenuStructure are null.
     /// This is the intended situation when creating a menu proxy, which only needs the items, but not the actions.
     /// </remarks>
@@ -20,7 +23,7 @@ namespace Holofunk.Menu
         /// </summary>
         /// <param name=""></param>
         /// <returns></returns>
-        public static MenuStructure CreateSystemMenuStructure()
+        public static MenuStructure Create()
         {
             Action<int> setBPMAction = delta =>
             {

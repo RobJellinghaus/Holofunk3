@@ -233,6 +233,42 @@ namespace Holofunk.HandComponents
 
             #region Effect popup menus
 
+            // State machine construction ensures there will only be one of these per hand state machine instance,
+            // so we can safely use a local variable here to close over this menu
+            GameObject menuGameObject = null;
+
+            var soundEffectMenu = new HandState(
+                "soundEffectMenu",
+                armed,
+                (evt, handController) =>
+                {
+                    // ignore hand position changes, to prevent them from kicking out of popup mode
+                    handController.IgnoreHandPositionForHandPose = true;
+                    // keep the set of touched loopies stable, so whatever we originally touched is still what we apply sound effects to
+                    handController.KeepTouchedLoopiesStable = true;
+
+                    menuGameObject = CreateMenu(handController, MenuKinds.SoundEffects);
+                },
+                (evt, handController) => {
+                    // start paying attention to hand position again
+                    handController.IgnoreHandPositionForHandPose = false;
+                    // let loopies get (un)touched again
+                    handController.KeepTouchedLoopiesStable = false;
+
+                    DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
+                    if (evt == HandPoseEvent.Closed)
+                    {
+                        menu.InvokeSelectedAction();
+                    }
+
+                    UnityEngine.GameObject.Destroy(menuGameObject);
+                });
+
+            AddTransition(stateMachine, armed, HandPoseEvent.Pointing2, soundEffectMenu);
+            AddTransition(stateMachine, initial, HandPoseEvent.Pointing2, soundEffectMenu);
+            AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Opened, armed);
+            AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Closed, initial);
+
             /* original code:
 
             var effectPopupMenu = new HandToHandMenuState(
@@ -326,36 +362,14 @@ namespace Holofunk.HandComponents
 
             #region System popup menu
 
-            // State machine construction ensures there will only be one of these per hand state machine instance,
-            // so we can safely use a local variable here to close over this menu
-            GameObject menuGameObject = null;
-
             var systemPopupMenu = new HandState(
                 "systemMenu",
                 armed,
-                (evt, handController) => {
+                (evt, handController) =>
+                {
                     handController.IgnoreHandPositionForHandPose = true;
 
-                    // get the forward direction towards the camera from the hand location
-                    PerformerState performerState = handController.DistributedPerformer.GetPerformer();
-                    Vector3 localHandPosition = handController.HandPosition(ref performerState);
-
-                    // get the performer's head position
-                    Vector3 localHeadPosition = performerState.HeadPosition;
-
-                    // we want a forward direction for the menu that orients it from unit Z towards localHeadPosition
-                    Vector3 localHandToHeadDirection = (localHeadPosition - localHandPosition).normalized;
-
-                    Vector3 viewpointHandPosition = DistributedViewpoint.Instance.LocalToViewpointMatrix()
-                        .MultiplyPoint(localHandPosition);
-
-                    Vector3 viewpointForwardDirection = DistributedViewpoint.Instance.LocalToViewpointMatrix()
-                        .MultiplyVector(localHandToHeadDirection);
-
-                    menuGameObject = DistributedMenu.Create(
-                        MenuKinds.System,
-                        viewpointForwardDirection,
-                        viewpointHandPosition);
+                    menuGameObject = CreateMenu(handController, MenuKinds.System);
                 },
                 (evt, handController) => {
                     handController.IgnoreHandPositionForHandPose = false;
@@ -366,18 +380,13 @@ namespace Holofunk.HandComponents
                         menu.InvokeSelectedAction();
                     }
 
-                    if (menuGameObject != null)
-                    {
-                        UnityEngine.GameObject.Destroy(menuGameObject);
-                    }
+                    UnityEngine.GameObject.Destroy(menuGameObject);
                 });
 
-            AddTransition(stateMachine, armed, HandPoseEvent.Pointing2, systemPopupMenu);
-            AddTransition(stateMachine, initial, HandPoseEvent.Pointing2, systemPopupMenu);
+            AddTransition(stateMachine, armed, HandPoseEvent.Bloom, systemPopupMenu);
+            AddTransition(stateMachine, initial, HandPoseEvent.Bloom, systemPopupMenu);
             AddTransition(stateMachine, systemPopupMenu, HandPoseEvent.Opened, armed);
             AddTransition(stateMachine, systemPopupMenu, HandPoseEvent.Closed, initial);
-
-
 
             /* original code:
 
@@ -500,6 +509,32 @@ namespace Holofunk.HandComponents
             #endregion
 
             return stateMachine;
+        }
+
+        private static GameObject CreateMenu(HandController handController, MenuKinds menuKind)
+        {
+            GameObject menuGameObject;
+            // get the forward direction towards the camera from the hand location
+            PerformerState performerState = handController.DistributedPerformer.GetPerformer();
+            Vector3 localHandPosition = handController.HandPosition(ref performerState);
+
+            // get the performer's head position
+            Vector3 localHeadPosition = performerState.HeadPosition;
+
+            // we want a forward direction for the menu that orients it from unit Z towards localHeadPosition
+            Vector3 localHandToHeadDirection = (localHeadPosition - localHandPosition).normalized;
+
+            Vector3 viewpointHandPosition = DistributedViewpoint.Instance.LocalToViewpointMatrix()
+                .MultiplyPoint(localHandPosition);
+
+            Vector3 viewpointForwardDirection = DistributedViewpoint.Instance.LocalToViewpointMatrix()
+                .MultiplyVector(localHandToHeadDirection);
+
+            menuGameObject = DistributedMenu.Create(
+                menuKind,
+                viewpointForwardDirection,
+                viewpointHandPosition);
+            return menuGameObject;
         }
     }
 }

@@ -49,7 +49,14 @@ namespace Holofunk.Menu
             if (menuState.MenuKind.Value == MenuKinds.System)
             {
                 // TODO: parameterize this properly
-                menuStructure = SystemMenuFactory.CreateSystemMenuStructure();
+                // TODO: figure out how to structure the package dependencies here; Menu shouldn't depend on App
+                menuStructure = App.SystemMenuFactory.Create();
+            }
+            else if (menuState.MenuKind.Value == MenuKinds.SoundEffects)
+            {
+                // TODO: parameterize this properly
+                // TODO: figure out how to structure the package dependencies here; Menu shouldn't depend on App
+                menuStructure = App.SoundEffectsMenuFactory.Create(new HashSet<DistributedId>(), null);
             }
 
             // create the root menu level
@@ -186,7 +193,7 @@ namespace Holofunk.Menu
 
             // First, find the closest item.
             int closestMenuIndex = -1;
-            float largestDotProduct = 0;
+            float smallestDistance = float.MaxValue;
             int closestMenuItemIndex = -1;
 
             for (int i = 0; i < menuLevels.Count; i++)
@@ -197,13 +204,11 @@ namespace Holofunk.Menu
 
                 if (result.HasValue)
                 {
-                    if (result.Value.Item1 > largestDotProduct)
+                    if (result.Value.Item1 < smallestDistance)
                     {
-                        largestDotProduct = result.Value.Item1;
+                        smallestDistance = result.Value.Item1;
                         closestMenuIndex = i;
                         closestMenuItemIndex = result.Value.Item2;
-
-                        //_logBuffer.Append($"New closest item: menu #{i}, dot product {largestDotProduct}, item #{closestMenuItemIndex}{Environment.NewLine}");
                     }
                 }
             }
@@ -214,7 +219,7 @@ namespace Holofunk.Menu
             }
             else
             {
-                return (closestMenuIndex, closestMenuItemIndex);
+                return (closestMenuIndex, closestMenuItemIndex + 1);
             }
         }
 

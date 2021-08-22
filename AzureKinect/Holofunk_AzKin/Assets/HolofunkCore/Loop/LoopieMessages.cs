@@ -104,7 +104,6 @@ namespace Holofunk.Loop
 
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
-            proxyCapability.RegisterType(LoopieId.Serialize, LoopieId.Deserialize);
             proxyCapability.RegisterType<LoopieState>();
         }
 

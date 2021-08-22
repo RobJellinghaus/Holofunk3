@@ -180,50 +180,31 @@ namespace Holofunk.Menu
 
         /// <summary>
         /// Get the index of the closest menu item to the given hand location, returning an optional tuple of the
-        /// camera-ray-dot-product together with the index of the closest menu item.
+        /// minimum distance together with the index of the closest menu item.
         /// </summary>
         public Option<Tuple<float, int>> GetClosestMenuItemIfAny(Vector3 handLocation)
         {
             // see if it is within TextureRadius of any of the menu items; if so, closest one's selected
-            float maxDot = 0;
+            float minDist = float.MaxValue;
             Option<int> selectedIndex = Option<int>.None;
             for (int i = 0; i < menuStructure.Count; i++)
             {
                 Vector3 menuItemLocation = menuItemGameObjects[i].transform.position;
 
-                // the camera is at 0,0,0.  So normalizing the hand location and menu location results in
-                // essentially directional vectors towards their locations from the camera -- in other
-                // words, POV rays.
-                Vector3 normalizedHandLocation = handLocation.normalized;
-                Vector3 normalizedMenuItemLocation = menuItemLocation.normalized;
-
-                // The dot product of those two rays is how close they are (in angular terms) from the camera POV.
-                // If they are perfectly aligned this will be 1; if absolutely orthogonal (impossible given that
-                // the hand location can't leave the camera field of view), this would be zero.
-                float dotProduct = Vector3.Dot(normalizedHandLocation, normalizedMenuItemLocation);
+                float distance = Vector3.Distance(menuItemLocation, handLocation);
 
                 //_logBuffer.Append($"    menuItemLocation[{i}] {menuItemLocation}, dotProduct {dotProduct}");
 
-                if (dotProduct > maxDot)
+                if (distance < minDist)
                 {
-                    maxDot = dotProduct;
+                    minDist = distance;
                     selectedIndex = i;
                 }
             }
 
-            // If the closest item is disabled, then nothing is selected.
-            // TODO: figure out if it would be better to return the disabled item and let the user non-choose it;
-            // if we return nothing at all, then a parent menu item may be considered "closer".
-            /*
-            if ((_menuModel.SelectedMenuIndex.HasValue
-                && !_menuModel.IsEnabled(_menuModel.SelectedMenuIndex.Value)))
-            {
-                //_logBuffer.Append(" -- menu not enabled");
-                return Option<Tuple<float, int>>.None;
-            }
-            */
+            // TODO: reimplement the concept of "disabled" menu items.
 
-            return Tuple.Create(maxDot, selectedIndex.Value);
+            return Tuple.Create(minDist, selectedIndex.Value);
         }
 
         internal void Destroy()
