@@ -94,6 +94,11 @@ namespace Holofunk.Loop
         /// </summary>
         private NowSoundLib.TrackInfo lastTrackInfo;
 
+        /// <summary>
+        /// The list of plugin instances, when on the node running the soundmanager.
+        /// </summary>
+        private List<PluginInstanceIndex> pluginInstances = new List<PluginInstanceIndex>();
+
         #endregion
 
         #region MonoBehaviour
@@ -105,6 +110,9 @@ namespace Holofunk.Loop
             {
                 trackId = NowSoundGraphAPI.CreateRecordingTrackAsync(loopie.AudioInput.Value);
             }
+
+            // TODO: support creating loopie with effects!
+            // TODO: support applying effects to performer! LIST OF EFFECTS ON PERFORMER!
 
             frequencyBins = new float[MagicNumbers.OutputBinCount];
             scaledBins = new float[MagicNumbers.OutputBinCount];
@@ -432,6 +440,42 @@ namespace Holofunk.Loop
                 Core.Contract.Assert(trackId != TrackId.Undefined);
 
                 NowSoundTrackAPI.FinishRecording(trackId);
+            }
+        }
+
+        public void AppendSoundEffect(EffectId effect)
+        {
+            int length = loopie.Effects == null ? 0 : loopie.Effects.Length / 2;
+            int[] newEffects = new int[(length + 1) * 2];
+            if (loopie.Effects != null)
+            {
+                loopie.Effects.CopyTo(newEffects, 0);
+            }
+            newEffects[length * 2] = (int)effect.PluginId.Value;
+            newEffects[length * 2 + 1] = (int)effect.PluginId.Value;
+
+            loopie.Effects = newEffects;
+
+            if (SoundManager.Instance != null)
+            {
+                // add that plugin instance index!
+                // Note that these are never sent over the network, as they're no good to any other node anyway.
+                pluginInstances.Add(
+                    NowSoundTrackAPI.AddPluginInstance(trackId, effect.PluginId.Value, effect.PluginProgramId.Value, 100));
+            }
+        }
+
+        public void ClearSoundEffects()
+        {
+            loopie.Effects = new int[0];
+
+            if (SoundManager.Instance != null)
+            {
+                // clean up all the plugins
+                foreach (PluginInstanceIndex pluginInstance in pluginInstances)
+                {
+                    NowSoundTrackAPI.DeletePluginInstance(trackId, pluginInstance);
+                }
             }
         }
 

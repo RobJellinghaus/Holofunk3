@@ -52,6 +52,18 @@ namespace Holofunk.Loop
         void SetVolume(float volume);
 
         /// <summary>
+        /// Append this sound effect to the list of effects on this track.
+        /// </summary>
+        [ReliableMethod]
+        void AppendSoundEffect(EffectId effect);
+
+        /// <summary>
+        /// Clear the sound effects on this track.
+        /// </summary>
+        [ReliableMethod]
+        void ClearSoundEffects();
+
+        /// <summary>
         /// Broadcast the current amplitude of this Loopie.
         /// </summary>
         [BroadcastMethod]

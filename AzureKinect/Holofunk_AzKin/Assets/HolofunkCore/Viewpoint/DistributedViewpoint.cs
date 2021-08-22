@@ -70,7 +70,14 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// Try to get the player with this ID.
         /// </summary>
-        public bool TryGetPlayer(PlayerId playerId, out PlayerState player) => GetLocalViewpoint().TryGetPlayer(playerId, out player);
+        public bool TryGetPlayer(PlayerId playerId, out PlayerState player)
+            => GetLocalViewpoint().TryGetPlayer(playerId, out player);
+
+        /// <summary>
+        /// Try to get the player who's performing from this host.
+        /// </summary>
+        public bool TryGetPlayer(SerializedSocketAddress hostAddress, out PlayerState player)
+            => GetLocalViewpoint().TryGetPlayer(hostAddress, out player);
 
         /// <summary>
         /// Update the given player.

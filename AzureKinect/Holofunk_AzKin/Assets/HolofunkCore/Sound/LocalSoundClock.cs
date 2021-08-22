@@ -1,6 +1,7 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
+using NowSoundLib;
 using UnityEngine;
 
 namespace Holofunk.Sound
@@ -19,6 +20,14 @@ namespace Holofunk.Sound
         public TimeInfo TimeInfo { get; private set; }
 
         public void UpdateTimeInfo(TimeInfo timeInfo) => TimeInfo = timeInfo;
+
+        public void SetBeatsPerMinute(float newBPM)
+        {
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.SetBeatsPerMinute(newBPM);
+            }
+        }
 
         public void OnDelete()
         {

@@ -56,6 +56,12 @@ namespace Holofunk.Loop
         public void FinishRecording() =>
             RouteReliableMessage(isRequest => new FinishRecording(Id, isRequest: !IsOwner));
 
+        public void AppendSoundEffect(EffectId effect) =>
+            RouteReliableMessage(isRequest => new AppendSoundEffect(Id, isRequest: !IsOwner, effect: effect));
+
+        public void ClearSoundEffects() =>
+            RouteReliableMessage(isRequest => new ClearSoundEffects(Id, isRequest: !IsOwner));
+
         public void SetCurrentInfo(SignalInfo signalInfo, TrackInfo trackInfo, ulong timestamp) =>
             RouteBroadcastMessage(new SetCurrentInfo(Id, new SerializedSocketAddress(OwningPeer), signalInfo, trackInfo, timestamp));
 
@@ -115,7 +121,8 @@ namespace Holofunk.Loop
                 AudioInput = new Sound.AudioInputId(NowSoundLib.AudioInputId.AudioInput1),
                 ViewpointPosition = viewpointPosition,
                 IsMuted = false,
-                Volume = 0.7f
+                Volume = 0.7f,
+                Effects = new int[0]
             });
 
             // Then enable the distributed behavior.

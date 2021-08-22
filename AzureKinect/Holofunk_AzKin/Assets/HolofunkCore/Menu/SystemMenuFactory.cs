@@ -1,5 +1,6 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
+using Holofunk.Sound;
 using System;
 using System.Collections.Generic;
 
@@ -21,10 +22,23 @@ namespace Holofunk.Menu
         /// <returns></returns>
         public static MenuStructure CreateSystemMenuStructure()
         {
+            Action<int> setBPMAction = delta =>
+            {
+                DistributedSoundClock theClock = DistributedSoundClock.Instance;
+                if (theClock != null)
+                {
+                    float newBPM = theClock.TimeInfo.Value.BeatsPerMinute + delta;
+                    if (newBPM > 0)
+                    {
+                        theClock.SetBeatsPerMinute(newBPM);
+                    }
+                }
+            };
+
             return new MenuStructure(
                 ("BPM", null, new MenuStructure(
-                    ("+10", () => { }, null),
-                    ("-10", () => { }, null))),
+                    ("+10", () => setBPMAction(10), null),
+                    ("-10", () => setBPMAction(-10), null))),
                 ("Delete My Sounds", () => { }, null));
         }
     }

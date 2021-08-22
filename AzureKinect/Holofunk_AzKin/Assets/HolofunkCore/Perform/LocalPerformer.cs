@@ -1,23 +1,17 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
-using Holofunk.Distributed;
-using System;
+using Holofunk.Sound;
+using Holofunk.Viewpoint;
+using NowSoundLib;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Holofunk.Perform
 {
     /// <summary>
-    /// The local implementation of a Viewpoint object.
+    /// The local implementation of a performer.
     /// </summary>
-    /// <remarks>
-    /// This keeps the local list of all players for this distributed viewpoint object on this host,
-    /// whether this host is the owning host or not.
-    /// </remarks>
     public class LocalPerformer : MonoBehaviour, IDistributedPerformer, ILocalObject
     {
         /// <summary>
@@ -26,6 +20,15 @@ namespace Holofunk.Perform
         private PerformerState performer;
 
         public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedPerformer>();
+
+        /// <summary>
+        /// The list of effect plugins currently applying to this Performer.
+        /// </summary>
+        /// <remarks>
+        /// This is not distributed state and can't be recreated if the Performer disconnects, but in that case this
+        /// state should be torn down anyway.
+        /// </remarks>
+        public List<PluginInstanceIndex> pluginInstances = new List<PluginInstanceIndex>();
 
         internal void Initialize(PerformerState performer)
         {
@@ -39,7 +42,7 @@ namespace Holofunk.Perform
 
         public void OnDelete()
         {
-            // Go gently
+            // TODO: Delete the performer's effects on the audio input
         }
 
         /// <summary>
@@ -47,7 +50,68 @@ namespace Holofunk.Perform
         /// </summary>
         public void UpdatePerformer(PerformerState performer)
         {
+            // did the list of sound effects on the performer change?
+            // TODO: switch to using method style as with Loopie, since it avoids needing to support arbitrary changes.
+            if (!this.performer.HasSameEffects(ref performer))
+            {
+                // effects changed.
+                // for now we support only either clearing them all or appending one at a time
+                if (performer.Effects.Length == 0)
+                {
+                    ClearPerformerEffects();
+                }
+                else if (performer.Effects.Length == this.performer.Effects.Length + 2)
+                {
+                    // assume appending
+                    AppendPerformerEffect(
+                        new EffectId(
+                            new Sound.PluginId((NowSoundLib.PluginId)performer.Effects[performer.Effects.Length - 2]),
+                            new PluginProgramId((ProgramId)performer.Effects[performer.Effects.Length - 1])));
+                }
+            }
+
             this.performer = performer;
+        }
+
+        private void AppendPerformerEffect(EffectId effect)
+        {
+            if (SoundManager.Instance != null)
+            {
+                // what is this performer's player?
+                // (this tells us, or should tell us, what the player's audio input ID is)
+                // TODO: add audio input ID assignment to player state
+                bool foundPlayer = DistributedViewpoint.Instance.TryGetPlayer(DistributedObject.Host.SocketAddress, out PlayerState playerState);
+
+                if (foundPlayer)
+                {
+                    pluginInstances.Add(
+                        NowSoundGraphAPI.AddInputPluginInstance(
+                            NowSoundLib.AudioInputId.AudioInput1,
+                            effect.PluginId.Value,
+                            effect.PluginProgramId.Value,
+                            100));
+                }
+            }
+        }
+
+        private void ClearPerformerEffects()
+        {
+            if (SoundManager.Instance != null)
+            {
+                // what is this performer's player?
+                // (this tells us, or should tell us, what the player's audio input ID is)
+                // TODO: add audio input ID assignment to player state
+                bool foundPlayer = DistributedViewpoint.Instance.TryGetPlayer(DistributedObject.Host.SocketAddress, out PlayerState playerState);
+
+                if (foundPlayer)
+                {
+                    foreach (PluginInstanceIndex pluginInstance in pluginInstances)
+                    {
+                        // TODO: support multiple audio input IDs here, assigned via the Player
+                        NowSoundGraphAPI.DeleteInputPluginInstance(NowSoundLib.AudioInputId.AudioInput1, pluginInstance);
+                    }
+                }
+            }
         }
     }
 }

@@ -49,7 +49,7 @@ namespace Holofunk.Viewpoint
         }
 
         /// <summary>
-        /// Update a SoundClock.
+        /// Update a SoundClock's TimeInfo.
         /// </summary>
         /// <remarks>
         /// TODO: consider some generic state abstraction to make all this create plumbing be shared.
@@ -62,11 +62,27 @@ namespace Holofunk.Viewpoint
             public override void Invoke(IDistributedInterface target) => ((IDistributedSoundClock)target).UpdateTimeInfo(TimeInfo);
         }
 
+        /// <summary>
+        /// Set a SoundClock's BPM.
+        /// </summary>
+        /// <remarks>
+        /// Note that this only takes effect if there are no currently existing Loopies, as we don't currently support
+        /// time-shifting the duration of existing Loopies.
+        /// </remarks>
+        public class UpdateSoundClockBPM : ReliableMessage
+        {
+            public float NewBPM { get; set; }
+            public UpdateSoundClockBPM() : base() { }
+            public UpdateSoundClockBPM(DistributedId id, bool isRequest, float newBPM) : base(id, isRequest) { NewBPM = newBPM; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedSoundClock)target).SetBeatsPerMinute(NewBPM);
+        }
+
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType(AudioInputId.Serialize, AudioInputId.Deserialize);
             proxyCapability.RegisterType(PluginId.Serialize, PluginId.Deserialize);
             proxyCapability.RegisterType(PluginProgramId.Serialize, PluginProgramId.Deserialize);
+            proxyCapability.RegisterType(EffectId.Serialize, EffectId.Deserialize);
 
             proxyCapability.RegisterType(SignalInfo.Serialize, SignalInfo.Deserialize);
             proxyCapability.RegisterType(TimeInfo.Serialize, TimeInfo.Deserialize);
@@ -86,6 +102,9 @@ namespace Holofunk.Viewpoint
                 (local, message) => local.Initialize(message.TimeInfo));
 
             Registrar.RegisterReliableMessage<UpdateSoundClockTimeInfo, DistributedSoundClock, LocalSoundClock, IDistributedSoundClock>(
+                proxyCapability);
+
+            Registrar.RegisterReliableMessage<UpdateSoundClockBPM, DistributedSoundClock, LocalSoundClock, IDistributedSoundClock>(
                 proxyCapability);
         }
     }

@@ -40,12 +40,25 @@ namespace Holofunk.Loop
         /// </summary>
         public float Volume { get; set; }
 
+        /// <summary>
+        /// The list of sound effects applied to this Loopie, flattened into an int[].
+        /// </summary>
+        /// <remarks>
+        /// Semantically this is an EffectId[] but we flatten it to a double-length int array,
+        /// as NetDataReader in LiteNetLib doesn't seem to support the NetPacketProcessor-style type
+        /// registration.
+        /// 
+        /// Clearing all sound effects is done by setting this to an empty array.
+        /// </remarks>
+        public int[] Effects { get; set; }
+
         public void Deserialize(NetDataReader reader)
         {
             AudioInput = AudioInputId.Deserialize(reader);
             ViewpointPosition = reader.GetVector3();
             IsMuted = reader.GetBool();
             Volume = reader.GetFloat();
+            Effects = reader.GetIntArray();
         }
 
         public void Serialize(NetDataWriter writer)
@@ -54,6 +67,7 @@ namespace Holofunk.Loop
             writer.Put(ViewpointPosition);
             writer.Put(IsMuted);
             writer.Put(Volume);
+            writer.PutArray(Effects);
         }
 
         public override string ToString() => $"Loopie[{AudioInput}, @{ViewpointPosition}]";

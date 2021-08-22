@@ -58,6 +58,15 @@ namespace Holofunk.Perform
         /// </remarks>
         public uint[] TouchedLoopieIdList { get; set; }
 
+        /// <summary>
+        /// Flattened list of (pluginId, pluginProgramId) int pairs, representing the sound effects
+        /// currently applied to this Performer's audio.
+        /// </summary>
+        /// <remarks>
+        /// Should get propagated to any Loopies created by this Performer.
+        /// </remarks>
+        public int[] Effects { get; set; }
+
         public void Deserialize(NetDataReader reader)
         {
             HeadPosition = reader.GetVector3();
@@ -67,6 +76,7 @@ namespace Holofunk.Perform
             LeftHandPose = HandPose.Deserialize(reader);
             RightHandPose = HandPose.Deserialize(reader);
             TouchedLoopieIdList = reader.GetUIntArray();
+            Effects = reader.GetIntArray();
         }
 
         public void Serialize(NetDataWriter writer)
@@ -78,6 +88,34 @@ namespace Holofunk.Perform
             HandPose.Serialize(writer, LeftHandPose);
             HandPose.Serialize(writer, RightHandPose);
             writer.PutArray(TouchedLoopieIdList);
+            writer.PutArray(Effects);
+        }
+
+        /// <summary>
+        /// Does this have the same Effects as the other state?
+        /// </summary>
+        public bool HasSameEffects(ref PerformerState other)
+        {
+            if (Effects == null && other.Effects == null)
+            {
+                return true;
+            }
+            if (Effects == null != (other.Effects == null))
+            {
+                return false;
+            }
+            if (Effects.Length != other.Effects.Length)
+            {
+                return false;
+            }
+            for (int i = 0; i < Effects.Length; i++)
+            {
+                if (Effects[i] != other.Effects[i])
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

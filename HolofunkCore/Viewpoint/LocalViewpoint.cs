@@ -64,10 +64,9 @@ namespace Holofunk.Viewpoint
         {
             for (int i = 0; i < players.Count; i++)
             {
-                PlayerState p = players[i];
-                if (p.PlayerId == playerId)
+                if (players[i].PlayerId == playerId)
                 {
-                    player = p;
+                    player = players[i];
                     return true;
                 }
             }
@@ -122,6 +121,15 @@ namespace Holofunk.Viewpoint
 
             // what is our current host?
             SerializedSocketAddress hostAddress = DistributedObject.Host.SocketAddress;
+            TryGetPlayer(hostAddress, out PlayerState p);
+            return p;
+        }
+
+        /// <summary>
+        /// Try to get the player associated with the performer from the given host.
+        /// </summary>
+        public bool TryGetPlayer(SerializedSocketAddress hostAddress, out PlayerState player)
+        {
             // do we have a player that has been recognized as being from here?
             for (int i = 0; i < PlayerCount; i++)
             {
@@ -129,12 +137,14 @@ namespace Holofunk.Viewpoint
                 if (p.PerformerHostAddress == hostAddress)
                 {
                     // found it!
-                    return p;
+                    player = p;
+                    return true;
                 }
             }
 
-            // didn't found it
-            return default(PlayerState);
+            // didn't find it
+            player = default(PlayerState);
+            return false;
         }
 
         public Matrix4x4 ViewpointToLocalMatrix()

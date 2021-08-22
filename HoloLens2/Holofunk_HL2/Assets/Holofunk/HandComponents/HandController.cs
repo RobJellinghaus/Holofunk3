@@ -6,6 +6,7 @@ using Holofunk.Distributed;
 using Holofunk.Hand;
 using Holofunk.Loop;
 using Holofunk.Perform;
+using Holofunk.Sound;
 using Holofunk.StateMachines;
 using Holofunk.Viewpoint;
 using Microsoft.MixedReality.Toolkit.Input;
@@ -213,6 +214,7 @@ namespace Holofunk.HandComponents
 
             touchedLoopieIds.Sort(DistributedId.Comparer.Instance);
 
+            // logging changes in touched loopie list
             if (!EqualLists(previouslyTouchedLoopieIds, touchedLoopieIds))
             {
                 previouslyTouchedLoopieIds.Clear();
@@ -237,12 +239,12 @@ namespace Holofunk.HandComponents
             return true;
         }
 
-        public HandPoseValue HandPose(ref PerformerState performer) => handSide == Side.Left 
-            ? performer.LeftHandPose 
+        public HandPoseValue HandPose(ref PerformerState performer) => handSide == Side.Left
+            ? performer.LeftHandPose
             : performer.RightHandPose;
 
-        public Vector3 HandPosition(ref PerformerState performer) => handSide == Side.Left 
-            ? performer.LeftHandPosition 
+        public Vector3 HandPosition(ref PerformerState performer) => handSide == Side.Left
+            ? performer.LeftHandPosition
             : performer.RightHandPosition;
 
         /// <summary>
@@ -262,7 +264,7 @@ namespace Holofunk.HandComponents
 
                 // Create state machine instance.
                 stateMachineInstance = new HandStateMachineInstance(HandPoseEvent.Unknown, HandStateMachine.Instance, this);
-                
+
                 // TODO: do we do an immediate OnNext? If not, then shouldn't we be setting lastHandPose to Unknown here?
                 if (handPose != HandPoseValue.Unknown)
                 {
@@ -318,6 +320,22 @@ namespace Holofunk.HandComponents
                 currentlyHeldLoopie.GetComponent<DistributedLoopie>().FinishRecording();
 
                 currentlyHeldLoopie = null;
+            }
+        }
+
+        /// <summary>
+        /// Apply the given sound effect to the set of touched loopies, by appending it to their effect lists.
+        /// </summary>
+        public void ApplySoundEffectToTouchedLoopies(EffectId effect)
+        {
+            foreach (LocalLoopie localLoopie in
+                DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
+                    DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
+            {
+                if (touchedLoopieIds.Contains(localLoopie.DistributedObject.Id))
+                {
+                    localLoopie.AppendSoundEffect(effect);
+                }
             }
         }
     }

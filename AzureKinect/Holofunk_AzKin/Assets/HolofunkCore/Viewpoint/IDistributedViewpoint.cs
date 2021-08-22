@@ -45,6 +45,11 @@ namespace Holofunk.Viewpoint
         bool TryGetPlayer(PlayerId playerId, out PlayerState player);
 
         /// <summary>
+        /// Try to get the player that has been identified as being from the given host.
+        /// </summary>
+        bool TryGetPlayer(SerializedSocketAddress hostAddress, out PlayerState player);
+
+        /// <summary>
         /// Update the given player.
         /// </summary>
         /// <param name="playerToUpdate">The player to update.</param>

@@ -13,14 +13,24 @@ namespace Holofunk.Sound
     public interface IDistributedSoundClock : IDistributedInterface
     {
         /// <summary>
-        /// The time info for the clock.
+        /// The current time info for the clock.
         /// </summary>
+        [LocalMethod]
         TimeInfo TimeInfo { get; }
 
         /// <summary>
-        /// Update the time info
+        /// Update the time info as time passes.
         /// </summary>
+        /// <remarks>
+        /// TODO: should UpdateTimeInfo be a BroadcastMethod?
+        /// </remarks>
         [ReliableMethod]
         void UpdateTimeInfo(TimeInfo timeInfo);
+
+        /// <summary>
+        /// Set the beats per minute going forward.
+        /// </summary>
+        [ReliableMethod]
+        void SetBeatsPerMinute(float newBPM);
     }
 }

@@ -24,12 +24,10 @@ namespace Holofunk.Sound
     {
         #region Static state
 
-        private static SoundManager s_instance;
-
         /// <summary>
         /// The singleton SoundManager; if this is null, there is no local sound support.
         /// </summary>
-        public static SoundManager Instance { get { return s_instance; } }
+        public static SoundManager Instance { get; private set; }
 
         #endregion
 
@@ -78,7 +76,7 @@ namespace Holofunk.Sound
             // Must only ever be one of these in a scene.
             Contract.Requires(Instance == null);
 
-            s_instance = this;
+            Instance = this;
 
             // prepopulate the backing strings for this bit of the UI
             _pluginInstanceDescriptionStrings.Add("(none)");
@@ -346,5 +344,15 @@ namespace Holofunk.Sound
         }
 
         #endregion
+
+        #region State update
+
+        public void SetBeatsPerMinute(float newBPM)
+        {
+            NowSoundGraphAPI.SetBeatsPerMinute(newBPM);
+        }
+
+        #endregion
+
     }
 }

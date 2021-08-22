@@ -11,9 +11,10 @@ namespace Holofunk.Sound
 {
     public class DistributedSoundClock : DistributedComponent, IDistributedSoundClock
     {
-        private static DistributedSoundClock theInstance = null;
-
-        public static DistributedSoundClock Instance => theInstance;
+        /// <summary>
+        /// The singleton sound clock we use for timing.
+        /// </summary>
+        public static DistributedSoundClock Instance { get; private set; }
 
         #region MonoBehaviours
 
@@ -26,9 +27,9 @@ namespace Holofunk.Sound
                 InitializeOwner();
             }
 
-            if (gameObject.activeSelf && theInstance == null)
+            if (gameObject.activeSelf && Instance == null)
             {
-                theInstance = this;
+                Instance = this;
             }
         }
 
@@ -46,6 +47,8 @@ namespace Holofunk.Sound
         public int BeatsPerMeasure => 4;
 
         public void UpdateTimeInfo(TimeInfo timeInfo) => GetLocalSoundClock().UpdateTimeInfo(timeInfo);
+
+        public void SetBeatsPerMinute(float newBPM) => GetLocalSoundClock().SetBeatsPerMinute(newBPM);
 
         private LocalSoundClock GetLocalSoundClock() => gameObject.GetComponent<LocalSoundClock>();
 
@@ -82,7 +85,7 @@ namespace Holofunk.Sound
             distributedClock.InitializeOwner();
 
             // Set the static instance.
-            theInstance = distributedClock;
+            Instance = distributedClock;
 
             // And finally set the name.
             newEffect.name = $"{distributedClock.Id}";

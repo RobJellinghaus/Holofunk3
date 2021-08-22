@@ -57,6 +57,21 @@ namespace Holofunk.Loop
             public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).FinishRecording();
         }
 
+        public class AppendSoundEffect : ReliableMessage
+        {
+            public EffectId Effect { get; set; }
+            public AppendSoundEffect() : base() { }
+            public AppendSoundEffect(DistributedId id, bool isRequest, EffectId effect) : base(id, isRequest) { Effect = effect; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).AppendSoundEffect(Effect);
+        }
+
+        public class ClearSoundEffects : ReliableMessage
+        {
+            public ClearSoundEffects() : base() { }
+            public ClearSoundEffects(DistributedId id, bool isRequest) : base(id, isRequest) { }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).ClearSoundEffects();
+        }
+
         public class SetCurrentInfo : BroadcastMessage
         {
             public SignalInfo SignalInfo { get; set; }
