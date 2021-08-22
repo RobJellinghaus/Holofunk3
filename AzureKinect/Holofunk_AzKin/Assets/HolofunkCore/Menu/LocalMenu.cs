@@ -150,15 +150,20 @@ namespace Holofunk.Menu
 
                 if (MenuState.TopSelectedItem.IsInitialized)
                 {
-                    // is there a submenu? if so, create it
+                    if (menuLevels.Count == 0)
+                    {
+                        // maybe need to create submenu?
+                        MenuStructure childMenuStructure = menuStructure.Child(menuState.TopSelectedItem);
+
+                        if (childMenuStructure != null && childMenuStructure.Count > 0)
+                        {
+                            menuLevels.Add(new MenuLevel(this, 1, childMenuStructure, Vector3.zero));
+                        }
+                    }
+                    // is there a selected subitem? if so, highlight it
                     if (MenuState.SubSelectedItem.IsInitialized)
                     {
-                        MenuLevel newSubMenu = new MenuLevel(
-                            this,
-                            1,
-                            menuStructure.Child(menuState.SubSelectedItem.Value - 1),
-                            Vector3.zero);
-                        newSubMenu.ColorizeMenuItem(MenuState.SubSelectedItem.Value - 1, Color.white);
+                        menuLevels[1].ColorizeMenuItem(MenuState.SubSelectedItem.Value - 1, Color.white);
                     }
                     else
                     {
