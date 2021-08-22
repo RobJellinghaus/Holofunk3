@@ -101,7 +101,8 @@ namespace Holofunk.Menu
 
         public void OnDelete()
         {
-            // nothing to do... gameobject deletion is sufficient
+            // and we blow ourselves awaaaay
+            Destroy(this.gameObject);
         }
 
         #endregion
