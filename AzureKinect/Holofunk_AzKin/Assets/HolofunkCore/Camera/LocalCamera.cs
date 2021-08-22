@@ -31,7 +31,7 @@ namespace Holofunk.Camera
         /// 
         /// If no camera position is known, then this is None.
         /// </remarks>
-        public Option<Vector3> LastCameraPosition { get; private set; }
+        public Option<Vector3> LastViewpointCameraPosition { get; private set; }
 
         public void Start()
         {
@@ -43,7 +43,7 @@ namespace Holofunk.Camera
         {
             // Look for a Viewpoint.
             DistributedViewpoint viewpoint = DistributedViewpoint.Instance;
-            LastCameraPosition = Option<Vector3>.None;
+            LastViewpointCameraPosition = Option<Vector3>.None;
 
             if (viewpoint != null)
             {
@@ -52,7 +52,7 @@ namespace Holofunk.Camera
                     // we want the viewpoint camera position
                     if (viewpoint.PlayerCount > 0)
                     {
-                        LastCameraPosition = viewpoint.GetPlayer(0).SensorPosition;
+                        LastViewpointCameraPosition = viewpoint.GetPlayer(0).SensorPosition;
                     }
                 }
                 else
@@ -65,7 +65,7 @@ namespace Holofunk.Camera
                     Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
                     Vector3 viewpointHeadPosition = localToViewpointMatrix.MultiplyPoint(performerState.HeadPosition);
 
-                    LastCameraPosition = viewpointHeadPosition;
+                    LastViewpointCameraPosition = viewpointHeadPosition;
                 }
             }
         }
@@ -78,13 +78,13 @@ namespace Holofunk.Camera
         /// <returns>A quaternion that achieves the from-to rotation to keep facing the camera.</returns>
         public Option<Quaternion> CameraFacingFlatRotation(Vector3 viewpointPosition, Vector3 viewpointForwardDirection)
         {
-            if (!LastCameraPosition.HasValue)
+            if (!LastViewpointCameraPosition.HasValue)
             {
                 return Option<Quaternion>.None;
             }
 
             // Get the vector from the viewpoint position to the camera position
-            Vector3 newForwardDirection = (LastCameraPosition.Value - viewpointPosition).normalized;
+            Vector3 newForwardDirection = (LastViewpointCameraPosition.Value - viewpointPosition).normalized;
 
             // flat rotation in XZ plane only (otherwise rotation axis order comes into play and things get odd)
             viewpointForwardDirection.y = 0;
