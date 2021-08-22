@@ -38,7 +38,8 @@ namespace Holofunk.Shape
             Core.Contract.Assert(prototypeShape != null);
 
             // clone the shape and put the clone at this Loopie's position
-            GameObject shape = GameObject.Instantiate(prototypeShape, parent); 
+            GameObject shape = GameObject.Instantiate(prototypeShape, parent);
+            shape.SetActive(true);
             shape.transform.localPosition = Vector3.zero;
             return shape;
         }
