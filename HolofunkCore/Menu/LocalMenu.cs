@@ -200,7 +200,7 @@ namespace Holofunk.Menu
             {
                 MenuLevel menuLevel = menuLevels[i];
                 //_logBuffer.Append($"Checking menu #{i}...{Environment.NewLine}");
-                Option<Tuple<float, int>> result = menuLevel.GetClosestMenuItemIfAny(handPosition);
+                Option<(float, int)> result = menuLevel.GetClosestMenuItemIfAny(handPosition);
 
                 if (result.HasValue)
                 {

@@ -182,7 +182,7 @@ namespace Holofunk.Menu
         /// Get the index of the closest menu item to the given hand location, returning an optional tuple of the
         /// minimum distance together with the index of the closest menu item.
         /// </summary>
-        public Option<Tuple<float, int>> GetClosestMenuItemIfAny(Vector3 handLocation)
+        public Option<(float, int)> GetClosestMenuItemIfAny(Vector3 handLocation)
         {
             // see if it is within TextureRadius of any of the menu items; if so, closest one's selected
             float minDist = float.MaxValue;
@@ -204,7 +204,7 @@ namespace Holofunk.Menu
 
             // TODO: reimplement the concept of "disabled" menu items.
 
-            return Tuple.Create(minDist, selectedIndex.Value);
+            return selectedIndex.HasValue ? ((minDist, selectedIndex.Value)) : Option<(float, int)>.None;
         }
 
         internal void Destroy()
