@@ -113,6 +113,7 @@ namespace Holofunk.Menu
 
         public void OnDelete()
         {
+            HoloDebug.Log($"LocalMenu.OnDelete: Deleting {DistributedObject.Id}");
             // and we blow ourselves awaaaay
             Destroy(this.gameObject);
         }

@@ -401,6 +401,7 @@ namespace Holofunk.Loop
 
         public void OnDelete()
         {
+            HoloDebug.Log($"LocalLoopie.OnDelete: Deleting {DistributedObject.Id}");
             if (SoundManager.Instance != null)
             {
                 Core.Contract.Assert(trackId != TrackId.Undefined);
@@ -409,7 +410,7 @@ namespace Holofunk.Loop
             }
 
             // and we blow ourselves awaaaay
-            Destroy(this.gameObject);
+            Destroy(gameObject);
         }
 
         public void SetMute(bool isMuted)
