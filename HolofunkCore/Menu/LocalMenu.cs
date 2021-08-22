@@ -147,35 +147,33 @@ namespace Holofunk.Menu
                 {
                     menuLevels[0].ColorizeMenuItem(priorMenuState.TopSelectedItem.Value - 1, Color.grey);
                 }
+            }
 
-                if (MenuState.TopSelectedItem.IsInitialized)
+            if (MenuState.TopSelectedItem.IsInitialized)
+            {
+                if (menuLevels.Count == 0)
                 {
-                    if (menuLevels.Count == 0)
-                    {
-                        // maybe need to create submenu?
-                        MenuStructure childMenuStructure = menuStructure.Child(menuState.TopSelectedItem);
+                    // maybe need to create submenu?
+                    MenuStructure childMenuStructure = menuStructure.Child(menuState.TopSelectedItem);
 
-                        if (childMenuStructure != null && childMenuStructure.Count > 0)
-                        {
-                            menuLevels.Add(new MenuLevel(this, 1, childMenuStructure, Vector3.zero));
-                        }
-                    }
-                    // is there a selected subitem? if so, highlight it
-                    if (MenuState.SubSelectedItem.IsInitialized)
+                    if (childMenuStructure != null && childMenuStructure.Count > 0)
                     {
-                        menuLevels[1].ColorizeMenuItem(MenuState.SubSelectedItem.Value - 1, Color.white);
-                    }
-                    else
-                    {
-                        menuLevels[0].ColorizeMenuItem(MenuState.TopSelectedItem.Value - 1, Color.white);
+                        menuLevels.Add(new MenuLevel(this, 1, childMenuStructure, Vector3.zero));
                     }
                 }
-            }
-            else if (priorMenuState.SubSelectedItem != MenuState.SubSelectedItem)
-            {
-                if (priorMenuState.SubSelectedItem.IsInitialized)
+
+                // is there a selected subitem? if so, highlight it
+                if (!MenuState.SubSelectedItem.IsInitialized)
                 {
-                    menuLevels[1].ColorizeMenuItem(priorMenuState.SubSelectedItem.Value - 1, Color.grey);
+                    menuLevels[0].ColorizeMenuItem(MenuState.TopSelectedItem.Value - 1, Color.white);
+                }
+
+                if (priorMenuState.SubSelectedItem != MenuState.SubSelectedItem)
+                {
+                    if (priorMenuState.SubSelectedItem.IsInitialized)
+                    {
+                        menuLevels[1].ColorizeMenuItem(priorMenuState.SubSelectedItem.Value - 1, Color.grey);
+                    }
                 }
 
                 if (MenuState.SubSelectedItem.IsInitialized)
