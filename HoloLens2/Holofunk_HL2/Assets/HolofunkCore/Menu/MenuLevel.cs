@@ -77,7 +77,7 @@ namespace Holofunk.Menu
 
                 menuItemGameObjects.Add(menuItemGameObject);
                 // everything starts off disabled
-                ColorizeMenuItem(i, Color.grey);
+                ColorizeMenuItem(i + 1, Color.grey);
             }
         }
 
