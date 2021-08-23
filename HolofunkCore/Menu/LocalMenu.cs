@@ -77,7 +77,7 @@ namespace Holofunk.Menu
 
         public MenuState MenuState => menuState;
 
-        public IDistributedObject DistributedObject => throw new NotImplementedException();
+        public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedMenu>();
 
         public void SetSelection(MenuItemId topSelectedItem, MenuItemId subSelectedItem)
         {
