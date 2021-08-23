@@ -251,6 +251,7 @@ namespace Holofunk.HandComponents
                     DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
                     if (evt == HandPoseEvent.Closed)
                     {
+                        HoloDebug.Log($"HandStateMachineInstance.soundEffect.exit: calling menu action on {touchedLoopies.Count} loopies");
                         menu.InvokeSelectedAction(touchedLoopies);
                     }
 

@@ -82,8 +82,8 @@ namespace Holofunk.App
                         {
                             state.Effects.CopyTo(newEffects, 0);
                         }
-                        newEffects[length + 1] = (int)pluginId.Value;
-                        newEffects[length + 2] = (int)programId.Value;
+                        newEffects[length] = (int)pluginId.Value;
+                        newEffects[length + 1] = (int)programId.Value;
 
                         state.Effects = newEffects;
 
