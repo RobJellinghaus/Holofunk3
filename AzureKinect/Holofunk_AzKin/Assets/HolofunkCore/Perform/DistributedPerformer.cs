@@ -50,7 +50,8 @@ namespace Holofunk.Perform
         /// nulled out.
         /// </remarks>
         [ReliableMethod]
-        public void UpdatePerformer(PerformerState performer) => RouteReliableMessage(isRequest => new UpdatePerformer(Id, isRequest, performer));
+        public void UpdatePerformer(PerformerState performer)
+            => RouteReliableMessage(isRequest => new UpdatePerformer(Id, isRequest, performer));
 
         #endregion
 
