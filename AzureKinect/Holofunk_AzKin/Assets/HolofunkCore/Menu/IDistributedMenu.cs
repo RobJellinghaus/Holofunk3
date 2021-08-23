@@ -2,6 +2,7 @@
 
 using Distributed.State;
 using Holofunk.Sound;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Holofunk.Menu
@@ -41,6 +42,6 @@ namespace Holofunk.Menu
         /// host which defines any actions in the menu structure.
         /// </remarks>
         [LocalMethod]
-        void InvokeSelectedAction();
+        void InvokeSelectedAction(HashSet<DistributedId> affectedObjects);
     }
 }

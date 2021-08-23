@@ -446,6 +446,7 @@ namespace Holofunk.Loop
 
         public void AppendSoundEffect(EffectId effect)
         {
+            HoloDebug.Log($"LocalLoopie.AppendSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}");
             int length = loopie.Effects == null ? 0 : loopie.Effects.Length / 2;
             int[] newEffects = new int[(length + 1) * 2];
             if (loopie.Effects != null)
@@ -468,6 +469,7 @@ namespace Holofunk.Loop
 
         public void ClearSoundEffects()
         {
+            HoloDebug.Log($"LocalLoopie.ClearSoundEffects: id {DistributedObject.Id}, {pluginInstances.Count} effects");
             loopie.Effects = new int[0];
 
             if (SoundManager.Instance != null)

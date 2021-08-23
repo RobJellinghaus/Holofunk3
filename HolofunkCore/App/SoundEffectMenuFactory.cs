@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Holofunk.Loop;
 using System.Linq;
 using Distributed.State;
+using Holofunk.Core;
 
 namespace Holofunk.App
 {
@@ -28,7 +29,7 @@ namespace Holofunk.App
         /// </summary>
         /// <param name=""></param>
         /// <returns></returns>
-        public static MenuStructure Create(HashSet<DistributedId> touchedLoopieIds, DistributedPerformer distributedPerformer)
+        public static MenuStructure Create()
         {
             // Collections of names for use in menu creation.
             Dictionary<PluginId, string> pluginNames = new Dictionary<PluginId, string>();
@@ -62,42 +63,55 @@ namespace Holofunk.App
             // Note that this action is only ever called on the machine that owns the menu.
             // So if in practice some of the state being closed over (e.g. distributedPerformer) is null
             // on a proxy, that's fine, since the proxy will never call this action.
-            Action<PluginId, PluginProgramId> setSoundEffectAction = (pluginId, programId) =>
+            Func<PluginId, PluginProgramId, Action<HashSet<DistributedId>>> setSoundEffectAction = (pluginId, programId) =>
             {
-                // are we touching anything?
-                if (touchedLoopieIds.Count > 0)
+                return touchedLoopieIds =>
                 {
-                    // apply this effect to the performer
-                    PerformerState state = distributedPerformer.GetPerformer();
-                    int[] newEffects = new int[state.Effects.Length + 2];
-                    state.Effects.CopyTo(newEffects, 0);
-                    newEffects[state.Effects.Length + 1] = (int)pluginId.Value;
-                    newEffects[state.Effects.Length + 2] = (int)programId.Value;
+                    DistributedPerformer distributedPerformer =
+                        DistributedObjectFactory.FindPrototypeComponent<DistributedPerformer>(
+                            DistributedObjectFactory.DistributedType.Performer);
 
-                    state.Effects = newEffects;
-
-                    distributedPerformer.UpdatePerformer(state);
-                }
-                else
-                {
-                    // append this effect to all loopies being touched.
-                    foreach (DistributedLoopie loopie in
-                        DistributedObjectFactory.FindComponentInstances<DistributedLoopie>(
-                            DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
+                    // are we touching anything?
+                    if (touchedLoopieIds.Count > 0)
                     {
-                        if (touchedLoopieIds.Contains(loopie.Id))
+                        // apply this effect to the performer
+                        PerformerState state = distributedPerformer.GetPerformer();
+                        int[] newEffects = new int[state.Effects.Length + 2];
+                        state.Effects.CopyTo(newEffects, 0);
+                        newEffects[state.Effects.Length + 1] = (int)pluginId.Value;
+                        newEffects[state.Effects.Length + 2] = (int)programId.Value;
+
+                        state.Effects = newEffects;
+
+                        HoloDebug.Log($"SoundEffectMenuFactory.setSoundEffectAction: applying effect to performer, pluginId {pluginId}, programId {programId}");
+                        distributedPerformer.UpdatePerformer(state);
+                    }
+                    else
+                    {
+                        // append this effect to all loopies being touched.
+                        foreach (DistributedLoopie loopie in
+                            DistributedObjectFactory.FindComponentInstances<DistributedLoopie>(
+                                DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
                         {
-                            loopie.AppendSoundEffect(new EffectId(pluginId, programId));
+                            if (touchedLoopieIds.Contains(loopie.Id))
+                            {
+                                HoloDebug.Log($"SoundEffectMenuFactory.setSoundEffectAction: applying effect to loopie {loopie.Id}, pluginId {pluginId}, programId {programId}");
+                                loopie.AppendSoundEffect(new EffectId(pluginId, programId));
+                            }
                         }
                     }
-                }
+                };
             };
 
-            List<(string, Action, MenuStructure)> pluginItems = new List<(string, Action, MenuStructure)>();
+            List<(string, Action<HashSet<DistributedId>>, MenuStructure)> pluginItems = new List<(string, Action<HashSet<DistributedId>>, MenuStructure)>();
             pluginItems.Add((
                 "Clear Effects",
-                () =>
+                touchedLoopieIds =>
                 {
+                    DistributedPerformer distributedPerformer =
+                        DistributedObjectFactory.FindPrototypeComponent<DistributedPerformer>(
+                            DistributedObjectFactory.DistributedType.Performer);
+
                     if (touchedLoopieIds.Count > 0)
                     {
                         // apply this effect to the performer
@@ -126,13 +140,13 @@ namespace Holofunk.App
                 // for lambda capturing
                 PluginId pluginId = plid;
                 List<PluginProgramId> childPrograms = plugins[pluginId];
-                List<(string, Action, MenuStructure)> items = new List<(string, Action, MenuStructure)>();
+                List<(string, Action<HashSet<DistributedId>>, MenuStructure)> items = new List<(string, Action<HashSet<DistributedId>>, MenuStructure)>();
                 foreach (PluginProgramId prid in childPrograms)
                 {
                     PluginProgramId pluginProgramId = prid;
                     EffectId effectId = new EffectId(pluginId, pluginProgramId);
                     string label = programNames[effectId];
-                    items.Add((label, () => setSoundEffectAction(pluginId, pluginProgramId), null));
+                    items.Add((label, setSoundEffectAction(pluginId, pluginProgramId), null));
                 }
 
                 MenuStructure subMenu = new MenuStructure(items.ToArray());

@@ -80,14 +80,6 @@ namespace Holofunk.HandComponents
         public IEnumerable<DistributedId> TouchedLoopieIds => touchedLoopieIds;
 
         /// <summary>
-        /// Should hand position be ignored when determining hand pose?
-        /// </summary>
-        /// <remarks>
-        /// This is enabled by popup menus when they come up, to prevent hand position changes from kicking you out of the menu.
-        /// </remarks>
-        internal bool IgnoreHandPositionForHandPose { get; set; }
-
-        /// <summary>
         /// Should the set of touched loopies be kept stable, rather than recomputed on each update?
         /// </summary>
         /// <remarks>

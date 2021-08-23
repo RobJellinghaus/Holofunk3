@@ -94,9 +94,6 @@ namespace Holofunk.HandComponents
                 armed,
                 (evt, handController) =>
                 {
-                    // ignore hand position changes, to prevent them from kicking out of recording mode
-                    handController.IgnoreHandPositionForHandPose = true;
-
                     //handController.PushSprite(SpriteId.HollowCircle, Color.red);
 
                     // Creating the loopie here assigns it as the currently held loopie.
@@ -105,9 +102,6 @@ namespace Holofunk.HandComponents
                 },
                 (evt, handController) =>
                 {
-                    // start paying attention to hand position again
-                    handController.IgnoreHandPositionForHandPose = false;
-
                     //handController.PopGameObject();
                     handController.ReleaseLoopie();
                 });
@@ -242,8 +236,6 @@ namespace Holofunk.HandComponents
                 armed,
                 (evt, handController) =>
                 {
-                    // ignore hand position changes, to prevent them from kicking out of popup mode
-                    handController.IgnoreHandPositionForHandPose = true;
                     // keep the set of touched loopies stable, so whatever we originally touched is still what we apply sound effects to
                     handController.KeepTouchedLoopiesStable = true;
 
@@ -251,15 +243,15 @@ namespace Holofunk.HandComponents
                     menuGameObject.GetComponent<MenuController>().Initialize(handController);
                 },
                 (evt, handController) => {
-                    // start paying attention to hand position again
-                    handController.IgnoreHandPositionForHandPose = false;
                     // let loopies get (un)touched again
                     handController.KeepTouchedLoopiesStable = false;
+
+                    HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(handController.TouchedLoopieIds);
 
                     DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
                     if (evt == HandPoseEvent.Closed)
                     {
-                        menu.InvokeSelectedAction();
+                        menu.InvokeSelectedAction(touchedLoopies);
                     }
 
                     UnityEngine.GameObject.Destroy(menuGameObject);
@@ -368,23 +360,20 @@ namespace Holofunk.HandComponents
                 armed,
                 (evt, handController) =>
                 {
-                    handController.IgnoreHandPositionForHandPose = true;
-
                     menuGameObject = CreateMenu(handController, MenuKinds.System);
                     menuGameObject.GetComponent<MenuController>().Initialize(handController);
                 },
                 (evt, handController) => {
-                    handController.IgnoreHandPositionForHandPose = false;
-
                     DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
                     if (evt == HandPoseEvent.Closed)
                     {
-                        menu.InvokeSelectedAction();
+                        // we don't pass specific affected objects to the system menu actions (yet...?).
+                        menu.InvokeSelectedAction(null);
                     }
 
                     // delete it in the distributed sense.
                     // note that locally, this will synchronously destroy the game object
-                    menuGameObject.GetComponent<DistributedMenu>().Delete();
+                    menu.Delete();
                 });
 
             AddTransition(stateMachine, armed, HandPoseEvent.Bloom, systemPopupMenu);

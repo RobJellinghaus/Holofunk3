@@ -43,9 +43,9 @@ namespace Holofunk.App
 
             return new MenuStructure(
                 ("BPM", null, new MenuStructure(
-                    ($"=>{bpm+10}", () => setBPMAction(10), null),
-                    ($"{bpm-10}<=", () => setBPMAction(-10), null))),
-                ("Delete My Sounds", () => { }, null));
+                    ($"=>{bpm+10}", _ => setBPMAction(10), null),
+                    ($"{bpm-10}<=", _ => setBPMAction(-10), null))),
+                ("Delete My Sounds", _ => { }, null));
         }
     }
 }

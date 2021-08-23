@@ -5,6 +5,7 @@ using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Sound;
 using LiteNetLib;
+using System.Collections.Generic;
 using UnityEngine;
 using static Holofunk.Menu.MenuMessages;
 
@@ -49,7 +50,7 @@ namespace Holofunk.Menu
         public void SetSelection(MenuItemId topSelectedItemId, MenuItemId subSelectedItemId) =>
             RouteReliableMessage(isRequest => new SetSelected(Id, isRequest: !IsOwner, topSelectedItemId, subSelectedItemId));
 
-        public void InvokeSelectedAction() => GetLocalMenu().InvokeSelectedAction();
+        public void InvokeSelectedAction(HashSet<DistributedId> affectedObjects) => GetLocalMenu().InvokeSelectedAction(affectedObjects);
 
         #endregion
 

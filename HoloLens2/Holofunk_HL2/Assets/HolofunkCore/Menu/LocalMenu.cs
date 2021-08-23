@@ -68,7 +68,7 @@ namespace Holofunk.Menu
             {
                 // TODO: parameterize this properly
                 // TODO: figure out how to structure the package dependencies here; Menu shouldn't depend on App
-                menuStructure = App.SoundEffectsMenuFactory.Create(new HashSet<DistributedId>(), null);
+                menuStructure = App.SoundEffectsMenuFactory.Create();
             }
 
             // create the root menu level
@@ -90,7 +90,7 @@ namespace Holofunk.Menu
             menuState = currentState;
         }
 
-        public void InvokeSelectedAction()
+        public void InvokeSelectedAction(HashSet<DistributedId> affectedObjects)
         {
             MenuState state = MenuState;
             if (!state.TopSelectedItem.IsInitialized)
@@ -100,7 +100,7 @@ namespace Holofunk.Menu
             }
 
             // ok top item is known initialized. get its structure entry
-            Action action = menuStructure.Action(state.TopSelectedItem);
+            Action<HashSet<DistributedId>> action = menuStructure.Action(state.TopSelectedItem);
 
             if (state.SubSelectedItem.IsInitialized)
             {
@@ -108,7 +108,7 @@ namespace Holofunk.Menu
                 action = childStructure.Action(state.SubSelectedItem);
             }
 
-            action();
+            action(affectedObjects);
         }
 
         public void OnDelete()
