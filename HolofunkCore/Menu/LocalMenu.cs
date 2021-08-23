@@ -145,6 +145,14 @@ namespace Holofunk.Menu
         /// </remarks>
         public void Update()
         {
+            if (priorMenuState.SubSelectedItem != MenuState.SubSelectedItem)
+            {
+                if (priorMenuState.SubSelectedItem.IsInitialized)
+                {
+                    menuLevels[1].ColorizeMenuItem(priorMenuState.SubSelectedItem, Color.grey);
+                }
+            }
+
             // Our selection state may have changed.
             // If so, we want to update our list of MenuLevels appropriately for the new state.
             if (priorMenuState.TopSelectedItem != MenuState.TopSelectedItem)
@@ -156,10 +164,11 @@ namespace Holofunk.Menu
                     menuLevels.RemoveAt(1);
                 }
 
-                if (priorMenuState.TopSelectedItem.IsInitialized)
-                {
-                    menuLevels[0].ColorizeMenuItem(priorMenuState.TopSelectedItem.Value - 1, Color.grey);
-                }
+            }
+
+            if (priorMenuState.TopSelectedItem.IsInitialized)
+            {
+                menuLevels[0].ColorizeMenuItem(priorMenuState.TopSelectedItem, Color.grey);
             }
 
             if (MenuState.TopSelectedItem.IsInitialized)
@@ -178,22 +187,14 @@ namespace Holofunk.Menu
                 }
 
                 // is there a selected subitem? if so, highlight it
-                if (!MenuState.SubSelectedItem.IsInitialized)
-                {
-                    menuLevels[0].ColorizeMenuItem(MenuState.TopSelectedItem.Value - 1, Color.white);
-                }
-
-                if (priorMenuState.SubSelectedItem != MenuState.SubSelectedItem)
-                {
-                    if (priorMenuState.SubSelectedItem.IsInitialized)
-                    {
-                        menuLevels[1].ColorizeMenuItem(priorMenuState.SubSelectedItem.Value - 1, Color.grey);
-                    }
-                }
 
                 if (MenuState.SubSelectedItem.IsInitialized)
                 {
-                    menuLevels[1].ColorizeMenuItem(MenuState.SubSelectedItem.Value - 1, Color.white);
+                    menuLevels[1].ColorizeMenuItem(MenuState.SubSelectedItem, Color.white);
+                }
+                else
+                {
+                    menuLevels[0].ColorizeMenuItem(MenuState.TopSelectedItem, Color.white);
                 }
             }
 
