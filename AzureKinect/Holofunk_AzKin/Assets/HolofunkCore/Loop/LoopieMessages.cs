@@ -119,6 +119,8 @@ namespace Holofunk.Loop
             Registrar.RegisterReliableMessage<SetVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<SetViewpointPosition, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<FinishRecording, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterReliableMessage<AppendSoundEffect, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterReliableMessage<ClearSoundEffects, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterBroadcastMessage<SetCurrentInfo, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterBroadcastMessage<SetCurrentWaveform, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
         }
