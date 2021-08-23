@@ -34,6 +34,11 @@ namespace Holofunk.Loop
         // Update is called once per frame
         void Update()
         {
+            if (DistributedSoundClock.Instance == null)
+            {
+                return;
+            }
+
             // local copy of struct
             NowSoundLib.TrackInfo trackInfo = localLoopie.TrackInfo;
 
