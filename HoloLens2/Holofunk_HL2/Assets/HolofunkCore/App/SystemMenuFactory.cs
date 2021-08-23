@@ -25,23 +25,26 @@ namespace Holofunk.App
         /// <returns></returns>
         public static MenuStructure Create()
         {
+            DistributedSoundClock clock1 = DistributedSoundClock.Instance;
+            float bpm = clock1.TimeInfo.Value.BeatsPerMinute;
+
             Action<int> setBPMAction = delta =>
             {
-                DistributedSoundClock theClock = DistributedSoundClock.Instance;
-                if (theClock != null)
+                DistributedSoundClock clock2 = DistributedSoundClock.Instance;
+                if (clock2 != null)
                 {
-                    float newBPM = theClock.TimeInfo.Value.BeatsPerMinute + delta;
+                    float newBPM = clock2.TimeInfo.Value.BeatsPerMinute + delta;
                     if (newBPM > 0)
                     {
-                        theClock.SetBeatsPerMinute(newBPM);
+                        clock2.SetBeatsPerMinute(newBPM);
                     }
                 }
             };
 
             return new MenuStructure(
                 ("BPM", null, new MenuStructure(
-                    ("+10", () => setBPMAction(10), null),
-                    ("-10", () => setBPMAction(-10), null))),
+                    ($"=>{bpm+10}", () => setBPMAction(10), null),
+                    ($"{bpm-10}<=", () => setBPMAction(-10), null))),
                 ("Delete My Sounds", () => { }, null));
         }
     }
