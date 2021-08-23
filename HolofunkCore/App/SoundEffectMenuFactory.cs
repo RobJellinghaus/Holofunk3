@@ -76,10 +76,11 @@ namespace Holofunk.App
                     {
                         // apply this effect to the performer
                         PerformerState state = distributedPerformer.GetPerformer();
-                        int[] newEffects = new int[state.Effects.Length + 2];
+                        int length = state.Effects == null ? 0 : state.Effects.Length;
+                        int[] newEffects = new int[length + 2];
                         state.Effects.CopyTo(newEffects, 0);
-                        newEffects[state.Effects.Length + 1] = (int)pluginId.Value;
-                        newEffects[state.Effects.Length + 2] = (int)programId.Value;
+                        newEffects[length + 1] = (int)pluginId.Value;
+                        newEffects[length + 2] = (int)programId.Value;
 
                         state.Effects = newEffects;
 

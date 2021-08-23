@@ -95,6 +95,12 @@ namespace Holofunk.Perform
             touchedLoopieIdList.AddRange(left.TouchedLoopieIds.Union(right.TouchedLoopieIds));
             touchedLoopieIdList.Sort(DistributedId.Comparer.Instance);
 
+            // And collect the effects list if any.
+
+            DistributedPerformer performerPrototype =
+                DistributedObjectFactory.FindPrototypeComponent<DistributedPerformer>(
+                    DistributedObjectFactory.DistributedType.Performer);
+
             PerformerState performer = new PerformerState
             {
                 LeftHandPosition = AverageLeftHandPos,
@@ -105,12 +111,9 @@ namespace Holofunk.Perform
                     _leftHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown)),
                 RightHandPose = new HandPose(
                     _rightHandPoseCounter.TopValue.GetValueOrDefault(HandPoseValue.Unknown)),
-                TouchedLoopieIdList = touchedLoopieIdList.Select(id => id.Value).ToArray()
+                TouchedLoopieIdList = touchedLoopieIdList.Select(id => id.Value).ToArray(),
+                Effects = performerPrototype.GetPerformer().Effects
             };
-
-            DistributedPerformer performerPrototype =
-                DistributedObjectFactory.FindPrototypeComponent<DistributedPerformer>(
-                    DistributedObjectFactory.DistributedType.Performer);
 
             // Update this over the network
             performerPrototype.UpdatePerformer(performer);
