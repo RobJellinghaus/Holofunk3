@@ -189,10 +189,10 @@ namespace Holofunk.Menu
             menuItemGameObjects.Clear();
         }
 
-        internal void ColorizeMenuItem(Option<int> originalSelectedMenuIndex, Color color)
+        internal void ColorizeMenuItem(MenuItemId originalSelectedMenuItem, Color color)
         {
-            menuItemGameObjects[originalSelectedMenuIndex.Value].GetComponent<SpriteRenderer>().material.color = color;
-            menuItemGameObjects[originalSelectedMenuIndex.Value].transform.GetChild(0).gameObject.GetComponent<TextMesh>().color = color;
+            menuItemGameObjects[originalSelectedMenuItem.AsIndex].GetComponent<SpriteRenderer>().material.color = color;
+            menuItemGameObjects[originalSelectedMenuItem.AsIndex].transform.GetChild(0).gameObject.GetComponent<TextMesh>().color = color;
         }
     }
 }
