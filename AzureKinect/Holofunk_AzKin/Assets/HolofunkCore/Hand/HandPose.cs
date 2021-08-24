@@ -60,9 +60,17 @@ namespace Holofunk.Hand
         PointingIndexAndMiddle,
 
         /// <summary>
-        /// Bringing all fingertips together above the palm; the "bloom" gesture.
+        /// Bringing all fingertips together above the palm; the original "bloom" gesture.
         /// </summary>
-        Bloom,
+        BloomUp,
+
+        /// <summary>
+        /// Bringing all fingertips together to the side of the palm; the "bloom" gesture, only pointing sideways.
+        /// </summary>
+        /// <remarks>
+        /// Turns out this is more reliably recognizable than the two-fingers-extended-separately gesture.
+        /// </remarks>
+        BloomSide,
 
         /// <summary>
         /// Pretty sure hand is fully flat with all fingers extended and adjacent.

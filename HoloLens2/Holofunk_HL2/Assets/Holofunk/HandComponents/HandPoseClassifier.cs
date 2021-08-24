@@ -190,11 +190,18 @@ namespace Holofunk.HandComponents
             // If all fingertips are close together and all are above their respective knuckles,
             // then consider it the bloom gesture.
             else if ((_sumPairwiseFingertipDistances / _sumPairwiseKnuckleDistances)
-                     <= HandPoseMagicNumbers.FingertipSumDistanceToKnuckleSumDistanceRatioMaximum
-                && ((_sumFingerTipAltitudes / _sumPairwiseKnuckleDistances)
-                     >= HandPoseMagicNumbers.FingertipSumAltitudeToKnuckleSumDistanceRatioMinimum))
+                     <= HandPoseMagicNumbers.FingertipSumDistanceToKnuckleSumDistanceRatioMaximum)
             {
-                _handPose = HandPoseValue.Bloom;
+                // we are blooming either up or to the side (we consider anything not up to be side, for now)
+                if ((_sumFingerTipAltitudes / _sumPairwiseKnuckleDistances)
+                     >= HandPoseMagicNumbers.FingertipSumAltitudeToKnuckleSumDistanceRatioMinimum)
+                {
+                    _handPose = HandPoseValue.BloomUp;
+                }
+                else
+                {
+                    _handPose = HandPoseValue.BloomSide;
+                }
             }
             // If all fingers are curled, or the thumb is curled and all the other fingers are aligned with the eye,
             // then consider the hand to be closed.
