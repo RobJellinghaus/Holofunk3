@@ -32,7 +32,7 @@ namespace Holofunk.StateMachines
         /// <summary>
         /// Number of transitions to log internally for debugging.
         /// </summary>
-        private readonly static int TransitionsToKeep = 5;
+        private readonly static int TransitionsToKeep = 1;
 
         readonly int _id;
 

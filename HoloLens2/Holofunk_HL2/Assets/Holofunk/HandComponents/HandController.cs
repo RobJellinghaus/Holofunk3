@@ -268,8 +268,10 @@ namespace Holofunk.HandComponents
                 if (lastHandPose.Value != handPose)
                 {
                     lastHandPose = handPose;
-
+                    
                     stateMachineInstance.OnNext(handPoseEvent);
+
+                    HoloDebug.Log(HandStateMachineInstanceString);
                 }
             }
         }

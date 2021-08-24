@@ -53,7 +53,6 @@ namespace Holofunk.Menu
         public MenuLevel(
             LocalMenu menu,
             Vector3 parentLocalPosition,
-            float itemDiameter,
             int depth,
             MenuStructure menuStructure)
         {
@@ -63,7 +62,7 @@ namespace Holofunk.Menu
 
             for (int i = 0; i < menuStructure.Count; i++)
             {
-                Vector3 submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i, itemDiameter);
+                Vector3 submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
 
                 GameObject menuItemGameObject = ShapeContainer.InstantiateShape(ShapeType.MenuItem, menu.transform);
                 // position this relative to its parent
@@ -84,10 +83,10 @@ namespace Holofunk.Menu
         /// <summary>
         /// Get the position of the menu item with the given index, relative to the root position.
         /// </summary>
-        internal Vector3 GetRelativePosition(Vector3 parentLocalPosition, int index, float itemDiameter)
+        internal Vector3 GetRelativePosition(Vector3 parentLocalPosition, int index)
         {
             Contract.Requires(index < menuStructure.Count);
-            float scaledTextureDiameter = itemDiameter * MagicNumbers.MenuScale;
+            float scaledTextureDiameter = MagicNumbers.HandRadius * MagicNumbers.MenuScale;
             if (depth == 0)
             {
                 // we are the root menu.  Handle 1-item and 2-item cases specially.
