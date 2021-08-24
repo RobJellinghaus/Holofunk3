@@ -22,9 +22,9 @@ namespace Holofunk.Perform
     {
         private HandPoseClassifier _classifier = new HandPoseClassifier();
 
-        private bool showDistanceStatistics = false;
+        private bool showDistanceStatistics = true;
 
-        private bool showRightHandProperties = true;
+        private bool showRightHandProperties = false;
 
         private bool showLoopieDistance = false;
 

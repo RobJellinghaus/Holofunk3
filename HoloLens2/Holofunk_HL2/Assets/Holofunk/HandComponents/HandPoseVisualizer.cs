@@ -25,7 +25,7 @@ namespace Holofunk.HandComponents
         {
             var handJointService = CoreServices.GetInputSystemDataProvider<IMixedRealityHandJointService>();
             var gazeProvider = CoreServices.InputSystem.EyeGazeProvider;
-            Handedness handedness = GetComponent<SolverHandler>().TrackedHandness;
+            Handedness handedness = Handedness.Right;
             if (handJointService != null && handJointService.IsHandTracked(handedness))
             {
                 _classifier.Recalculate(handJointService, gazeProvider, handedness);

@@ -251,19 +251,21 @@ namespace Holofunk.HandComponents
                     DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
                     if (evt == HandPoseEvent.Closed)
                     {
-                        HoloDebug.Log($"HandStateMachineInstance.soundEffect.exit: calling menu action on {touchedLoopies.Count} loopies");
+                        HoloDebug.Log($"HandStateMachineInstance.soundEffectPopupMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
                         menu.InvokeSelectedAction(touchedLoopies);
                     }
 
-                    UnityEngine.GameObject.Destroy(menuGameObject);
+                    // delete it in the distributed sense.
+                    // note that locally, this will synchronously destroy the game object
+                    HoloDebug.Log($"HandStateMachineInstance.soundEffectPopupMenu.exit: deleting menu {menu.Id}");
+                    menu.Delete();
                 });
 
-            AddTransition(stateMachine, armed, HandPoseEvent.Pointing2, soundEffectMenu);
-            AddTransition(stateMachine, initial, HandPoseEvent.Pointing2, soundEffectMenu);
             AddTransition(stateMachine, armed, HandPoseEvent.BloomSide, soundEffectMenu);
             AddTransition(stateMachine, initial, HandPoseEvent.BloomSide, soundEffectMenu);
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Opened, armed);
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Closed, initial);
+            AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Flat, initial); // flaky recognition
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Pointing1, pointingMuteUnmute);
 
             /* original code:
@@ -377,6 +379,7 @@ namespace Holofunk.HandComponents
 
                     // delete it in the distributed sense.
                     // note that locally, this will synchronously destroy the game object
+                    HoloDebug.Log($"HandStateMachineInstance.systemPopupMenu.exit: deleting menu {menu.Id}");
                     menu.Delete();
                 });
 

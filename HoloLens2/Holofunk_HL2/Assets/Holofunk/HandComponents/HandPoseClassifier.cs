@@ -162,7 +162,9 @@ namespace Holofunk.HandComponents
             // Now classify overall hand pose.
             if (AllFingerPose(FingerPose.Extended)
                 && GetFingerPose(Finger.Thumb) == FingerPose.Extended
-                && AnyFingerExtension(FingerPairExtension.NotExtendedTogether))
+                && GetFingerPairExtension(Finger.Thumb) == FingerPairExtension.NotExtendedTogether
+                && (_sumPairwiseFingertipDistances / _sumPairwiseKnuckleDistances)
+                     > HandPoseMagicNumbers.FingertipSumDistanceToKnuckleSumDistanceRatioMaximum)
             {
                 _handPose = HandPoseValue.Opened;
             }
@@ -173,6 +175,7 @@ namespace Holofunk.HandComponents
             {
                 _handPose = HandPoseValue.PointingIndex;
             }
+            /* UNRELIABLE
             else if (GetFingerPose(Finger.Index) == FingerPose.Extended
                 && GetFingerPose(Finger.Middle) == FingerPose.Extended
                 && GetFingerPose(Finger.Ring) != FingerPose.Extended
@@ -187,10 +190,13 @@ namespace Holofunk.HandComponents
             {
                 _handPose = HandPoseValue.PointingMiddle;
             }
+            */
             // If all fingertips are close together and all are above their respective knuckles,
             // then consider it the bloom gesture.
             else if ((_sumPairwiseFingertipDistances / _sumPairwiseKnuckleDistances)
-                     <= HandPoseMagicNumbers.FingertipSumDistanceToKnuckleSumDistanceRatioMaximum)
+                     <= HandPoseMagicNumbers.FingertipSumDistanceToKnuckleSumDistanceRatioMaximum
+                     && GetFingerJointColinearity(Finger.Index) > HandPoseMagicNumbers.FingerLinearityExtendedMinimum
+                     && GetFingerJointColinearity(Finger.Middle) > HandPoseMagicNumbers.FingerLinearityExtendedMinimum)
             {
                 // we are blooming either up or to the side (we consider anything not up to be side, for now)
                 if ((_sumFingerTipAltitudes / _sumPairwiseKnuckleDistances)

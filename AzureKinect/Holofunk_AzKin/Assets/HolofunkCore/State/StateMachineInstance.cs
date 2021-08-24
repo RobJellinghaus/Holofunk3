@@ -36,6 +36,8 @@ namespace Holofunk.StateMachines
 
         readonly int _id;
 
+        long _transitionCount;
+
         readonly StateMachine<TEvent> _machine;
         State<TEvent> _machineState;
 
@@ -178,10 +180,13 @@ namespace Holofunk.StateMachines
                 {
                     _lastTransitionStrings.RemoveAt(0);
                 }
+
                 MoveTo(value, destination);
+
+                _transitionCount++;
             }
         }
 
-        public override string ToString() => $"StateMachineInstance[{_machineState}{(_lastTransitionStrings.Count > 0 ? "; " : "")}{string.Join($";{Environment.NewLine}", _lastTransitionStrings)}]";
+        public override string ToString() => $"StateMachineInstance[{_machineState}] #{_transitionCount}: {string.Join($";{Environment.NewLine}", _lastTransitionStrings)}";
     }
 }

@@ -68,6 +68,7 @@ namespace Holofunk.HandComponents
                 case HandPoseValue.PointingIndexAndMiddle: return Pointing2;
                 case HandPoseValue.Flat: return Flat;
                 case HandPoseValue.BloomUp: return BloomUp;
+                case HandPoseValue.BloomSide: return BloomSide;
                 default: return Unknown;
             }
         }

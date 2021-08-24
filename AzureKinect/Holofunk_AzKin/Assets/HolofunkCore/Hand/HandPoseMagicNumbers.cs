@@ -15,7 +15,7 @@ namespace Holofunk.Hand
         /// The threshold value for finger linearity (as calculated by HandPoseRecognizer.CalculateFingerPose), above which
         /// the finger is considered extended.
         /// </summary>
-        public static float FingerLinearityExtendedMinimum = 2.5f;
+        public static float FingerLinearityExtendedMinimum = 2f;
 
         /// <summary>
         /// The threshold value for finger linearity (as calculated by HandPoseRecognizer.CalculateFingerPose), below which
@@ -45,7 +45,7 @@ namespace Holofunk.Hand
         /// The minimum colinearity between adjacent fingers to consider them extended together.
         /// </summary>
         /// <remarks>
-        /// This seems high but "open" fingers still have colinearity of around 0.95 to 0.96.
+        /// This seems high but "open" fingers still have colinearity of around 2.2.
         /// </remarks>
         public static float FingersExtendedColinearityMinimum = 0.975f;
 
