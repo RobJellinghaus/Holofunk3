@@ -57,7 +57,15 @@ namespace Holofunk.Perform
             {
                 // effects changed.
                 // for now we support only either clearing them all or appending one at a time
-                if (performer.Effects == null || performer.Effects.Length == 0)
+                if (performer.Effects == null)
+                {
+                    performer.Effects = new int[0];
+                }
+                if (this.performer.Effects == null)
+                {
+                    this.performer.Effects = new int[0];
+                }
+                if (performer.Effects.Length == 0)
                 {
                     HoloDebug.Log("LocalPerformer.UpdatePerformer: effects cleared, calling ClearPerformerEffects");
                     ClearPerformerEffects();
