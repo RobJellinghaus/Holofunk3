@@ -123,7 +123,7 @@ namespace Holofunk.App
                         DistributedObjectFactory.FindPrototypeComponent<DistributedPerformer>(
                             DistributedObjectFactory.DistributedType.Performer);
 
-                    if (touchedLoopieIds.Count > 0)
+                    if (touchedLoopieIds.Count == 0)
                     {
                         // apply this effect to the performer
                         PerformerState state = distributedPerformer.GetPerformer();
