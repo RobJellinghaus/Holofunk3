@@ -95,6 +95,7 @@ namespace Holofunk.Perform
                 // this performer is a proxy, we know this. so, where did it come from?
                 // we assigned it a player already and from that player we can get their assigned audio input
                 // (which we, the viewpoint, are in charge of assigning).
+                // TODO: add audio input ID assignment to player state
                 bool foundPlayer = DistributedViewpoint.Instance.TryGetPlayer(
                     new SerializedSocketAddress(DistributedObject.OwningPeer),
                     out PlayerState playerState);
@@ -120,10 +121,13 @@ namespace Holofunk.Perform
         {
             if (SoundManager.Instance != null)
             {
-                // what is this performer's player?
-                // (this tells us, or should tell us, what the player's audio input ID is)
+                // this performer is a proxy, we know this. so, where did it come from?
+                // we assigned it a player already and from that player we can get their assigned audio input
+                // (which we, the viewpoint, are in charge of assigning).
                 // TODO: add audio input ID assignment to player state
-                bool foundPlayer = DistributedViewpoint.Instance.TryGetPlayer(DistributedObject.Host.SocketAddress, out PlayerState playerState);
+                bool foundPlayer = DistributedViewpoint.Instance.TryGetPlayer(
+                    new SerializedSocketAddress(DistributedObject.OwningPeer),
+                    out PlayerState playerState);
 
                 if (foundPlayer)
                 {
