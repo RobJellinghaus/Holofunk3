@@ -99,12 +99,17 @@ namespace Holofunk.Perform
 
                 if (foundPlayer)
                 {
+                    HoloDebug.Log($"LocalPerformer.AppendPerformerEffect: appending [{effect.PluginId}, {effect.PluginProgramId}] with {pluginInstances} effects already active");
                     pluginInstances.Add(
                         NowSoundGraphAPI.AddInputPluginInstance(
                             NowSoundLib.AudioInputId.AudioInput1,
                             effect.PluginId.Value,
                             effect.PluginProgramId.Value,
                             100));
+                }
+                else
+                {
+                    HoloDebug.Log("LocalPerformer.AppendPerformerEffect: Did not find player");
                 }
             }
         }
@@ -120,12 +125,17 @@ namespace Holofunk.Perform
 
                 if (foundPlayer)
                 {
+                    HoloDebug.Log($"LocalPerformer.ClearPerformerEffects: clearing {pluginInstances.Count} effects");
                     foreach (PluginInstanceIndex pluginInstance in pluginInstances)
                     {
                         // TODO: support multiple audio input IDs here, assigned via the Player
                         NowSoundGraphAPI.DeleteInputPluginInstance(NowSoundLib.AudioInputId.AudioInput1, pluginInstance);
                     }
                     pluginInstances.Clear();
+                }
+                else
+                {
+                    HoloDebug.Log("LocalPerformer.ClearPerformerEffects: Did not find player");
                 }
             }
         }
