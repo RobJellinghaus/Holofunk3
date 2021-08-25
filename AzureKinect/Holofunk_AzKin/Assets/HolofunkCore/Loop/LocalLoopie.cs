@@ -479,6 +479,7 @@ namespace Holofunk.Loop
                 {
                     NowSoundTrackAPI.DeletePluginInstance(trackId, pluginInstance);
                 }
+                pluginInstances.Clear();
             }
         }
 

@@ -77,6 +77,9 @@ namespace Holofunk.App
                         // apply this effect to the performer
                         PerformerState state = distributedPerformer.GetPerformer();
                         int length = state.Effects == null ? 0 : state.Effects.Length;
+
+                        HoloDebug.Log($"SoundEffectMenuFactory.setSoundEffectAction: before action, there are {length} effect ids");
+
                         int[] newEffects = new int[length + 2];
                         if (state.Effects != null)
                         {
@@ -88,7 +91,11 @@ namespace Holofunk.App
                         state.Effects = newEffects;
 
                         HoloDebug.Log($"SoundEffectMenuFactory.setSoundEffectAction: applying effect to performer, pluginId {pluginId}, programId {programId}");
+                        
                         distributedPerformer.UpdatePerformer(state);
+                        int[] fx = distributedPerformer.GetPerformer().Effects;
+
+                        HoloDebug.Log($"SoundEffectMenuFactory.setSoundEffectAction: after action, there are {fx.Length} effect ids");
                     }
                     else
                     {

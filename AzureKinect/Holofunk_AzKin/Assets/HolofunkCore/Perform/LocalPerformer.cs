@@ -1,6 +1,7 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
+using Holofunk.Core;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using NowSoundLib;
@@ -56,17 +57,23 @@ namespace Holofunk.Perform
             {
                 // effects changed.
                 // for now we support only either clearing them all or appending one at a time
-                if (performer.Effects.Length == 0)
+                if (performer.Effects == null || performer.Effects.Length == 0)
                 {
+                    HoloDebug.Log("LocalPerformer.UpdatePerformer: effects cleared, calling ClearPerformerEffects");
                     ClearPerformerEffects();
                 }
                 else if (performer.Effects.Length == this.performer.Effects.Length + 2)
                 {
                     // assume appending
+                    HoloDebug.Log("LocalPerformer.UpdatePerformer: effects got longer by 2, assuming append");
                     AppendPerformerEffect(
                         new EffectId(
                             new Sound.PluginId((NowSoundLib.PluginId)performer.Effects[performer.Effects.Length - 2]),
                             new PluginProgramId((ProgramId)performer.Effects[performer.Effects.Length - 1])));
+                }
+                else
+                {
+                    HoloDebug.Log($"LocalPerformer.UpdatePerformer: effects went from {this.performer.Effects.Length} to {performer.Effects.Length} -- making no fx changes");
                 }
             }
 
@@ -110,6 +117,7 @@ namespace Holofunk.Perform
                         // TODO: support multiple audio input IDs here, assigned via the Player
                         NowSoundGraphAPI.DeleteInputPluginInstance(NowSoundLib.AudioInputId.AudioInput1, pluginInstance);
                     }
+                    pluginInstances.Clear();
                 }
             }
         }
