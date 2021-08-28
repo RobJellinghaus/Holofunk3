@@ -5,7 +5,6 @@ using Holofunk.Core;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using NowSoundLib;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Holofunk.Perform
@@ -21,15 +20,6 @@ namespace Holofunk.Perform
         private PerformerState performer;
 
         public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedPerformer>();
-
-        /// <summary>
-        /// The list of effect plugins currently applying to this Performer.
-        /// </summary>
-        /// <remarks>
-        /// This is not distributed state and can't be recreated if the Performer disconnects, but in that case this
-        /// state should be torn down anyway.
-        /// </remarks>
-        public List<PluginInstanceIndex> pluginInstances = new List<PluginInstanceIndex>();
 
         internal void Initialize(PerformerState performer)
         {
@@ -102,13 +92,17 @@ namespace Holofunk.Perform
 
                 if (foundPlayer)
                 {
-                    HoloDebug.Log($"LocalPerformer.AppendPerformerEffect: appending [{effect.PluginId}, {effect.PluginProgramId}] with {pluginInstances} effects already active");
-                    pluginInstances.Add(
-                        NowSoundGraphAPI.AddInputPluginInstance(
-                            NowSoundLib.AudioInputId.AudioInput1,
-                            effect.PluginId.Value,
-                            effect.PluginProgramId.Value,
-                            100));
+                    NowSoundLib.AudioInputId playerAudioInput = NowSoundLib.AudioInputId.AudioInput1;
+
+                    int playerEffectCount = NowSoundGraphAPI.GetInputPluginInstanceCount(playerAudioInput);
+
+                    HoloDebug.Log($"LocalPerformer.AppendPerformerEffect: appending [{effect.PluginId}, {effect.PluginProgramId}] with {playerEffectCount} effects already active");
+
+                    NowSoundGraphAPI.AddInputPluginInstance(
+                        NowSoundLib.AudioInputId.AudioInput1,
+                        effect.PluginId.Value,
+                        effect.PluginProgramId.Value,
+                        100);
                 }
                 else
                 {
@@ -131,13 +125,19 @@ namespace Holofunk.Perform
 
                 if (foundPlayer)
                 {
-                    HoloDebug.Log($"LocalPerformer.ClearPerformerEffects: clearing {pluginInstances.Count} effects");
-                    foreach (PluginInstanceIndex pluginInstance in pluginInstances)
+                    NowSoundLib.AudioInputId playerAudioInput = NowSoundLib.AudioInputId.AudioInput1;
+
+                    int playerEffectCount = NowSoundGraphAPI.GetInputPluginInstanceCount(playerAudioInput);
+                    HoloDebug.Log($"LocalPerformer.ClearPerformerEffects: clearing {playerEffectCount} effects");
+
+                    for (int i = 0; i < playerEffectCount; i++)
                     {
-                        // TODO: support multiple audio input IDs here, assigned via the Player
-                        NowSoundGraphAPI.DeleteInputPluginInstance(NowSoundLib.AudioInputId.AudioInput1, pluginInstance);
+                        // Each time we remove one the indices of the later ones change.
+                        // So just remove index 1 over and over.
+                        // TODO: really use stable IDs if it makes sense to do so later (e.g. direct instance manipulation from the app).
+                        // TODO: ...or just add a plugin instance query API to NowSoundLib and ask NowSoundLib what's the deal.
+                        NowSoundGraphAPI.DeleteInputPluginInstance(playerAudioInput, (PluginInstanceIndex)1);
                     }
-                    pluginInstances.Clear();
                 }
                 else
                 {
