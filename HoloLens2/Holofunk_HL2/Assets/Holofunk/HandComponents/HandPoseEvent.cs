@@ -52,8 +52,8 @@ namespace Holofunk.HandComponents
         internal static HandPoseEvent Closed { get { return new HandPoseEvent(HandPoseValue.Closed); } }
         internal static HandPoseEvent Pointing1 { get { return new HandPoseEvent(HandPoseValue.PointingIndex); } }
         internal static HandPoseEvent Pointing2 { get { return new HandPoseEvent(HandPoseValue.PointingIndexAndMiddle); } }
-        internal static HandPoseEvent BloomUp { get { return new HandPoseEvent(HandPoseValue.BloomUp); } }
-        internal static HandPoseEvent BloomSide { get { return new HandPoseEvent(HandPoseValue.BloomSide); } }
+        internal static HandPoseEvent Bloom { get { return new HandPoseEvent(HandPoseValue.Bloom); } }
+        internal static HandPoseEvent ThumbsUp { get { return new HandPoseEvent(HandPoseValue.ThumbsUp); } }
         internal static HandPoseEvent Flat { get { return new HandPoseEvent(HandPoseValue.Flat); } }
         internal static HandPoseEvent Unknown { get { return new HandPoseEvent(HandPoseValue.Unknown); } }
 
@@ -67,8 +67,8 @@ namespace Holofunk.HandComponents
                 case HandPoseValue.PointingIndex: return Pointing1;
                 case HandPoseValue.PointingIndexAndMiddle: return Pointing2;
                 case HandPoseValue.Flat: return Flat;
-                case HandPoseValue.BloomUp: return BloomUp;
-                case HandPoseValue.BloomSide: return BloomSide;
+                case HandPoseValue.Bloom: return Bloom;
+                case HandPoseValue.ThumbsUp: return ThumbsUp;
                 default: return Unknown;
             }
         }

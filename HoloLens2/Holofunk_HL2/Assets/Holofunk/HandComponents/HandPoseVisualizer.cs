@@ -34,14 +34,15 @@ namespace Holofunk.HandComponents
                 TextMesh textMesh = gameObject.transform.GetChild(0).GetComponent<TextMesh>();
                 float knuckleDist = _classifier.GetSumPairwiseKnuckleDistances();
                 float fingertipDist = _classifier.GetSumPairwiseFingertipDistances();
-                float fingertipAlt = _classifier.GetSumFingertipAltitudes();
+                float thumbTipAlt = _classifier.GetThumbTipAltitude();
                 textMesh.text =
 $@"Finger poses: {Pose(Finger.Thumb)}, {Pose(Finger.Index)}, {Pose(Finger.Middle)}, {Pose(Finger.Ring)}, {Pose(Finger.Pinky)}
 Joint lin: {Colin(Finger.Thumb),0:f3}, {Colin(Finger.Index),0:f3}, {Colin(Finger.Middle),0:f3}, {Colin(Finger.Ring),0:f3}, {Colin(Finger.Pinky),0:f3}
 Finger pair co-ext: {Ext(Finger.Thumb)}, {Ext(Finger.Index)}, {Ext(Finger.Middle)}, {Ext(Finger.Ring)}
 Finger pair lin: {PairColin(Finger.Thumb),0:f3}, {PairColin(Finger.Index),0:f3}, {PairColin(Finger.Middle),0:f3}, {PairColin(Finger.Ring),0:f3}
 Eye->knuck lin: {EyeColin(Finger.Index),0:f3}, {EyeColin(Finger.Middle),0:f3}, {EyeColin(Finger.Ring),0:f3}
-Tip / knuck: {fingertipDist,0:f3} / {knuckleDist,0:f3} = {fingertipDist / knuckleDist,0:f3} (alt {fingertipAlt,0:f3}, ratio {fingertipAlt / knuckleDist,0:f3})
+Tip / knuck: {fingertipDist,0:f3} / {knuckleDist,0:f3} = {fingertipDist / knuckleDist,0:f3}
+Thumb tip alt {thumbTipAlt,0:f3}
 Hand pose: {_classifier.GetHandPose()}";
 
                 string Pose(Finger finger)

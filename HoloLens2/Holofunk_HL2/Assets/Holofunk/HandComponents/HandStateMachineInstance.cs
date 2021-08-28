@@ -261,8 +261,7 @@ namespace Holofunk.HandComponents
                     menu.Delete();
                 });
 
-            AddTransition(stateMachine, armed, HandPoseEvent.BloomSide, soundEffectMenu);
-            AddTransition(stateMachine, initial, HandPoseEvent.BloomSide, soundEffectMenu);
+            AddTransition(stateMachine, armed, HandPoseEvent.Bloom, soundEffectMenu);
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Opened, armed);
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Closed, initial);
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Flat, initial); // flaky recognition
@@ -383,8 +382,8 @@ namespace Holofunk.HandComponents
                     menu.Delete();
                 });
 
-            AddTransition(stateMachine, armed, HandPoseEvent.BloomUp, systemPopupMenu);
-            AddTransition(stateMachine, initial, HandPoseEvent.BloomUp, systemPopupMenu);
+            AddTransition(stateMachine, armed, HandPoseEvent.ThumbsUp, systemPopupMenu);
+            AddTransition(stateMachine, initial, HandPoseEvent.ThumbsUp, systemPopupMenu);
             AddTransition(stateMachine, systemPopupMenu, HandPoseEvent.Opened, armed);
             AddTransition(stateMachine, systemPopupMenu, HandPoseEvent.Closed, initial);
 

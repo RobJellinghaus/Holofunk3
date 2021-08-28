@@ -65,9 +65,9 @@ namespace Holofunk.Hand
         public static float FingertipSumDistanceToKnuckleSumDistanceRatioMaximum = 0.75f;
 
         /// <summary>
-        /// The minimum total summed fingertip altitude (above corresponding knuckle), as ratio over knuckle distance,
-        /// to be considered a valid bloom gesture.
+        /// <summary>
+        /// The required thumb tip altitude (above the proximal joint) to be considered "thumbs up".
         /// </summary>
-        public static float FingertipSumAltitudeToKnuckleSumDistanceRatioMinimum = 2f;
+        public static readonly float ThumbTipAltitude = 0.02f; // 2 cm
     }
 }
