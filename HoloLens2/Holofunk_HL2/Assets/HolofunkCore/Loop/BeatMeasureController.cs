@@ -78,6 +78,14 @@ namespace Holofunk.Loop
                         : new Color(0, 0, 0, 0);
                 }
             }
+            else
+            {
+                // make sure everything is faded out completely
+                for (int i = 0; i < DistributedSoundClock.Instance.BeatsPerMeasure; i++)
+                {
+                    filledQuarterCircles[i].enabled = false;
+                }
+            }
         }
     }
 }
