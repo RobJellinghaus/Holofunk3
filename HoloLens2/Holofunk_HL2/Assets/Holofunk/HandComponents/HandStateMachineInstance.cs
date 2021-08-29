@@ -249,7 +249,7 @@ namespace Holofunk.HandComponents
                     HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(handController.TouchedLoopieIds);
 
                     DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
-                    if (evt == HandPoseEvent.Closed)
+                    if (evt == HandPoseEvent.Closed || evt == HandPoseEvent.ThumbsUp)
                     {
                         HoloDebug.Log($"HandStateMachineInstance.soundEffectPopupMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
                         menu.InvokeSelectedAction(touchedLoopies);
@@ -264,6 +264,8 @@ namespace Holofunk.HandComponents
             AddTransition(stateMachine, armed, HandPoseEvent.Bloom, soundEffectMenu);
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Opened, armed);
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Closed, initial);
+            // debatable transition... but thumbs up looks like an intermediate pose on the way from bloom to closed
+            AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.ThumbsUp, initial);
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Flat, initial); // flaky recognition
             AddTransition(stateMachine, soundEffectMenu, HandPoseEvent.Pointing1, pointingMuteUnmute);
 
