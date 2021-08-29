@@ -137,7 +137,8 @@ namespace Holofunk.Loop
             // So audio frequency, visual color, and in-world height in the stack all correlate.
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
-                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.Cylinder, transform.GetChild(0));
+                // instantiate them into the "default" first measure, which always exists
+                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.Cylinder, transform.GetChild(0).GetChild(0));
                 disc.SetActive(true);
                 disc.transform.localPosition = new Vector3(0, i * MagicNumbers.FrequencyDiscVerticalDistance, 0);
                 Vector3 localScale = disc.transform.localScale;
@@ -199,12 +200,13 @@ namespace Holofunk.Loop
             {
                 // we need another beatMeasureController.
                 BeatMeasureController lastBeatMeasureController = beatMeasureControllers[beatMeasureControllers.Count - 1];
-                GameObject newBeatMeasureControllerGameObject = Instantiate(lastBeatMeasureController.gameObject, transform);
+                GameObject newBeatMeasureControllerGameObject = Instantiate(lastBeatMeasureController.gameObject, lastBeatMeasureController.transform.parent);
                 newBeatMeasureControllerGameObject.name = $"BeatMeasureController#{transform.childCount}";
                 BeatMeasureController newBeatMeasureController = newBeatMeasureControllerGameObject.GetComponent<BeatMeasureController>();
                 newBeatMeasureController.startingMeasure = beatMeasureControllers.Count;
                 newBeatMeasureController.localLoopie = this;
 
+                // TODO: this should be unnecessary, it could be a simple traversal over the siblings
                 beatMeasureControllers.Add(newBeatMeasureController);
 
                 newBeatMeasureController.transform.localPosition = lastBeatMeasureController.transform.localPosition + new Vector3(MagicNumbers.BeatMeasureSeparation * 2, 0, 0);
