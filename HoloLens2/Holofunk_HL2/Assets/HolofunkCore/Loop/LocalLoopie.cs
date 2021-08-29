@@ -61,15 +61,6 @@ namespace Holofunk.Loop
         private Vector3 lastViewpointPosition = Vector3.zero;
 
         /// <summary>
-        /// The controllers displaying the various measures of our track's duration.
-        /// </summary>
-        /// <remarks>
-        /// If, for instance, we have a 14-beat track in with a 4-beats-per-measure Clock, there will be four BeatMeasureControllers;
-        /// the first three will be displaying four beats each, and the final one only two.
-        /// </remarks>
-        private List<BeatMeasureController> beatMeasureControllers;
-
-        /// <summary>
         /// The list of shapes, one per frequency band, for this loopie's display.
         /// </summary>
         private List<GameObject> frequencyBandShapes;
@@ -103,6 +94,11 @@ namespace Holofunk.Loop
 
         #region MonoBehaviour
 
+        /// <summary>
+        /// The transform that contains all our BeatMeasureControllers.
+        /// </summary>
+        private Transform BeatMeasureContainer => transform.GetChild(1);
+
         public void Start()
         {
             // if there is a sound manager, start recording!
@@ -119,9 +115,7 @@ namespace Holofunk.Loop
 
             InstantiateFrequencyBandShapes();
 
-            beatMeasureControllers = new List<BeatMeasureController>();
-            beatMeasureControllers.Add(transform.GetChild(1).GetComponent<BeatMeasureController>());
-            beatMeasureControllers[0].localLoopie = this;
+            BeatMeasureContainer.GetChild(0).GetComponent<BeatMeasureController>().localLoopie = this;
         }
 
         private void InstantiateFrequencyBandShapes()
@@ -135,10 +129,12 @@ namespace Holofunk.Loop
             // We go from lowest frequency band (bottom of the stack) to highest (top).
             // Likewise we colorize with red hue on the bottom and violet hue on the top.
             // So audio frequency, visual color, and in-world height in the stack all correlate.
+
+            // instantiate them into the "default" first measure controller, which is in the scene as an empty game object
+            Transform firstBeatMeasureControllerObject = BeatMeasureContainer.GetChild(0);
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
-                // instantiate them into the "default" first measure controller, which is in the scene as an empty game object
-                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.Cylinder, transform.GetChild(1).GetChild(0));
+                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.Cylinder, firstBeatMeasureControllerObject);
                 disc.SetActive(true);
                 disc.transform.localPosition = new Vector3(0, i * MagicNumbers.FrequencyDiscVerticalDistance, 0);
                 Vector3 localScale = disc.transform.localScale;
@@ -194,27 +190,29 @@ namespace Holofunk.Loop
         /// </summary>
         private void UpdateMeasureControllers()
         {
+            int measureControllerCount = BeatMeasureContainer.childCount;
             // Did we advance to a new measure?
             // If so, make a new BeatMeasureController and move the existing ones to the left.
-            if ((int)trackInfo.DurationInBeats > beatMeasureControllers.Count * BeatsPerMeasure)
+            if ((int)trackInfo.DurationInBeats > measureControllerCount * BeatsPerMeasure)
             {
                 // we need another beatMeasureController.
-                BeatMeasureController lastBeatMeasureController = beatMeasureControllers[beatMeasureControllers.Count - 1];
+                BeatMeasureController lastBeatMeasureController = 
+                    BeatMeasureContainer
+                    .GetChild(measureControllerCount - 1)
+                    .GetComponent<BeatMeasureController>();
+
                 GameObject newBeatMeasureControllerGameObject = Instantiate(lastBeatMeasureController.gameObject, lastBeatMeasureController.transform.parent);
                 newBeatMeasureControllerGameObject.name = $"BeatMeasureController#{transform.childCount}";
                 BeatMeasureController newBeatMeasureController = newBeatMeasureControllerGameObject.GetComponent<BeatMeasureController>();
-                newBeatMeasureController.startingMeasure = beatMeasureControllers.Count;
+                newBeatMeasureController.startingMeasure = measureControllerCount;
                 newBeatMeasureController.localLoopie = this;
-
-                // TODO: this should be unnecessary, it could be a simple traversal over the siblings
-                beatMeasureControllers.Add(newBeatMeasureController);
 
                 newBeatMeasureController.transform.localPosition = lastBeatMeasureController.transform.localPosition + new Vector3(MagicNumbers.BeatMeasureSeparation * 2, 0, 0);
 
-                for (int i = 0; i < beatMeasureControllers.Count; i++)
+                for (int i = 0; i < BeatMeasureContainer.childCount; i++)
                 {
                     // shove them all to the left just a bit
-                    beatMeasureControllers[i].transform.localPosition -= new Vector3(MagicNumbers.BeatMeasureSeparation, 0, 0);
+                    BeatMeasureContainer.GetChild(i).localPosition -= new Vector3(MagicNumbers.BeatMeasureSeparation, 0, 0);
                 }
             }
         }
