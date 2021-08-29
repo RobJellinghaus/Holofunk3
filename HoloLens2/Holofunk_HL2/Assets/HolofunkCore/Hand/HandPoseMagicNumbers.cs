@@ -36,6 +36,11 @@ namespace Holofunk.Hand
         public static float ThumbLinearityCurledMaximum = 0.8f;
 
         /// <summary>
+        /// The minimum upness of the thumb-proximal-to-tip vector for the gesture to be considered ThumbsUp.
+        /// </summary>
+        public static float ThumbVectorDotUpMinimum = 0.7f;
+
+        /// <summary>
         /// The minimum ratio of distance between the base joint pair and the end joint pair for a pair of fingers to
         /// be considered non-adjacent.
         /// </summary>

@@ -89,6 +89,14 @@ namespace Holofunk.HandComponents
         float _thumbTipAltitude;
 
         /// <summary>
+        /// The thumb's vector (proximal joint -> tip) dotted with Vector3.Up.
+        /// </summary>
+        /// <remarks>
+        /// This is more reliable than thumb tip altitude.
+        /// </remarks>
+        float _thumbVectorDotUp;
+
+        /// <summary>
         /// The overall hand pose.
         /// </summary>
         HandPoseValue _handPose;
@@ -148,9 +156,10 @@ namespace Holofunk.HandComponents
                     _sumPairwiseFingertipDistances += (finger0tip - finger1tip).magnitude;
                 }
 
-                _thumbTipAltitude = JointPosition(handJointService, handedness, TrackedHandJoint.ThumbTip).y
-                    - JointPosition(handJointService, handedness, TrackedHandJoint.ThumbProximalJoint).y;
-
+                Vector3 thumbTipPosition = JointPosition(handJointService, handedness, TrackedHandJoint.ThumbTip);
+                Vector3 thumbProximalPosition = JointPosition(handJointService, handedness, TrackedHandJoint.ThumbProximalJoint);
+                _thumbTipAltitude = thumbTipPosition.y - thumbProximalPosition.y;
+                _thumbVectorDotUp = Vector3.Dot((thumbTipPosition - thumbProximalPosition).normalized, Vector3.up);
             }
 
             ClassifyHandPose();
@@ -209,7 +218,7 @@ namespace Holofunk.HandComponents
             else if (NoFingerPose(FingerPose.Extended))
             {
                 if (GetFingerPose(Finger.Thumb) == FingerPose.Extended
-                    && _thumbTipAltitude > HandPoseMagicNumbers.ThumbTipAltitude)
+                    && _thumbVectorDotUp > HandPoseMagicNumbers.ThumbVectorDotUpMinimum)
                 {
                     _handPose = HandPoseValue.ThumbsUp;
                 }
@@ -421,6 +430,8 @@ namespace Holofunk.HandComponents
         public float GetSumPairwiseKnuckleDistances() => _sumPairwiseKnuckleDistances;
 
         public float GetThumbTipAltitude() => _thumbTipAltitude;
+
+        public float GetThumbVectorDotUp() => _thumbVectorDotUp;
 
         public HandPoseValue GetHandPose() => _handPose;
     }
