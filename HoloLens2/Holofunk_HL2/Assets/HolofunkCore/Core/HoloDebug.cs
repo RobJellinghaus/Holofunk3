@@ -20,6 +20,11 @@ namespace Holofunk.Core
             UnityEngine.Debug.Log(message);
         }
 
+        public static void Warn(string message)
+        {
+            UnityEngine.Debug.LogWarning(message);
+        }
+
         public static void Assert(bool condition, string message = "")
         {
             if (!condition)

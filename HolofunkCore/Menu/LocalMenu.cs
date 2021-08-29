@@ -97,7 +97,14 @@ namespace Holofunk.Menu
                 action = childStructure.Action(state.SubSelectedItem);
             }
 
-            action(affectedObjects);
+            if (action != null)
+            {
+                action(affectedObjects);
+            }
+            else
+            {
+                HoloDebug.Warn($"LocalMenu.InvokeSelectedActiono: Did not find action for menu state {state}");
+            }
         }
 
         public void OnDelete()
