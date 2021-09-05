@@ -255,27 +255,11 @@ namespace Holofunk.HandComponents
                     && GetFingerPose(Finger.Pinky) != pose;
             }
 
-            bool AnyFingerExtension(FingerPairExtension extension)
-            {
-                return GetFingerPairExtension(Finger.Thumb) == extension
-                    || GetFingerPairExtension(Finger.Index) == extension
-                    || GetFingerPairExtension(Finger.Middle) == extension
-                    || GetFingerPairExtension(Finger.Ring) == extension;
-            }
-
             bool NoFingerExtension(FingerPairExtension extension)
             {
                 return GetFingerPairExtension(Finger.Index) != extension
                     && GetFingerPairExtension(Finger.Middle) != extension
                     && GetFingerPairExtension(Finger.Ring) != extension;
-            }
-
-            bool FingerEyeColinearityHigh()
-            {
-                return GetFingerEyeColinearity(Finger.Index) >= HandPoseMagicNumbers.FingerEyeColinearityMinimum
-                    && GetFingerEyeColinearity(Finger.Middle) >= HandPoseMagicNumbers.FingerEyeColinearityMinimum
-                    && GetFingerEyeColinearity(Finger.Ring) >= HandPoseMagicNumbers.FingerEyeColinearityMinimum
-                    && GetFingerEyeColinearity(Finger.Pinky) >= HandPoseMagicNumbers.FingerEyeColinearityMinimum;
             }
         }
 

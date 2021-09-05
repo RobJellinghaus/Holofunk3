@@ -7,9 +7,14 @@ namespace Holofunk.Shape
     public enum ShapeType
     {
         /// <summary>
+        /// 0.1m/0.05m/0.1m cube
+        /// </summary>
+        FlatCube,
+
+        /// <summary>
         /// 0.1 m radius vertically thin cylinder
         /// </summary>
-        Cylinder,
+        FlatCylinder,
 
         /// <summary>
         /// Hollow circle sprite (0.1 m)
@@ -32,7 +37,7 @@ namespace Holofunk.Shape
         public static GameObject InstantiateShape(ShapeType shapeType, Transform parent)
         {
             // get the ShapeContainer
-            GameObject shapeContainer = GameObject.Find("ShapeContainer");
+            GameObject shapeContainer = GameObject.Find(nameof(ShapeContainer));
             GameObject prototypeShape = shapeContainer.transform.Find(shapeType.ToString()).gameObject;
 
             Core.Contract.Assert(prototypeShape != null);

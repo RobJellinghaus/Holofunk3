@@ -134,7 +134,8 @@ namespace Holofunk.Loop
             Transform firstBeatMeasureControllerObject = BeatMeasureContainer.GetChild(0);
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
-                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.Cylinder, firstBeatMeasureControllerObject);
+                // really a very flat sort of cube... not much of a cube at all really
+                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.Cube, firstBeatMeasureControllerObject);
                 disc.SetActive(true);
                 disc.transform.localPosition = new Vector3(0, i * MagicNumbers.FrequencyDiscVerticalDistance, 0);
                 Vector3 localScale = disc.transform.localScale;
