@@ -118,7 +118,7 @@ namespace Holofunk.Core
         /// avoid "twitching" at volumes that seem quite low but that produce high variance.  So we clamp values lower than
         /// this to zero, as a crude low-pass filter.
         /// </remarks>
-        public static readonly float FrequencyBinMinValue = 1f;
+        public static readonly float FrequencyBinMinValue = 5f;
 
         /// <summary>
         /// The minimum hue value to use for the frequency shapes.
