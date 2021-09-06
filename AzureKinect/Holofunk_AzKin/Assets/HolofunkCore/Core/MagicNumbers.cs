@@ -38,7 +38,7 @@ namespace Holofunk.Core
         /// <summary>
         /// Number of output bins; this can be whatever we want to see, rendering-wise.
         /// </summary>
-        public static readonly int OutputBinCount = 20;
+        public static readonly int OutputBinCount = 64;
         /// <summary>
         /// Number of divisions per octave (e.g. setting this to 3 equals four semitones per bin, 12 divided by 3).
         /// </summary>
@@ -50,7 +50,7 @@ namespace Holofunk.Core
         /// <summary>
         /// The bin (out of OutputBinCount) in which the central frequency should be mapped; zero-indexed.
         /// </summary>
-        public static readonly int CentralFrequencyBin = 10;
+        public static readonly int CentralFrequencyBin = 32;
 
         #endregion
 
@@ -62,7 +62,7 @@ namespace Holofunk.Core
         /// <remarks>
         /// For frequency displays, this is the scale at minimum volume.
         /// </remarks>
-        internal const float MinVolumeScale = 0.3f;
+        internal const float MinVolumeScale = 0.2f;
 
         /// <summary>
         /// Scale factor by which to multiply the raw volume to get a loopie scale lerp value.
@@ -122,7 +122,7 @@ namespace Holofunk.Core
         /// avoid "twitching" at volumes that seem quite low but that produce high variance.  So we clamp values lower than
         /// this to zero, as a crude low-pass filter.
         /// </remarks>
-        public static readonly float FrequencyBinMinValue = 10f;
+        public static readonly float FrequencyBinMinValue = 1f;
 
         /// <summary>
         /// The minimum hue value to use for the frequency shapes.

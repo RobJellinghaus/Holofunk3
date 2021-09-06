@@ -50,7 +50,7 @@ namespace Holofunk.VolumeWidget
             }
             else
             {
-                // ratio is between 1/MaxVolumeRatio and Ratio.
+                // ratio is between 1/MaxVolumeRatio and 1.
                 // just take the reciprocal!
                 float downwardsFraction = 1 / state.VolumeRatio;
 

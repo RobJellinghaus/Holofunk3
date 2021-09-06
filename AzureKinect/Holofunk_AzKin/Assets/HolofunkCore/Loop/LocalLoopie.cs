@@ -281,7 +281,8 @@ namespace Holofunk.Loop
             // get the max value -- these can be anything, typically from <1 for almost inaudible up to 100 - 400 for quite loud.
             // Intensity values seem greater at lower frequencies.  So we just scale everything to the maximum in this histogram.
             // TODO: also scale by volume for total size?
-            float maxFrequencyValue = 0;
+            float minFrequencyAmplitude = float.MaxValue;
+            float maxFrequencyAmplitude = 0;
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
                 if (float.IsNaN(frequencyBins[i]))
@@ -296,13 +297,14 @@ namespace Holofunk.Loop
                     continue;
                 }
 
-                maxFrequencyValue = Mathf.Max(maxFrequencyValue, frequencyBins[i]);
+                minFrequencyAmplitude = Mathf.Min(minFrequencyAmplitude, frequencyBins[i]);
+                maxFrequencyAmplitude = Mathf.Max(maxFrequencyAmplitude, frequencyBins[i]);
             }
 
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
                 Color discColor = FrequencyBinColor(i);
-                if (maxFrequencyValue == 0)
+                if (maxFrequencyAmplitude == 0)
                 {
                     Vector3 newLocalScale = new Vector3(
                         originalBandShapeLocalScale.x * MagicNumbers.MinVolumeScale,
@@ -315,24 +317,25 @@ namespace Holofunk.Loop
                 }
                 else
                 {
-                    // TODO: fundamentally restructure ALL OF THIS to do proper RMS calculation or something
-
                     Core.Contract.Assert(!float.IsNaN(signalInfo.Avg));
 
                     // first, normalize to max
-                    float normalizedValue = frequencyBins[i] / maxFrequencyValue;
-                    Core.Contract.Assert(!float.IsNaN(normalizedValue));
+                    float normalizedAmplitude = frequencyBins[i] / maxFrequencyAmplitude;
+                    Core.Contract.Assert(!float.IsNaN(normalizedAmplitude));
 
-                    // now, lerp multiplicatively to increase the size of small values
-                    float boostedValue = normalizedValue * Mathf.Lerp(MagicNumbers.LerpVolumeScaleFactor, 1, normalizedValue);
-                    Core.Contract.Assert(!float.IsNaN(boostedValue));
+                    // now take log base 10 (will be less than 0)
+                    float logNormalizedAmplitude = Mathf.Log10(normalizedAmplitude);
 
-                    // now, multiply by some proportion of the volume
-                    float volumeScaledValue = boostedValue * (signalInfo.Avg * Mathf.Lerp(MagicNumbers.LerpVolumeScaleFactor, 1, normalizedValue));
-                    Core.Contract.Assert(!float.IsNaN(volumeScaledValue));
+                    // now what's the log base 10 of the minimum value? (will also be less than 0)
+                    float logMinimumAmplitude = Mathf.Log10(minFrequencyAmplitude / maxFrequencyAmplitude);
+
+                    // now logNormalizedValue is in the range (logMinimumValue, 0) where logMinimumValue < 0.
+                    // let's map this to a ratio from 0 to 1.
+                    float positiveLogAmplitude = logNormalizedAmplitude + -logMinimumAmplitude;
+                    float amplitudeRatio = positiveLogAmplitude / (-logMinimumAmplitude);
 
                     // now, lerp from a baseline value to ensure zero volume isn't invisible
-                    float flooredValue = Mathf.Lerp(MagicNumbers.MinVolumeScale, 1, volumeScaledValue);
+                    float flooredValue = Mathf.Lerp(MagicNumbers.MinVolumeScale, 1, amplitudeRatio);
                     Core.Contract.Assert(!float.IsNaN(flooredValue));
 
                     // now, look up what the value was last time
@@ -353,7 +356,7 @@ namespace Holofunk.Loop
 
                     frequencyBandShapes[i].transform.localScale = newLocalScale;
 
-                    discColor.a = Mathf.Lerp(MagicNumbers.FrequencyShapeMinAlpha, MagicNumbers.FrequencyShapeMaxAlpha, boostedValue);
+                    discColor.a = Mathf.Lerp(MagicNumbers.FrequencyShapeMinAlpha, MagicNumbers.FrequencyShapeMaxAlpha, amplitudeRatio);
                 }
 
                 // now update the color.
