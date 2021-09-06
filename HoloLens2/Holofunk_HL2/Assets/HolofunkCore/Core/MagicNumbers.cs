@@ -86,7 +86,7 @@ namespace Holofunk.Core
         /// <remarks>
         /// TODO: consider emitting RMS or other linearized amplitude
         /// </remarks>
-        public static readonly float LoopieAmplitudeBias = 10.0f;
+        public static readonly float LoopieAmplitudeBias = 1.0f;
 
         /// <summary>
         /// The horizontal separation between measure indicators.
