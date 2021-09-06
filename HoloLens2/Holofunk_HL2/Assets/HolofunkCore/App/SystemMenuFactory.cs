@@ -3,6 +3,9 @@
 using Holofunk.Sound;
 using System;
 using Holofunk.Menu;
+using Holofunk.Viewpoint;
+using System.Collections.Generic;
+using Distributed.State;
 
 namespace Holofunk.App
 {
@@ -28,6 +31,14 @@ namespace Holofunk.App
             DistributedSoundClock clock1 = DistributedSoundClock.Instance;
             float bpm = clock1.TimeInfo.Value.BeatsPerMinute;
 
+            bool isViewpoint = false;
+            bool isRecording = false;
+            if (DistributedViewpoint.Instance != null)            
+            {
+                isViewpoint = true;
+                isRecording = DistributedViewpoint.Instance.IsRecording;
+            }
+
             Action<int> setBPMAction = delta =>
             {
                 DistributedSoundClock clock2 = DistributedSoundClock.Instance;
@@ -41,11 +52,40 @@ namespace Holofunk.App
                 }
             };
 
-            return new MenuStructure(
-                ("BPM", null, new MenuStructure(
-                    ($"=>{bpm+10}", _ => setBPMAction(10), null),
-                    ($"{bpm-10}<=", _ => setBPMAction(-10), null))),
-                ("Delete My Sounds", _ => { }, null));
+            Action<bool> setRecordingAction = beRecording =>
+            {
+                if (beRecording)
+                {
+                    DistributedViewpoint.Instance.StartRecording();
+                }
+                else
+                {
+                    DistributedViewpoint.Instance.StopRecording();
+                }
+            };
+
+            List<(string, Action<HashSet<DistributedId>>, MenuStructure)> items = 
+                new List<(string, Action<HashSet<DistributedId>>, MenuStructure)>();
+
+            items.Add(("BPM", null, new MenuStructure(
+                    ($"=>{bpm + 10}", _ => setBPMAction(10), null),
+                    ($"{bpm - 10}<=", _ => setBPMAction(-10), null))));
+
+            items.Add(("Delete My Sounds", _ => { }, null));
+
+            if (isViewpoint)
+            {
+                if (isRecording)
+                {
+                    items.Add(("Stop\nRecording", _ => setRecordingAction(false), null));
+                }
+                else
+                {
+                    items.Add(("Start\nRecording", _ => setRecordingAction(true), null));
+                }
+            }
+
+            return new MenuStructure(items.ToArray());
         }
     }
 }
