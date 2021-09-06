@@ -101,12 +101,24 @@ namespace Holofunk.Core
         /// <summary>
         /// The scale of each frequency disc's width, relative to the original scale of its shape.
         /// </summary>
-        public static readonly float FrequencyDiscWidthScaleFactor = 1.9f;
+        public static readonly float FrequencyDiscWidthScaleFactor = 1f;
 
         /// <summary>
         /// The vertical distance apart to place each frequency disc.
         /// </summary>
-        public static readonly float FrequencyDiscVerticalDistance = 0.003f;
+        public static readonly float FrequencyDiscVerticalDistance = 0.002f;
+
+        /// <summary>
+        /// The minimum value below which frequency bins will be ignored.
+        /// </summary>
+        /// <remarks>
+        /// Since frequency intensity values swing widely between frequency bands, and lower frequencies tend to have higher
+        /// intensity values even at what seems like the same subjective volume, it's challenging to correlate absolute
+        /// frequency intensity values to absolute visual scale or even subjective volume.  But heuristically we want to
+        /// avoid "twitching" at volumes that seem quite low but that produce high variance.  So we clamp values lower than
+        /// this to zero, as a crude low-pass filter.
+        /// </remarks>
+        public static readonly float FrequencyBinMinValue = 1f;
 
         /// <summary>
         /// The minimum hue value to use for the frequency shapes.

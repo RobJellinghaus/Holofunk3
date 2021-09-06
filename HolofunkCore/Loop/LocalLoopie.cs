@@ -297,8 +297,20 @@ namespace Holofunk.Loop
                     return;
                 }
 
+                if (frequencyBins[i] < MagicNumbers.FrequencyBinMinValue)
+                {
+                    // skip it, it's too quiet and will make it hard to see actual loudness
+                    continue;
+                }
+
                 minFrequencyAmplitude = Mathf.Min(minFrequencyAmplitude, frequencyBins[i]);
                 maxFrequencyAmplitude = Mathf.Max(maxFrequencyAmplitude, frequencyBins[i]);
+            }
+
+            if (maxFrequencyAmplitude == 0)
+            {
+                // there was no sound at all. set min to 0 also
+                minFrequencyAmplitude = 0;
             }
 
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
