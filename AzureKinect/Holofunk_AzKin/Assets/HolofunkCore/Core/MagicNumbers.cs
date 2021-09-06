@@ -73,12 +73,12 @@ namespace Holofunk.Core
         /// <summary>
         /// Minimum loopie scale for minimum amplitude.
         /// </summary>
-        public static readonly float MinLoopieScale = 0.6f;
+        public static readonly float MinLoopieScale = 1.2f;
 
         /// <summary>
         /// Maximum loopie scale for maximum amplitude.
         /// </summary>
-        public static readonly float MaxLoopieScale = 1.1f;
+        public static readonly float MaxLoopieScale = 2f;
 
         /// <summary>
         /// Loopie amplitude is logarithmic, so we boost it up to make it more noticeable.
@@ -86,7 +86,7 @@ namespace Holofunk.Core
         /// <remarks>
         /// TODO: consider emitting RMS or other linearized amplitude
         /// </remarks>
-        public static readonly float LoopieSignaleBias = 0.1f;
+        public static readonly float LoopieSignalBias = 0.1f;
 
         /// <summary>
         /// Number of powers of 10 to multiply the average signal value by.
@@ -96,7 +96,7 @@ namespace Holofunk.Core
         /// this adjustment sets the range of log10 values considered to be loud enough
         /// to alter the loopie's visual scale.
         /// </remarks>
-        public static readonly float LoopieSignalExponent = 2;
+        public static readonly float LoopieSignalExponent = 3;
 
         /// <summary>
         /// The horizontal separation between measure indicators.
