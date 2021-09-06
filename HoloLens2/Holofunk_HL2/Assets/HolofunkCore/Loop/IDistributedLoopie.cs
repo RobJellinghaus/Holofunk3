@@ -46,10 +46,22 @@ namespace Holofunk.Loop
         void SetMute(bool mute);
 
         /// <summary>
-        /// Set the current volume of this Loopie.
+        /// Multiply the current volume of this loopie by this factor.
         /// </summary>
+        /// <remarks>
+        /// This is better than a straight SetVolume method, as it avoids issues with multiple
+        /// users racing to raise/lower the volume (if one is raising and one is lowering,
+        /// their effects will cancel out nicely with this method, as opposed to creating horrible
+        /// rapid volume thrashing with a direct SetVolume).
+        /// 
+        /// The constraints on the ratio are intended to prevent muting something to zero and
+        /// being unable to ever raise its volume again. Note that NowSoundLib clamps over-volume
+        /// multiplications to a max amplitude of 1, which will clip and be terrible but will at
+        /// least not break the sound driver.
+        /// </remarks>
+        /// <param name="ratio">The amount to multiply the volume by; must be between 0.1 and 10</param>
         [ReliableMethod]
-        void SetVolume(float volume);
+        void MultiplyVolume(float ratio);
 
         /// <summary>
         /// Append this sound effect to the list of effects on this track.

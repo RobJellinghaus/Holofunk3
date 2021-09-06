@@ -47,8 +47,8 @@ namespace Holofunk.Loop
         public void SetMute(bool isMuted) => 
             RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
 
-        public void SetVolume(float volume) =>
-            RouteReliableMessage(isRequest => new SetVolume(Id, isRequest: !IsOwner, volume: volume));
+        public void MultiplyVolume(float volume) =>
+            RouteReliableMessage(isRequest => new MultiplyVolume(Id, isRequest: !IsOwner, ratio: volume));
 
         public void SetViewpointPosition(Vector3 viewpointPosition) =>
             RouteReliableMessage(isRequest => new SetViewpointPosition(Id, isRequest: !IsOwner, viewpointPosition: viewpointPosition));

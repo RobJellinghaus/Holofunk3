@@ -7,6 +7,16 @@ namespace Holofunk.Shape
     public enum ShapeType
     {
         /// <summary>
+        /// Pair of cones, 0.05m/0.1m/0.05m each in dimension
+        /// </summary>
+        Bicone,
+
+        /// <summary>
+        /// Cone, 0.05m/0.1m/0.05m
+        /// </summary>
+        Cone,
+
+        /// <summary>
         /// 0.1m/0.05m/0.1m cube
         /// </summary>
         FlatCube,

@@ -159,5 +159,25 @@ namespace Holofunk.Core
         public static readonly float MenuScale = 0.4f;
 
         #endregion
+
+        #region Volume widgets
+
+        /// <summary>
+        /// Maximum amount louder the widget can louden (as a ratio of original volume).
+        /// </summary>
+        /// <remarks>
+        /// MinRatio = 1 / MaxRatio
+        /// </remarks>
+        public static readonly float MaxVolumeRatio = 4;
+
+        /// <summary>
+        /// Maximum distance in meters to reach the MaxRatio volume.
+        /// </summary>
+        /// <remarks>
+        /// The same distance downwards will soften by the MinRatio amount.
+        /// </remarks>
+        public static readonly float MaxVolumeHeightMeters = 0.03f; // 30 cm
+
+        #endregion
     }
 }

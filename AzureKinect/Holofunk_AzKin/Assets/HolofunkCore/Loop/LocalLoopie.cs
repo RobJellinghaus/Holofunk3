@@ -425,9 +425,15 @@ namespace Holofunk.Loop
             }
         }
 
-        public void SetVolume(float volume)
+        public void MultiplyVolume(float ratio)
         {
-            loopie.Volume = volume;
+            loopie.Volume *= ratio;
+            HoloDebug.Log($"LocalLoopie.MultiplyVolume: multiplied by {ratio}, volume is now {loopie.Volume}");
+
+            if (SoundManager.Instance != null)
+            {
+                NowSoundTrackAPI.SetVolume(trackId, loopie.Volume);
+            }
         }
 
         public void SetViewpointPosition(Vector3 viewpointPosition)

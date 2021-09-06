@@ -34,12 +34,12 @@ namespace Holofunk.Loop
             public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetMute(IsMuted);
         }
 
-        public class SetVolume : ReliableMessage
+        public class MultiplyVolume : ReliableMessage
         {
-            public float Volume { get; set; }
-            public SetVolume() : base() { }
-            public SetVolume(DistributedId id, bool isRequest, float volume) : base(id, isRequest) { Volume = volume; }
-            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetVolume(Volume);
+            public float Ratio { get; set; }
+            public MultiplyVolume() : base() { }
+            public MultiplyVolume(DistributedId id, bool isRequest, float ratio) : base(id, isRequest) { Ratio = ratio; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).MultiplyVolume(Ratio);
         }
 
         public class SetViewpointPosition : ReliableMessage
@@ -116,7 +116,7 @@ namespace Holofunk.Loop
                 (local, message) => local.Initialize(message.Loopie));
             Registrar.RegisterDeleteMessage<Delete, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<SetMute, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
-            Registrar.RegisterReliableMessage<SetVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterReliableMessage<MultiplyVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<SetViewpointPosition, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<FinishRecording, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<AppendSoundEffect, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);

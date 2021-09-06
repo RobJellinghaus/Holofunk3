@@ -9,18 +9,13 @@ using Holofunk.Perform;
 using Holofunk.Sound;
 using Holofunk.StateMachines;
 using Holofunk.Viewpoint;
-using Microsoft.MixedReality.Toolkit.Input;
-using Microsoft.MixedReality.Toolkit.Utilities;
-using NowSoundLib;
+using Holofunk.VolumeWidget;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Holofunk.HandComponents
 {
-    using HandState = State<HandPoseEvent, HandController, HandController>;
-    using HandAction = Action<HandPoseEvent, HandController>;
     //using HandToHandMenuState = State<HandPoseEvent, MenuModel<HandController>, HandController>;
     using HandStateMachineInstance = StateMachineInstance<HandPoseEvent>;
 
@@ -54,12 +49,22 @@ namespace Holofunk.HandComponents
         private GameObject currentlyHeldLoopie;
 
         /// <summary>
-        /// Whhat should this hand do when it touches a loopie?
+        /// What should this hand do when it touches a loopie?
         /// </summary>
         /// <remarks>
         /// This will be applied repeatedly on every update in which a loopie is touched, so idempotency is strongly recommended!
         /// </remarks>
-        internal Action<DistributedLoopie> touchedLoopieAction;
+        private Action<DistributedLoopie> touchedLoopieAction;
+
+        /// <summary>
+        /// What should this hand do on every update, before touching loopies?
+        /// </summary>
+        /// <remarks>
+        /// This is used for, e.g., updating the current volume widget and performing other interactions that aren't
+        /// loopie-centric.
+        /// TODO: could touchedLoopieAction just be a sort of updateAction?
+        /// </remarks>
+        private Action updateAction;
 
         /// <summary>
         /// The sorted IDs of the loopies touched by this hand.
@@ -93,7 +98,13 @@ namespace Holofunk.HandComponents
         /// </summary>
         internal bool AnyLoopiesTouched => touchedLoopieIds.Count > 0;
 
-        internal void ApplyToTouchedLoopies(Action<DistributedLoopie> action)
+        internal void SetUpdateAction(Action updateAction)
+            => this.updateAction = updateAction;
+
+        internal void SetTouchedLoopieAction(Action<DistributedLoopie> touchedLoopieAction)
+            => this.touchedLoopieAction = touchedLoopieAction;
+
+        private void ApplyToTouchedLoopies(Action<DistributedLoopie> action)
         {
             if (action != null)
             {
@@ -178,7 +189,13 @@ namespace Holofunk.HandComponents
             else
             {
                 // freely update the touched loopie list of the performer
-                UpdateTouchedLoopies(ref performer);
+                UpdateTouchedLoopieList(ref performer);
+            }
+
+            // apply the update action, if any
+            if (updateAction != null)
+            {
+                updateAction();
             }
 
             ApplyToTouchedLoopies(touchedLoopieAction);
@@ -187,7 +204,7 @@ namespace Holofunk.HandComponents
         /// <summary>
         /// Update the local lists of loopies touched by this hand.
         /// </summary>
-        private void UpdateTouchedLoopies(ref PerformerState performer)
+        private void UpdateTouchedLoopieList(ref PerformerState performer)
         {
             touchedLoopieIds.Clear();
 
@@ -289,15 +306,45 @@ namespace Holofunk.HandComponents
                 return;
             }
 
+            Vector3 viewpointHandPosition = GetViewpointHandPosition();
+
+            GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition);
+            currentlyHeldLoopie = newLoopie;
+        }
+
+        /// <summary>
+        /// Create a volume widget.
+        /// </summary>
+        public GameObject CreateVolumeWidget()
+        {
+            if (DistributedViewpoint.Instance == null)
+            {
+                HoloDebug.Log("No DistributedViewpoint.TheViewpoint; can't create volume widget");
+                return null;
+            }
+
+            Vector3 viewpointHandPosition = GetViewpointHandPosition();
+
+            GameObject newWidget = DistributedVolumeWidget.Create(viewpointHandPosition);
+            return newWidget;
+        }
+
+        public Vector3 GetViewpointHandPosition()
+        {
+            // performer space hand position
+            Vector3 localHandPosition = GetLocalHandPosition();
+            Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
+            Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(localHandPosition);
+            return viewpointHandPosition;
+        }
+
+        public Vector3 GetLocalHandPosition()
+        {
             PerformerState performer = DistributedPerformer.GetPerformer();
 
             // performer space hand position
             Vector3 performerHandPosition = HandPosition(ref performer);
-            Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
-            Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
-
-            GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition);
-            currentlyHeldLoopie = newLoopie;
+            return performerHandPosition;
         }
 
         /// <summary>

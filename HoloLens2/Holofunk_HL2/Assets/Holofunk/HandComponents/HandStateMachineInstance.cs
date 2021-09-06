@@ -6,8 +6,10 @@ using Holofunk.Hand;
 using Holofunk.Loop;
 using Holofunk.Menu;
 using Holofunk.Perform;
+using Holofunk.Shape;
 using Holofunk.StateMachines;
 using Holofunk.Viewpoint;
+using Holofunk.VolumeWidget;
 using NowSoundLib;
 using System;
 using System.Collections.Generic;
@@ -164,7 +166,7 @@ namespace Holofunk.HandComponents
                     // Collection of loopies that makes sure we don't flip loopies back and forth between states.
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
-                    handController.touchedLoopieAction = loopie =>
+                    handController.SetTouchedLoopieAction(loopie =>
                     {
                         HoloDebug.Log($"HandStateMachineInstance.Mute.TouchedLoopieAction: loopie {loopie.Id}, IsMuted {loopie.GetLoopie().IsMuted}");
                         // the first loopie touched, if it's a double-mute, puts us into delete mode
@@ -193,9 +195,9 @@ namespace Holofunk.HandComponents
                                 loopie.SetMute(true);
                             }
                         }
-                    };
+                    });
                 },
-                (evt, handController) => handController.touchedLoopieAction = null);
+                (evt, handController) => handController.SetTouchedLoopieAction(null));
 
             AddTransition(stateMachine, pointingMuteUnmute, HandPoseEvent.Closed, mute);
             AddTransition(stateMachine, mute, HandPoseEvent.Opened, armed);
@@ -208,20 +210,94 @@ namespace Holofunk.HandComponents
                 {
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
-                    handController.touchedLoopieAction = loopie =>
+                    handController.SetTouchedLoopieAction(loopie =>
                     {
                         if (!toggledLoopies.Contains(loopie.Id))
                         {
                             toggledLoopies.Add(loopie.Id); // loopity doo, I've got another puzzle for you
                             loopie.SetMute(false);
                         }
-                    };
+                    });
                 },
-                (evt, handController) => handController.touchedLoopieAction = null);
+                (evt, handController) => handController.SetTouchedLoopieAction(null));
 
             AddTransition(stateMachine, pointingMuteUnmute, HandPoseEvent.Opened, unmute);
             AddTransition(stateMachine, unmute, HandPoseEvent.Closed, initial);
             AddTransition(stateMachine, unmute, HandPoseEvent.Pointing1, pointingMuteUnmute);
+
+            #endregion
+
+            #region Louden/soften
+
+            // Shared state machine storage for the volume widget that visualizes changing the volume.
+            DistributedVolumeWidget widget = null;
+
+            // we're pointing, and about to possibly mute/unmute
+            HandState loudenSoften = new HandState(
+                "loudenSoften",
+                armed,
+                (evt, handController) =>
+                {
+                    // keep the set of touched loopies stable, so whatever we originally touched is still what we louden/soften
+                    handController.KeepTouchedLoopiesStable = true;
+
+                    widget = handController.CreateVolumeWidget().GetComponent<DistributedVolumeWidget>();
+                    float initialHandYPosition = handController.GetLocalHandPosition().y;
+                    float lastVolumeRatio = 1;
+                    float volumeRatio = 1;
+
+                    handController.SetUpdateAction(() =>
+                    {
+                        lastVolumeRatio = volumeRatio;
+
+                        float currentHandYPosition = handController.GetLocalHandPosition().y;
+
+                        float currentRatioOfMaxDistance = (currentHandYPosition - initialHandYPosition) / MagicNumbers.MaxVolumeHeightMeters;
+                        // clamp this to (-1, 1) interval
+                        currentRatioOfMaxDistance = Math.Max(1f, Math.Min(-1f, currentRatioOfMaxDistance));
+
+                        float newRatio;
+                        if (currentRatioOfMaxDistance > 0)
+                        {
+                            // map to interval (1, MaxVolumeRatio)
+                            newRatio = 1 + currentRatioOfMaxDistance * (MagicNumbers.MaxVolumeRatio - 1);
+                        }
+                        else
+                        {
+                            // map to interval (1/MaxVolumeRatio, 1)
+                            newRatio = 1 / (1 + (-currentRatioOfMaxDistance * (MagicNumbers.MaxVolumeRatio - 1)));
+                        }
+
+                        volumeRatio = newRatio;
+
+                        VolumeWidgetState state = widget.State;
+                        widget.UpdateState(
+                            new VolumeWidgetState { ViewpointPosition = state.ViewpointPosition, VolumeRatio = volumeRatio });
+                    });
+
+                    handController.SetTouchedLoopieAction(loopie =>
+                    {
+                        if (lastVolumeRatio != volumeRatio)
+                        {
+                            loopie.MultiplyVolume(volumeRatio / lastVolumeRatio);
+                        }
+                    });
+                },
+                (evt, handController) =>
+                {
+                    // technically this should revert to whatever it was before, but we know in this case this was false before
+                    handController.KeepTouchedLoopiesStable = false;
+
+                    handController.SetUpdateAction(null);
+                    handController.SetTouchedLoopieAction(null);
+
+                    widget.Delete();
+                });
+
+            AddTransition(stateMachine, initial, HandPoseEvent.Flat, loudenSoften);
+            AddTransition(stateMachine, armed, HandPoseEvent.Flat, loudenSoften);
+            AddTransition(stateMachine, loudenSoften, HandPoseEvent.Opened, armed);
+            AddTransition(stateMachine, loudenSoften, HandPoseEvent.Closed, initial);
 
             #endregion
 

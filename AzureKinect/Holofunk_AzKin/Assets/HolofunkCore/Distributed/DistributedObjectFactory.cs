@@ -30,6 +30,7 @@ namespace Holofunk.Distributed
             SoundClock,
             SoundEffect,
             Viewpoint,
+            VolumeWidget,
         }
 
         /// <summary>
