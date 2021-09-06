@@ -297,12 +297,6 @@ namespace Holofunk.Loop
                     return;
                 }
 
-                if (frequencyBins[i] < MagicNumbers.FrequencyBinMinValue)
-                {
-                    // ignore very tiny bins; very tiny max values will blow up when normalizing
-                    continue;
-                }
-
                 minFrequencyAmplitude = Mathf.Min(minFrequencyAmplitude, frequencyBins[i]);
                 maxFrequencyAmplitude = Mathf.Max(maxFrequencyAmplitude, frequencyBins[i]);
             }
@@ -329,30 +323,38 @@ namespace Holofunk.Loop
                     float normalizedAmplitude = frequencyBins[i] / maxFrequencyAmplitude;
                     Core.Contract.Assert(!float.IsNaN(normalizedAmplitude));
 
-                    // now take log base 10 (will be less than 0)
+                    // now take log base 10 (could be 0 if there was only one amplitude value!)
                     float logNormalizedAmplitude = Mathf.Log10(normalizedAmplitude);
 
-                    // now what's the log base 10 of the minimum value? (will also be less than 0)
+                    // now what's the log base 10 of the minimum value? (could also be 0)
                     float logMinimumAmplitude = Mathf.Log10(minFrequencyAmplitude / maxFrequencyAmplitude);
+                    float amplitudeRatio, targetValue;
+                    if (logMinimumAmplitude == 0)
+                    {
+                        amplitudeRatio = 0;
+                        targetValue = MagicNumbers.MinVolumeScale;
+                    }
+                    else
+                    {
+                        // now logNormalizedValue is in the range (logMinimumValue, 0) where logMinimumValue < 0.
+                        // let's map this to a ratio from 0 to 1.
+                        float positiveLogAmplitude = logNormalizedAmplitude + -logMinimumAmplitude;
+                        amplitudeRatio = positiveLogAmplitude / (-logMinimumAmplitude);
 
-                    // now logNormalizedValue is in the range (logMinimumValue, 0) where logMinimumValue < 0.
-                    // let's map this to a ratio from 0 to 1.
-                    float positiveLogAmplitude = logNormalizedAmplitude + -logMinimumAmplitude;
-                    float amplitudeRatio = positiveLogAmplitude / (-logMinimumAmplitude);
+                        // now, lerp from a baseline value to ensure zero volume isn't invisible
+                        float flooredValue = Mathf.Lerp(MagicNumbers.MinVolumeScale, 1, amplitudeRatio);
+                        Core.Contract.Assert(!float.IsNaN(flooredValue));
 
-                    // now, lerp from a baseline value to ensure zero volume isn't invisible
-                    float flooredValue = Mathf.Lerp(MagicNumbers.MinVolumeScale, 1, amplitudeRatio);
-                    Core.Contract.Assert(!float.IsNaN(flooredValue));
+                        // now, look up what the value was last time
+                        float lastFlooredValue = scaledBins[i];
+                        Core.Contract.Assert(!float.IsNaN(lastFlooredValue));
 
-                    // now, look up what the value was last time
-                    float lastFlooredValue = scaledBins[i];
-                    Core.Contract.Assert(!float.IsNaN(lastFlooredValue));
+                        float decayedValue = lastFlooredValue - ((lastFlooredValue - flooredValue) * MagicNumbers.BinValueDecay);
+                        Core.Contract.Assert(!float.IsNaN(decayedValue));
 
-                    float decayedValue = lastFlooredValue - ((lastFlooredValue - flooredValue) * MagicNumbers.BinValueDecay);
-                    Core.Contract.Assert(!float.IsNaN(decayedValue));
-
-                    float targetValue = Mathf.Max(flooredValue, decayedValue);
-                    Core.Contract.Assert(!float.IsNaN(targetValue));
+                        targetValue = Mathf.Max(flooredValue, decayedValue);
+                        Core.Contract.Assert(!float.IsNaN(targetValue));
+                    }
 
                     Vector3 newLocalScale = new Vector3(
                         originalBandShapeLocalScale.x * targetValue,
