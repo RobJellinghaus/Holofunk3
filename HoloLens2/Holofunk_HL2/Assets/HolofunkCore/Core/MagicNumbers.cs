@@ -42,7 +42,7 @@ namespace Holofunk.Core
         /// <summary>
         /// Number of divisions per octave (e.g. setting this to 3 equals four semitones per bin, 12 divided by 3).
         /// </summary>
-        public static readonly int OctaveDivisions = 5;
+        public static readonly int OctaveDivisions = 10;
         /// <summary>
         /// The central frequency of the histogram; this is middle C.
         /// </summary>
@@ -87,6 +87,16 @@ namespace Holofunk.Core
         /// TODO: consider emitting RMS or other linearized amplitude
         /// </remarks>
         public static readonly float LoopieAmplitudeBias = 0.1f;
+
+        /// <summary>
+        /// Number of powers of 10 to multiply the average signal value by.
+        /// </summary>
+        /// <remarks>
+        /// The signal value ranges from 0 to 1, so its logarithm is always negative;
+        /// this adjustment sets the range of log10 values considered to be loud enough
+        /// to alter the loopie's visual scale.
+        /// </remarks>
+        public static readonly float LoopieSignalExponent = 2;
 
         /// <summary>
         /// The horizontal separation between measure indicators.

@@ -277,8 +277,10 @@ namespace Holofunk.Loop
         {
             if (signalInfo.Avg > 0f)
             {
+                // signalInfo ranges from 0 to 1
                 float delta = MagicNumbers.MaxLoopieScale - MagicNumbers.MinLoopieScale;
-                float scale = MagicNumbers.MinLoopieScale + Mathf.Log10(signalInfo.Avg) * delta * MagicNumbers.LoopieAmplitudeBias;
+                float scale = MagicNumbers.MinLoopieScale
+                    + (Mathf.Log10(signalInfo.Avg) + MagicNumbers.LoopieAmplitudeExponent) * delta * MagicNumbers.LoopieAmplitudeBias;
                 // and clamp in case bias sends us over
                 scale = Mathf.Min(Mathf.Max(scale, MagicNumbers.MaxLoopieScale), MagicNumbers.MinLoopieScale);
                 transform.localScale = new Vector3(scale, scale, scale);
