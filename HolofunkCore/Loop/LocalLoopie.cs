@@ -325,8 +325,8 @@ namespace Holofunk.Loop
             bool beatIsEven = (intBeat & 0x1) == 0;
             float fractionalBeat = timeInfo.Value.BeatInMeasure - intBeat;
             // TODO: make this properly sensitive to actual beats in measure
-            float topDiscTargetYRotationDeg = ((intBeat / 2) + (beatIsEven ? fractionalBeat : 0)) * 90;
-            float bottomDiscTargetYRotationDeg = (((intBeat - 1) / 2) + (beatIsEven ? 0 : fractionalBeat)) * 90;
+            float topDiscTargetYRotationDeg = ((intBeat / 2) + (beatIsEven ? fractionalBeat : 1)) * 90;
+            float bottomDiscTargetYRotationDeg = ((intBeat / 2) + (beatIsEven ? 0 : fractionalBeat)) * 90;
 
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
