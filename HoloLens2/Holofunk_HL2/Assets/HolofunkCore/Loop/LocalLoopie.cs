@@ -6,7 +6,6 @@ using Holofunk.Shape;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using NowSoundLib;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -280,7 +279,7 @@ namespace Holofunk.Loop
                 // signalInfo ranges from 0 to 1
                 float delta = MagicNumbers.MaxLoopieScale - MagicNumbers.MinLoopieScale;
                 float scale = MagicNumbers.MinLoopieScale
-                    + (Mathf.Log10(signalInfo.Avg) + MagicNumbers.LoopieAmplitudeExponent) * delta * MagicNumbers.LoopieAmplitudeBias;
+                    + (Mathf.Log10(signalInfo.Avg) + MagicNumbers.LoopieSignalExponent) * delta * MagicNumbers.LoopieSignaleBias;
                 // and clamp in case bias sends us over
                 scale = Mathf.Min(Mathf.Max(scale, MagicNumbers.MaxLoopieScale), MagicNumbers.MinLoopieScale);
                 transform.localScale = new Vector3(scale, scale, scale);

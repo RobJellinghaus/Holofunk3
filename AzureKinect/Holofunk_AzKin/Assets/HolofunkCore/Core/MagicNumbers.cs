@@ -86,7 +86,7 @@ namespace Holofunk.Core
         /// <remarks>
         /// TODO: consider emitting RMS or other linearized amplitude
         /// </remarks>
-        public static readonly float LoopieAmplitudeBias = 0.1f;
+        public static readonly float LoopieSignaleBias = 0.1f;
 
         /// <summary>
         /// Number of powers of 10 to multiply the average signal value by.
