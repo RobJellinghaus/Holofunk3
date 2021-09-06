@@ -68,7 +68,7 @@ namespace Holofunk.Core
         /// <remarks>
         /// For frequency displays, this is the scale at minimum volume.
         /// </remarks>
-        internal static float MinVolumeScale = 0.4f;
+        internal static float MinVolumeScale = 0.5f;
 
         /// <summary>
         /// Minimum loopie scale for minimum signal.

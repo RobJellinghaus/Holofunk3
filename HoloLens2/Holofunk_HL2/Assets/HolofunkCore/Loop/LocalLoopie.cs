@@ -274,6 +274,8 @@ namespace Holofunk.Loop
         /// </summary>
         private void UpdateLoopieAppearance()
         {
+            Sound.TimeInfo timeInfo = DistributedSoundClock.Instance.TimeInfo;
+
             if (signalInfo.Avg > 0f)
             {
                 // signalInfo ranges from 0 to 1
@@ -313,6 +315,17 @@ namespace Holofunk.Loop
                 // there was no sound at all. set min to 0 also
                 minFrequencyAmplitude = 0;
             }
+
+            // calculate the top and bottom target values for stack rotation.
+            // the way this works is:
+            // - if the beat is even, we are rotating the top of stack by 90 degrees by end of beat;
+            // - if the beat is odd, we are rotating the bottom of stack likewise.
+            // All other rotation values are interpolated between the two.
+            int intBeat = (int)timeInfo.Value.BeatInMeasure;
+            bool beatIsEven = (intBeat & 0x1) == 0;
+            float fractionalBeat = timeInfo.Value.BeatInMeasure - intBeat;
+            float topDiscTargetYRotationDeg = beatIsEven ? (fractionalBeat * 90) : 0;
+            float bottomDiscTargetYRotationDeg = beatIsEven ? 0 : (fractionalBeat * 90);
 
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
@@ -381,7 +394,6 @@ namespace Holofunk.Loop
                 }
 
                 // now update the color.
-
                 if (IsTouched)
                 {
                     discColor = new Color(Increase(discColor.r), Increase(discColor.g), Increase(discColor.b), Increase(discColor.a));
@@ -393,6 +405,11 @@ namespace Holofunk.Loop
                 }
 
                 frequencyBandShapes[i].GetComponent<Renderer>().material.color = discColor;
+
+                // and finally, the rotation
+                float ratio = (float)i / (MagicNumbers.OutputBinCount - 1);
+                float yRotationDeg = bottomDiscTargetYRotationDeg + (ratio * (topDiscTargetYRotationDeg - bottomDiscTargetYRotationDeg));
+                frequencyBandShapes[i].transform.localRotation = Quaternion.AngleAxis(yRotationDeg, Vector3.up);
             }
         }
 
