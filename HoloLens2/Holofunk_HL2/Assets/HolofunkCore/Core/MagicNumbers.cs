@@ -98,19 +98,9 @@ namespace Holofunk.Core
         public static readonly float BeatMeasureSeparation = 0.015f;
 
         /// <summary>
-        /// The scale of each frequency disc's height, relative to the original scale of its shape.
+        /// The height of the stack of discs.
         /// </summary>
-        public static readonly float FrequencyDiscHeightScaleFactor = 0.05f;
-
-        /// <summary>
-        /// The scale of each frequency disc's width, relative to the original scale of its shape.
-        /// </summary>
-        public static readonly float FrequencyDiscWidthScaleFactor = 1.9f;
-
-        /// <summary>
-        /// The vertical distance apart to place each frequency disc.
-        /// </summary>
-        public static readonly float FrequencyDiscVerticalDistance = 0.006f;
+        public static readonly float FrequencyDiscStackHeight = 0.01f;
 
         /// <summary>
         /// The minimum value below which frequency bins will be ignored.

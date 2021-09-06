@@ -1,7 +1,7 @@
 ﻿// NowSound library by Rob Jellinghaus, https://github.com/RobJellinghaus/NowSound
 // Licensed under the MIT license
 
-using Holofunk.Core;
+//using Holofunk.Core;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -486,13 +486,35 @@ namespace NowSoundLib
         static extern NowSoundSignalInfo NowSoundGraph_OutputSignalInfo();
 
         /// <summary>
-        /// Get information about the post-mixing signal of the output channels.
+        /// Get information about the output signal.
         /// Graph must be Running.
         /// </summary>
         /// <returns></returns>
         public static NowSoundSignalInfo OutputSignalInfo()
         {
             return NowSoundGraph_OutputSignalInfo();
+        }
+
+        [DllImport("NowSoundLib")]
+        static extern float NowSoundGraph_InputPan(AudioInputId audioInputId);
+
+        /// <summary>
+        /// Get the pan value of this input (0 = left, 0.5 = center, 1 = right).
+        /// </summary>
+        public static float InputPan(AudioInputId audioInputId)
+        {
+            return NowSoundGraph_InputPan(audioInputId);
+        }
+
+        [DllImport("NowSoundLib")]
+        static extern void NowSoundGraph_SetInputPan(AudioInputId audioInputId, float pan);
+
+        /// <summary>
+        /// Set the pan value of this input  (0 = left, 0.5 = center, 1 = right).
+        /// </summary>
+        public static void SetInputPan(AudioInputId audioInputId, float pan)
+        {
+            NowSoundGraph_SetInputPan(audioInputId, pan);
         }
 
         [DllImport("NowSoundLib")]

@@ -137,13 +137,10 @@ namespace Holofunk.Loop
                 // really a very flat sort of cube... not much of a cube at all really
                 GameObject disc = ShapeContainer.InstantiateShape(ShapeType.FlatCube, firstBeatMeasureControllerObject);
                 disc.SetActive(true);
-                disc.transform.localPosition = new Vector3(0, i * MagicNumbers.FrequencyDiscVerticalDistance, 0);
-                Vector3 localScale = disc.transform.localScale;
-                // TODO: magic constant for x/z (e.g. width, since x/z symmetrical) scale
-                disc.transform.localScale = new Vector3(
-                    localScale.x * MagicNumbers.FrequencyDiscWidthScaleFactor,
-                    localScale.y * MagicNumbers.FrequencyDiscHeightScaleFactor,
-                    localScale.z * MagicNumbers.FrequencyDiscWidthScaleFactor);
+                disc.transform.localPosition = new Vector3(
+                    0,
+                    i * (MagicNumbers.FrequencyDiscStackHeight / MagicNumbers.OutputBinCount),
+                    0);
 
                 // a bit wasteful to do redundantly per shape, but simplifies the logic since we don't have to go look at the prototype
                 originalBandShapeLocalScale = disc.transform.localScale;
