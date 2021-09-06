@@ -40,9 +40,9 @@ namespace Holofunk.Core
         /// </summary>
         public static readonly int OutputBinCount = 64;
         /// <summary>
-        /// Number of divisions per octave (e.g. setting this to 3 equals four semitones per bin, 12 divided by 3).
+        /// 12 divisions per octave = 12 semitones per octave... how diatonic
         /// </summary>
-        public static readonly int OctaveDivisions = 10;
+        public static readonly int OctaveDivisions = 12;
         /// <summary>
         /// The central frequency of the histogram; this is middle C.
         /// </summary>
@@ -68,15 +68,15 @@ namespace Holofunk.Core
         /// <remarks>
         /// For frequency displays, this is the scale at minimum volume.
         /// </remarks>
-        internal static float MinVolumeScale = 0.2f;
+        internal static float MinVolumeScale = 0.4f;
 
         /// <summary>
-        /// Minimum loopie scale for minimum amplitude.
+        /// Minimum loopie scale for minimum signal.
         /// </summary>
-        public static readonly float MinLoopieScale = 1.2f;
+        public static readonly float MinLoopieScale = 1.5f;
 
         /// <summary>
-        /// Maximum loopie scale for maximum amplitude.
+        /// Maximum loopie scale for maximum signal.
         /// </summary>
         public static readonly float MaxLoopieScale = 2f;
 
