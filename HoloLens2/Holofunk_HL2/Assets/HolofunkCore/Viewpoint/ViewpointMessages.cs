@@ -22,11 +22,26 @@ namespace Holofunk.Viewpoint
             public override void Invoke(IDistributedInterface target) => ((IDistributedViewpoint)target).UpdatePlayer(Player);
         }
 
+        public class StartRecording : ReliableMessage
+        {
+            public StartRecording() : base() { }
+            public StartRecording(DistributedId id, bool isRequest) : base(id, isRequest) { }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedViewpoint)target).StartRecording();
+        }
+
+        public class StopRecording : ReliableMessage
+        {
+            public StopRecording() : base() { }
+            public StopRecording(DistributedId id, bool isRequest) : base(id, isRequest) { }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedViewpoint)target).StopRecording();
+        }
+
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType(PlayerId.Serialize, PlayerId.Deserialize);
             proxyCapability.RegisterType(UserId.Serialize, UserId.Deserialize);
             proxyCapability.RegisterType<PlayerState>();
+            proxyCapability.RegisterType<ViewpointState>();
         }
 
         public static void Register(DistributedHost.ProxyCapability proxyCapability)
@@ -37,6 +52,10 @@ namespace Holofunk.Viewpoint
                 (local, message) => local.Initialize(message.Players));
 
             Registrar.RegisterReliableMessage<UpdatePlayer, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
+                proxyCapability);
+            Registrar.RegisterReliableMessage<StartRecording, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
+                proxyCapability);
+            Registrar.RegisterReliableMessage<StopRecording, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
                 proxyCapability);
         }
     }

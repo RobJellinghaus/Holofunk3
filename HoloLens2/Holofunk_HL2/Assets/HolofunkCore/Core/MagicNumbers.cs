@@ -57,12 +57,18 @@ namespace Holofunk.Core
         #region Loopies
 
         /// <summary>
+        /// Minimum dot product between the sensor->head ray and the sensor forward direction, to be considered
+        /// panned all the way to one side.
+        /// </summary>
+        public static float MinDotProductForPanning = 0.7f;
+
+        /// <summary>
         /// Minimum scale factor for loopies at minimum volume. (Max scale factor is always 1)
         /// </summary>
         /// <remarks>
         /// For frequency displays, this is the scale at minimum volume.
         /// </remarks>
-        internal const float MinVolumeScale = 0.2f;
+        internal static float MinVolumeScale = 0.2f;
 
         /// <summary>
         /// Scale factor by which to multiply the raw volume to get a loopie scale lerp value.
@@ -72,7 +78,7 @@ namespace Holofunk.Core
         /// so that max volume still equals max scale (rather than some lower-than-max volume
         /// equaling max scale, as would be the case if this weren't itself lerped).
         /// </remarks>
-        internal const float LerpVolumeScaleFactor = 5;
+        internal static float LerpVolumeScaleFactor = 5;
 
         /// <summary>
         /// Minimum loopie scale for minimum amplitude.
@@ -98,9 +104,19 @@ namespace Holofunk.Core
         public static readonly float BeatMeasureSeparation = 0.015f;
 
         /// <summary>
-        /// The height of the stack of discs.
+        /// The scale of each frequency disc's height, relative to the original scale of its shape.
         /// </summary>
-        public static readonly float FrequencyDiscStackHeight = 0.01f;
+        public static readonly float FrequencyDiscHeightScaleFactor = 0.05f;
+
+        /// <summary>
+        /// The scale of each frequency disc's width, relative to the original scale of its shape.
+        /// </summary>
+        public static readonly float FrequencyDiscWidthScaleFactor = 1.9f;
+
+        /// <summary>
+        /// The vertical distance apart to place each frequency disc.
+        /// </summary>
+        public static readonly float FrequencyDiscVerticalDistance = 0.006f;
 
         /// <summary>
         /// The minimum value below which frequency bins will be ignored.

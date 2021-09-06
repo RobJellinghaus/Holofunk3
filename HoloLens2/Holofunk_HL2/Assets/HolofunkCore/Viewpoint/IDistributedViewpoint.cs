@@ -79,5 +79,23 @@ namespace Holofunk.Viewpoint
         /// </remarks>
         [LocalMethod]
         Matrix4x4 LocalToViewpointMatrix();
+
+        /// <summary>
+        /// Are we recording?
+        /// </summary>
+        [LocalMethod]
+        bool IsRecording { get; }
+
+        /// <summary>
+        /// Start recording.
+        /// </summary>
+        [ReliableMethod]
+        void StartRecording();
+
+        /// <summary>
+        /// Stop recording.
+        /// </summary>
+        [ReliableMethod]
+        void StopRecording();
     }
 }

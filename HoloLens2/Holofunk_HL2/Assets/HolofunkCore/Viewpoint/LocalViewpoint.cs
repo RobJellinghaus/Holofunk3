@@ -2,6 +2,7 @@
 
 using Distributed.State;
 using Holofunk.Distributed;
+using Holofunk.Sound;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,11 @@ namespace Holofunk.Viewpoint
         /// Internal method for use by Create message.
         /// </summary>
         internal PlayerState[] PlayersAsArray => players.ToArray();
+
+        /// <summary>
+        /// The state of this viewpoint.
+        /// </summary>
+        private ViewpointState state;
 
         #region IDistributedViewpoint
 
@@ -184,6 +190,28 @@ namespace Holofunk.Viewpoint
                 {
                     return Matrix4x4.zero;
                 }
+            }
+        }
+
+        public bool IsRecording => state.IsRecording;
+
+        public void StartRecording()
+        {
+            state.IsRecording = true;
+
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.StartRecording();
+            }
+        }
+
+        public void StopRecording()
+        {
+            state.IsRecording = false;
+
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.StopRecording();
             }
         }
 

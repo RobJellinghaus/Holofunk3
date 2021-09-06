@@ -87,13 +87,26 @@ namespace Holofunk.Viewpoint
         /// There is no way to delete a player, but a player object can be marked untracked and have its fields
         /// nulled out.
         /// </remarks>
-        [ReliableMethod]
-        public void UpdatePlayer(PlayerState playerToUpdate) => RouteReliableMessage(isRequest => new UpdatePlayer(Id, isRequest, playerToUpdate));
+        public void UpdatePlayer(PlayerState playerToUpdate)
+            => RouteReliableMessage(isRequest => new UpdatePlayer(Id, isRequest, playerToUpdate));
 
         public Matrix4x4 ViewpointToLocalMatrix() => GetLocalViewpoint().ViewpointToLocalMatrix();
 
         public Matrix4x4 LocalToViewpointMatrix() => GetLocalViewpoint().LocalToViewpointMatrix();
 
+        public bool IsRecording => GetLocalViewpoint().IsRecording;
+
+        /// <summary>
+        /// Set that we are recording.
+        /// </summary>
+        public void StartRecording()
+            => RouteReliableMessage(isRequest => new StartRecording(Id, isRequest));
+
+        /// <summary>
+        /// Set that we are done recording.
+        /// </summary>
+        public void StopRecording()
+            => RouteReliableMessage(isRequest => new StopRecording(Id, isRequest));
 
         #endregion
 

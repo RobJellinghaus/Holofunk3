@@ -81,11 +81,6 @@ namespace Holofunk.Loop
         private Vector3 originalBandShapeLocalScale;
 
         /// <summary>
-        /// The last known TrackInfo about this track.
-        /// </summary>
-        private NowSoundLib.TrackInfo lastTrackInfo;
-
-        /// <summary>
         /// The list of plugin instances, when on the node running the soundmanager.
         /// </summary>
         private List<PluginInstanceIndex> pluginInstances = new List<PluginInstanceIndex>();
@@ -137,10 +132,13 @@ namespace Holofunk.Loop
                 // really a very flat sort of cube... not much of a cube at all really
                 GameObject disc = ShapeContainer.InstantiateShape(ShapeType.FlatCube, firstBeatMeasureControllerObject);
                 disc.SetActive(true);
-                disc.transform.localPosition = new Vector3(
-                    0,
-                    i * (MagicNumbers.FrequencyDiscStackHeight / MagicNumbers.OutputBinCount),
-                    0);
+                disc.transform.localPosition = new Vector3(0, i * MagicNumbers.FrequencyDiscVerticalDistance, 0);
+                Vector3 localScale = disc.transform.localScale;
+                // TODO: magic constant for x/z (e.g. width, since x/z symmetrical) scale
+                disc.transform.localScale = new Vector3(
+                    localScale.x * MagicNumbers.FrequencyDiscWidthScaleFactor,
+                    localScale.y * MagicNumbers.FrequencyDiscHeightScaleFactor,
+                    localScale.z * MagicNumbers.FrequencyDiscWidthScaleFactor);
 
                 // a bit wasteful to do redundantly per shape, but simplifies the logic since we don't have to go look at the prototype
                 originalBandShapeLocalScale = disc.transform.localScale;
@@ -230,6 +228,17 @@ namespace Holofunk.Loop
                     lastViewpointPosition = loopie.ViewpointPosition;
 
                     transform.localPosition = localLoopiePosition;
+
+                    // if this is the sound manager, set the panning properly for the moving loopie
+                    if (SoundManager.Instance != null)
+                    {
+                        PlayerState firstPlayer = DistributedViewpoint.Instance.GetPlayer(0);
+                        if (firstPlayer.Tracked)
+                        {
+                            float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, lastViewpointPosition);
+                            NowSoundTrackAPI.SetPan(trackId, panValue);
+                        }
+                    }
                 }
             }
         }
@@ -534,6 +543,55 @@ namespace Holofunk.Loop
         /// the network.)
         /// </remarks>
         public bool IsTouched { get; set; }
+
+        #endregion
+
+        #region Viewpoint-based pan operations
+
+        /// <summary>
+        /// Calculate the pan value for a given sound position relative to the sensor.
+        /// </summary>
+        /// <param name="sensorPosition">The sensor position, in viewpoint (e.g. sensor) coordinates</param>
+        /// <param name="sensorForwardDirection">The sensor forward direction, in viewpoint (e.g. sensor) coordinates</param>
+        /// <param name="soundPosition">The sound position, in viewpoint (e.g. sensor) coordinates</param>
+        /// <returns>A pan value (0 = left, 0.5 = center, 1 = right)</returns>
+        public static float CalculatePanValue(Vector3 sensorPosition, Vector3 sensorForwardDirection, Vector3 soundPosition)
+        {
+            Vector3 flattenedSensorPosition = sensorPosition;
+            flattenedSensorPosition.y = 0;
+            Vector3 flattenedSoundPosition = soundPosition;
+            flattenedSoundPosition.y = 0;
+
+            // find out how close the sensor->head ray is to the sensor forward direction
+            Vector3 flattenedSensorForwardDirection = sensorForwardDirection;
+            flattenedSensorForwardDirection.y = 0;
+            flattenedSensorForwardDirection.Normalize();
+
+            Vector3 flattenedSensorToSoundDirection = (flattenedSoundPosition - flattenedSensorPosition).normalized;
+
+            float soundDirectionDotSensorForwardDirection = Vector3.Dot(flattenedSensorForwardDirection, flattenedSensorToSoundDirection);
+
+            // clamp to between MinDotProductForPanning and 1 (not really possible that user will walk beyond screen edge,
+            // but better safe than sorry)
+            soundDirectionDotSensorForwardDirection = Mathf.Max(soundDirectionDotSensorForwardDirection, MagicNumbers.MinDotProductForPanning);
+
+            // convert to interval between 0 and (1 - MinDotProductForPanning)
+            float panValue = soundDirectionDotSensorForwardDirection - MagicNumbers.MinDotProductForPanning;
+            // convert to interval between 0 and 0.5
+            panValue *= 0.5f / (1 - MagicNumbers.MinDotProductForPanning);
+            panValue = Mathf.Max(0.5f, panValue);
+
+            HoloDebug.Assert(panValue >= 0);
+            HoloDebug.Assert(panValue <= 0.5);
+
+            // if sound position is positive X (in viewpoint space), then panning to the right
+            if (soundPosition.x >= 0)
+            {
+                panValue = 1 - panValue;
+            }
+
+            return panValue;
+        }
 
         #endregion
     }

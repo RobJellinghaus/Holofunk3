@@ -1,7 +1,7 @@
 ﻿// NowSound library by Rob Jellinghaus, https://github.com/RobJellinghaus/NowSound
 // Licensed under the MIT license
 
-//using Holofunk.Core;
+using Holofunk.Core;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;

@@ -57,12 +57,18 @@ namespace Holofunk.Core
         #region Loopies
 
         /// <summary>
+        /// Minimum dot product between the sensor->head ray and the sensor forward direction, to be considered
+        /// panned all the way to one side.
+        /// </summary>
+        public static float MinDotProductForPanning = 0.7f;
+
+        /// <summary>
         /// Minimum scale factor for loopies at minimum volume. (Max scale factor is always 1)
         /// </summary>
         /// <remarks>
         /// For frequency displays, this is the scale at minimum volume.
         /// </remarks>
-        internal const float MinVolumeScale = 0.2f;
+        internal static float MinVolumeScale = 0.2f;
 
         /// <summary>
         /// Scale factor by which to multiply the raw volume to get a loopie scale lerp value.
@@ -72,7 +78,7 @@ namespace Holofunk.Core
         /// so that max volume still equals max scale (rather than some lower-than-max volume
         /// equaling max scale, as would be the case if this weren't itself lerped).
         /// </remarks>
-        internal const float LerpVolumeScaleFactor = 5;
+        internal static float LerpVolumeScaleFactor = 5;
 
         /// <summary>
         /// Minimum loopie scale for minimum amplitude.

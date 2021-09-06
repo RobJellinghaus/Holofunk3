@@ -5,6 +5,8 @@ using com.rfilkov.kinect;
 using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
+using Holofunk.Loop;
+using Holofunk.Sound;
 using UnityEngine;
 
 namespace Holofunk.Viewpoint
@@ -84,6 +86,19 @@ namespace Holofunk.Viewpoint
                         PerformerToViewpointMatrix = currentPlayer.PerformerToViewpointMatrix,
                         ViewpointToPerformerMatrix = currentPlayer.ViewpointToPerformerMatrix
                     };
+
+                    // and now, pan the sound for this player.
+                    // TODO: handle multiple audio inputs.
+                    if (SoundManager.Instance != null)
+                    {
+                        Vector3 sensorPosition = currentPlayer.SensorPosition;
+                        Vector3 sensorForwardDirection = currentPlayer.SensorForwardDirection;
+                        Vector3 soundPosition = currentPlayer.HeadPosition;
+
+                        float panValue = LocalLoopie.CalculatePanValue(sensorPosition, sensorForwardDirection, soundPosition);
+
+                        NowSoundLib.NowSoundGraphAPI.SetInputPan(NowSoundLib.AudioInputId.AudioInput1, panValue);
+                    }
                 }
 
                 // We currently use the prototype Viewpoint as the owned instance for this app.
@@ -120,7 +135,6 @@ namespace Holofunk.Viewpoint
                 return posJoint;
             }
         }
-
 
         private Vector3 GetJointWorldSpaceForwardDirection(ulong userId, KinectInterop.JointType joint)
         {
