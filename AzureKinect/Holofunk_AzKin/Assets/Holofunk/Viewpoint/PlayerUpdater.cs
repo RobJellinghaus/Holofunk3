@@ -89,7 +89,7 @@ namespace Holofunk.Viewpoint
 
                     // and now, pan the sound for this player.
                     // TODO: handle multiple audio inputs.
-                    if (SoundManager.Instance != null)
+                    if (SoundManager.Instance != null && SoundManager.Instance.IsRunning)
                     {
                         Vector3 sensorPosition = currentPlayer.SensorPosition;
                         Vector3 sensorForwardDirection = currentPlayer.SensorForwardDirection;

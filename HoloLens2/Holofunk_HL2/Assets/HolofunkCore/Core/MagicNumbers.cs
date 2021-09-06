@@ -71,16 +71,6 @@ namespace Holofunk.Core
         internal static float MinVolumeScale = 0.2f;
 
         /// <summary>
-        /// Scale factor by which to multiply the raw volume to get a loopie scale lerp value.
-        /// </summary>
-        /// <remarks>
-        /// Note that this factor is itself lerped from 0 volume (this) to 1 volume (1),
-        /// so that max volume still equals max scale (rather than some lower-than-max volume
-        /// equaling max scale, as would be the case if this weren't itself lerped).
-        /// </remarks>
-        internal static float LerpVolumeScaleFactor = 5;
-
-        /// <summary>
         /// Minimum loopie scale for minimum amplitude.
         /// </summary>
         public static readonly float MinLoopieScale = 0.6f;
@@ -116,7 +106,7 @@ namespace Holofunk.Core
         /// <summary>
         /// The vertical distance apart to place each frequency disc.
         /// </summary>
-        public static readonly float FrequencyDiscVerticalDistance = 0.006f;
+        public static readonly float FrequencyDiscVerticalDistance = 0.003f;
 
         /// <summary>
         /// The minimum value below which frequency bins will be ignored.

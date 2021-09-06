@@ -62,6 +62,9 @@ namespace Holofunk.Sound
 
         #region Properties
 
+        public bool IsRunning => currentAudioGraphState == NowSoundGraphState.GraphRunning;
+        public bool IsError => currentAudioGraphState == NowSoundGraphState.GraphInError;
+
         public bool IsRecordingToFile => _isRecordingToFile;
 
         public List<string> Plugins => _plugins;
