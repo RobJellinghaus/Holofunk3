@@ -612,10 +612,7 @@ namespace Holofunk.Loop
             float panValue = soundDirectionDotSensorForwardDirectionClamped - MagicNumbers.MinDotProductForPanning;
             // convert to interval between 0 and 0.5
             panValue *= 0.5f / (1 - MagicNumbers.MinDotProductForPanning);
-            panValue = Mathf.Max(0.5f, panValue);
-
-            HoloDebug.Assert(panValue >= 0);
-            HoloDebug.Assert(panValue <= 0.5);
+            panValue = Mathf.Max(0f, Mathf.Min(0.5f, panValue));
 
             // if sound position is positive X (in viewpoint space), then panning to the right
             if (soundPosition.x >= 0)
