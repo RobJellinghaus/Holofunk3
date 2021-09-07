@@ -64,7 +64,7 @@ namespace Holofunk.Core
         /// The actual edge of the Azure Kinect body tracking is very small (pretty close to square in fact),
         /// so this is surprisingly high.
         /// </remarks>
-        public static float MinDotProductForPanning = 0.85f;
+        public static float MinDotProductForPanning = 0.8f;
 
         /// <summary>
         /// Minimum scale factor for loopies at minimum volume. (Max scale factor is always 1)
