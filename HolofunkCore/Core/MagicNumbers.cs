@@ -60,7 +60,11 @@ namespace Holofunk.Core
         /// Minimum dot product between the sensor->head ray and the sensor forward direction, to be considered
         /// panned all the way to one side.
         /// </summary>
-        public static float MinDotProductForPanning = 0.7f;
+        /// <remarks>
+        /// The actual edge of the Azure Kinect body tracking is very small (pretty close to square in fact),
+        /// so this is surprisingly high.
+        /// </remarks>
+        public static float MinDotProductForPanning = 0.85f;
 
         /// <summary>
         /// Minimum scale factor for loopies at minimum volume. (Max scale factor is always 1)
