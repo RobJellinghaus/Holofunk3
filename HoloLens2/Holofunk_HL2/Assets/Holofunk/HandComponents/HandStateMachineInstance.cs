@@ -123,6 +123,8 @@ namespace Holofunk.HandComponents
                 // Start recording if and only if 1) the UI didn't capture this, and 2) recording is enabled.
                 (evt, handController) => (!evt.IsCaptured /* && HolofunkController.Instance.IsRecordingEnabled */) ? recording : closedHand);
 
+            // don't let flat take you out of recording
+            AddTransition(stateMachine, recording, HandPoseEvent.Flat, recording);
             AddTransition(stateMachine, recording, HandPoseEvent.Opened, armed);
             AddTransition(stateMachine, closedHand, HandPoseEvent.Opened, armed);
 
@@ -140,6 +142,9 @@ namespace Holofunk.HandComponents
 
             AddTransition(stateMachine, pointing, HandPoseEvent.Unknown, initial);
             AddTransition(stateMachine, pointing, HandPoseEvent.Opened, armed);
+
+            // EXPERIMENT: don't make flat leave pointing
+            AddTransition(stateMachine, pointing, HandPoseEvent.Flat, pointing);
 
             #endregion
 
@@ -294,12 +299,10 @@ namespace Holofunk.HandComponents
                     widget.Delete();
                 });
 
-            /* TODO: revive as we can make these more stable
-            AddTransition(stateMachine, initial, HandPoseEvent.Flat, loudenSoften);
             AddTransition(stateMachine, armed, HandPoseEvent.Flat, loudenSoften);
             AddTransition(stateMachine, loudenSoften, HandPoseEvent.Opened, armed);
             AddTransition(stateMachine, loudenSoften, HandPoseEvent.Closed, initial);
-            */
+
             #endregion
 
             #region Effect popup menus

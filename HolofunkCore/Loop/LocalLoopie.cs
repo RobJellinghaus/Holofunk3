@@ -606,10 +606,10 @@ namespace Holofunk.Loop
 
             // clamp to between MinDotProductForPanning and 1 (not really possible that user will walk beyond screen edge,
             // but better safe than sorry)
-            soundDirectionDotSensorForwardDirection = Mathf.Max(soundDirectionDotSensorForwardDirection, MagicNumbers.MinDotProductForPanning);
+            float soundDirectionDotSensorForwardDirectionClamped = Mathf.Max(soundDirectionDotSensorForwardDirection, MagicNumbers.MinDotProductForPanning);
 
             // convert to interval between 0 and (1 - MinDotProductForPanning)
-            float panValue = soundDirectionDotSensorForwardDirection - MagicNumbers.MinDotProductForPanning;
+            float panValue = soundDirectionDotSensorForwardDirectionClamped - MagicNumbers.MinDotProductForPanning;
             // convert to interval between 0 and 0.5
             panValue *= 0.5f / (1 - MagicNumbers.MinDotProductForPanning);
             panValue = Mathf.Max(0.5f, panValue);
@@ -622,6 +622,8 @@ namespace Holofunk.Loop
             {
                 panValue = 1 - panValue;
             }
+
+            HoloDebug.Log($"LocalLoopie.CalculatePanValue: soundPosition {soundPosition}, soundDirectionDotForwardDirection {soundDirectionDotSensorForwardDirection}, panValue {panValue}");
 
             return panValue;
         }
