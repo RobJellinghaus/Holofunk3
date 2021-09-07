@@ -7,6 +7,7 @@ using Holofunk.Menu;
 using Holofunk.Perform;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
+using Holofunk.VolumeWidget;
 using UnityEngine;
 
 namespace Holofunk.Distributed
@@ -67,6 +68,7 @@ namespace Holofunk.Distributed
             Host.RegisterWith(PerformerMessages.RegisterTypes);
             Host.RegisterWith(SoundMessages.RegisterTypes);
             Host.RegisterWith(ViewpointMessages.RegisterTypes);
+            Host.RegisterWith(VolumeWidgetMessages.RegisterTypes);
 
             // Distributed message types; must be registered only after all types have been registered
             Host.RegisterWith(LoopieMessages.Register);
@@ -74,6 +76,7 @@ namespace Holofunk.Distributed
             Host.RegisterWith(PerformerMessages.Register);
             Host.RegisterWith(SoundMessages.Register);
             Host.RegisterWith(ViewpointMessages.Register);
+            Host.RegisterWith(VolumeWidgetMessages.Register);
 
             Instance = this;
 
