@@ -299,10 +299,14 @@ namespace Holofunk.HandComponents
                     widget.Delete();
                 });
 
+            // TODO: stabilize this next
+            /*
             AddTransition(stateMachine, armed, HandPoseEvent.Flat, loudenSoften);
+            AddTransition(stateMachine, loudenSoften, HandPoseEvent.Closed, loudenSoften);
+            AddTransition(stateMachine, loudenSoften, HandPoseEvent.Pointing1, loudenSoften);
             AddTransition(stateMachine, loudenSoften, HandPoseEvent.Opened, armed);
             AddTransition(stateMachine, loudenSoften, HandPoseEvent.Closed, initial);
-
+            */
             #endregion
 
             #region Effect popup menus
