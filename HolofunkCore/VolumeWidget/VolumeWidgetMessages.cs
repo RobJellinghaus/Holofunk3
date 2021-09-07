@@ -31,7 +31,7 @@ namespace Holofunk.VolumeWidget
         {
             Registrar.RegisterCreateMessage<Create, DistributedVolumeWidget, LocalVolumeWidget, IDistributedVolumeWidget>(
                 proxyCapability,
-                DistributedObjectFactory.DistributedType.Viewpoint,
+                DistributedObjectFactory.DistributedType.VolumeWidget,
                 (local, message) => local.Initialize(message.State));
 
             Registrar.RegisterReliableMessage<UpdateState, DistributedVolumeWidget, LocalVolumeWidget, IDistributedVolumeWidget>(
