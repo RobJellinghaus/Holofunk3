@@ -234,7 +234,7 @@ namespace Holofunk.Loop
                         PlayerState firstPlayer = DistributedViewpoint.Instance.GetPlayer(0);
                         if (firstPlayer.Tracked)
                         {
-                            float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, lastViewpointPosition);
+                            float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, loopie.ViewpointPosition, log: true);
                             NowSoundTrackAPI.SetPan(trackId, panValue);
                         }
                     }
@@ -588,7 +588,7 @@ namespace Holofunk.Loop
         /// <param name="sensorForwardDirection">The sensor forward direction, in viewpoint (e.g. sensor) coordinates</param>
         /// <param name="soundPosition">The sound position, in viewpoint (e.g. sensor) coordinates</param>
         /// <returns>A pan value (0 = left, 0.5 = center, 1 = right)</returns>
-        public static float CalculatePanValue(Vector3 sensorPosition, Vector3 sensorForwardDirection, Vector3 soundPosition)
+        public static float CalculatePanValue(Vector3 sensorPosition, Vector3 sensorForwardDirection, Vector3 soundPosition, bool log = false)
         {
             Vector3 flattenedSensorPosition = sensorPosition;
             flattenedSensorPosition.y = 0;
@@ -623,7 +623,10 @@ namespace Holofunk.Loop
                 panValue = 1 - panValue;
             }
 
-            HoloDebug.Log($"LocalLoopie.CalculatePanValue: soundPosition {soundPosition}, soundDirectionDotForwardDirection {soundDirectionDotSensorForwardDirection}, panValue {panValue}");
+            if (log)
+            {
+                HoloDebug.Log($"LocalLoopie.CalculatePanValue: soundPosition {soundPosition}, soundDirectionDotForwardDirection {soundDirectionDotSensorForwardDirection}, panValue {panValue}");
+            }
 
             return panValue;
         }
