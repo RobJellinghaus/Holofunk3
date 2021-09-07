@@ -125,11 +125,11 @@ namespace Holofunk.Loop
             // So audio frequency, visual color, and in-world height in the stack all correlate.
 
             // instantiate them into the "default" first measure controller, which is in the scene as an empty game object
-            Transform firstBeatMeasureControllerObject = BeatMeasureContainer.GetChild(0);
+            Transform childShapeContainer = transform.GetChild(0);
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
                 // really a very flat sort of cube... not much of a cube at all really
-                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.FlatCube, firstBeatMeasureControllerObject);
+                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.FlatCube, childShapeContainer);
                 disc.SetActive(true);
                 disc.transform.localPosition = new Vector3(0, i * MagicNumbers.FrequencyDiscVerticalDistance, 0);
                 Vector3 localScale = disc.transform.localScale;
