@@ -274,8 +274,6 @@ namespace Holofunk.Loop
         /// </summary>
         private void UpdateLoopieAppearance()
         {
-            Sound.TimeInfo timeInfo = DistributedSoundClock.Instance.TimeInfo;
-
             if (signalInfo.Avg > 0f)
             {
                 // signalInfo ranges from 0 to 1
@@ -321,9 +319,9 @@ namespace Holofunk.Loop
             // - if the beat is even, we are rotating the top of stack by 90 degrees by end of beat;
             // - if the beat is odd, we are rotating the bottom of stack likewise.
             // All other rotation values are interpolated between the two.
-            int intBeat = (int)timeInfo.Value.BeatInMeasure;
+            int intBeat = (int)trackInfo.LocalClockBeat;
             bool beatIsEven = (intBeat & 0x1) == 0;
-            float fractionalBeat = timeInfo.Value.BeatInMeasure - intBeat;
+            float fractionalBeat = (float)trackInfo.LocalClockBeat - intBeat;
             // TODO: make this properly sensitive to actual beats in measure
             float topDiscTargetYRotationDeg = ((intBeat / 2) + (beatIsEven ? fractionalBeat : 1)) * 90;
             float bottomDiscTargetYRotationDeg = ((intBeat / 2) + (beatIsEven ? 0 : fractionalBeat)) * 90;
