@@ -166,7 +166,7 @@ namespace Holofunk.Loop
         {
             UpdateSoundData();
 
-            UpdateHeldLoopiePosition();
+            UpdateLoopiePanPosition();
 
             // Now that track info has been updated, update the controllers displaying what measure it is.
             UpdateMeasureControllers();
@@ -213,17 +213,22 @@ namespace Holofunk.Loop
         }
 
         /// <summary>
-        /// If we are holding the loopie, drag it around appropriately.
+        /// Update the loopie's stereo panning, based on its position relative to the viewpoint's forward direction.
         /// </summary>
-        private void UpdateHeldLoopiePosition()
+        /// <remarks>
+        /// If the viewpoint had ears, this is what it would hear.
+        /// </remarks>
+        private void UpdateLoopiePanPosition()
         {
             // move to viewpoint position if viewpoint position moved (and/or viewpoint matrix came back)
             if (lastViewpointPosition != loopie.ViewpointPosition)
             {
+                Vector3 loopieViewpointPosition = loopie.ViewpointPosition;
+
                 if (DistributedViewpoint.Instance != null)
                 {
                     Matrix4x4 viewpointToLocalMatrix = DistributedViewpoint.Instance.ViewpointToLocalMatrix();
-                    Vector3 localLoopiePosition = viewpointToLocalMatrix.MultiplyPoint(loopie.ViewpointPosition);
+                    Vector3 localLoopiePosition = viewpointToLocalMatrix.MultiplyPoint(loopieViewpointPosition);
                     lastViewpointPosition = loopie.ViewpointPosition;
 
                     transform.localPosition = localLoopiePosition;
@@ -236,6 +241,8 @@ namespace Holofunk.Loop
                         {
                             float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, loopie.ViewpointPosition, log: true);
                             NowSoundTrackAPI.SetPan(trackId, panValue);
+                            float updatedPan = NowSoundTrackAPI.Pan(trackId);
+                            HoloDebug.Log($"LocalLoopie.UpdateLoopiePanPosition: loopie {trackId}, viewpointPosition {loopie.ViewpointPosition}, panValue {panValue}, updatedPanValue {updatedPan}");
                         }
                     }
                 }
@@ -438,6 +445,7 @@ namespace Holofunk.Loop
         internal void Initialize(LoopieState loopie)
         {
             this.loopie = loopie;
+            HoloDebug.Log($"LocalLoopie.Initialize: initializing {DistributedObject.Id} at viewpoint position {loopie.ViewpointPosition}");
         }
 
         public void OnDelete()
