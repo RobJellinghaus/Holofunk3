@@ -28,7 +28,7 @@ namespace Holofunk.VolumeWidget
 
         #endregion
 
-        #region IDistributedViewpoint
+        #region IDistributedVolumeWidget
 
         public override ILocalObject LocalObject => GetLocalVolumeWidget();
 

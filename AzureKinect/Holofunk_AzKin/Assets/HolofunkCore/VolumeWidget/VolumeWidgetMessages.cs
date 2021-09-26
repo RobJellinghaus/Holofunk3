@@ -14,6 +14,13 @@ namespace Holofunk.VolumeWidget
             public Create(DistributedId id, VolumeWidgetState state) : base(id) { State = state; }
         }
 
+        public class Delete : DeleteMessage
+        {
+            public Delete() : base() { }
+            public Delete(DistributedId id, bool isRequest) : base(id, isRequest) { }
+            public override string ToString() => $"{base.ToString()}{Id}";
+        }
+
         public class UpdateState : ReliableMessage
         {
             public VolumeWidgetState State { get; set; }
@@ -33,6 +40,8 @@ namespace Holofunk.VolumeWidget
                 proxyCapability,
                 DistributedObjectFactory.DistributedType.VolumeWidget,
                 (local, message) => local.Initialize(message.State));
+
+            Registrar.RegisterDeleteMessage<Delete, DistributedVolumeWidget, LocalVolumeWidget, IDistributedVolumeWidget>(proxyCapability);
 
             Registrar.RegisterReliableMessage<UpdateState, DistributedVolumeWidget, LocalVolumeWidget, IDistributedVolumeWidget>(
                 proxyCapability);
