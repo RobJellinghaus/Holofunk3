@@ -64,7 +64,8 @@ namespace Holofunk.VolumeWidget
 
         protected override void SendDeleteMessage(NetPeer netPeer, bool isRequest)
         {
-            // don't do it!
+            HoloDebug.Log($"DistributedVolumeWidget.SendDeleteMessage: Sending VolumeWidget.Delete for id {Id} to peer {netPeer.EndPoint} with state {GetLocalVolumeWidget().State}");
+            Host.SendReliableMessage(new Delete(Id, isRequest), netPeer);
         }
 
         #endregion
