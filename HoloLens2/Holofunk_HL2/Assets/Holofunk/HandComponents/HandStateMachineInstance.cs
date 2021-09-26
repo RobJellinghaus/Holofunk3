@@ -265,16 +265,16 @@ namespace Holofunk.HandComponents
                         if (currentRatioOfMaxDistance > 0)
                         {
                             // map to interval (1, MaxVolumeRatio)
-                            newRatio = (1 + currentRatioOfMaxDistance) * MagicNumbers.MaxVolumeRatio;
+                            newRatio = 1 + (currentRatioOfMaxDistance * (MagicNumbers.MaxVolumeRatio - 1));
                         }
                         else
                         {
                             // map to interval (1/MaxVolumeRatio, 1)
-                            newRatio = 1 / ((1 + -currentRatioOfMaxDistance) * MagicNumbers.MaxVolumeRatio);
+                            newRatio = 1 / (-currentRatioOfMaxDistance * (MagicNumbers.MaxVolumeRatio - 1));
                         }
 
                         HoloDebug.Log($"HandStateMachineInstance.LouderSofter: initialHandY {initialHandYPosition}, currentHandY {currentHandYPosition}, currentRatioOfMax {currentRatioOfMaxDistance}, lastVolRatio {lastVolumeRatio}, newRatio {newRatio}");
-
+s
                         volumeRatio = newRatio;
 
                         VolumeWidgetState state = widget.State;
