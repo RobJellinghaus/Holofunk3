@@ -4,6 +4,7 @@ using Holofunk.Core;
 using Holofunk.Hand;
 using Microsoft.MixedReality.Toolkit.Input;
 using Microsoft.MixedReality.Toolkit.Utilities;
+using System;
 using UnityEngine;
 
 namespace Holofunk.HandComponents
@@ -13,6 +14,8 @@ namespace Holofunk.HandComponents
     /// </summary>
     public class HandPoseClassifier
     {
+        #region Fields (all computed by Recalculate)
+
         /// <summary>
         /// The joints we track for measuring thumb pose.
         /// </summary>
@@ -97,9 +100,30 @@ namespace Holofunk.HandComponents
         float _thumbVectorDotUp;
 
         /// <summary>
+        /// The minimum values of all joint coordinates (in X, Y, Z axes).
+        /// </summary>
+        Vector3 _minJointCoordinates;
+
+        /// <summary>
+        /// The maximum values of all joint coordinates (in X, Y, Z axes).
+        /// </summary>
+        Vector3 _maxJointCoordinates;
+
+        /// <summary>
+        /// _maxJointCoordinates - _minJointCoordinates
+        /// </summary>
+        /// <remarks>
+        /// Used to determine hand flatness. If Y value of this is smallest (by a magic number factor), the
+        /// hand is presumed flat.
+        /// </remarks>
+        Vector3 _netJointDisplacement;
+
+        /// <summary>
         /// The overall hand pose.
         /// </summary>
         HandPoseValue _handPose;
+
+        #endregion
 
         /// <summary>
         /// Construct a new hand pose instance.
@@ -114,9 +138,7 @@ namespace Holofunk.HandComponents
             _fingerEyeColinearities = new float[(int)Finger.Max + 1];
         }
 
-        /// <summary>
-        /// Recalculate this pose based on the current joint positions of the given hand.
-        /// </summary>
+        /// <summary>Recalculate this hand's pose based on the current joint positions of the given hand.</summary>
         public void Recalculate(
             IMixedRealityHandJointService handJointService,
             IMixedRealityGazeProvider gazeProvider,
@@ -125,6 +147,9 @@ namespace Holofunk.HandComponents
             // First determine the finger poses.
             _sumPairwiseFingertipDistances = 0;
             _sumPairwiseKnuckleDistances = 0;
+            _minJointCoordinates = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            _maxJointCoordinates = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+
             for (Finger finger = Finger.Thumb; finger <= Finger.Max; finger++)
             {
                 (FingerPose pose, float fingerColinearity) = CalculateFingerPose(handJointService, handedness, finger);
@@ -160,7 +185,26 @@ namespace Holofunk.HandComponents
                 Vector3 thumbProximalPosition = JointPosition(handJointService, handedness, TrackedHandJoint.ThumbProximalJoint);
                 _thumbTipAltitude = thumbTipPosition.y - thumbProximalPosition.y;
                 _thumbVectorDotUp = Vector3.Dot((thumbTipPosition - thumbProximalPosition).normalized, Vector3.up);
+
+                // Now the min/avg/max joint positions.
+                TrackedHandJoint[] jointsToTrack = finger == Finger.Thumb ? _thumbPoseJoints : _fingerPoseJoints[(int)finger - 1];
+                UpdateMinMaxAvg(JointPosition(handJointService, handedness, jointsToTrack[0]));
+                UpdateMinMaxAvg(JointPosition(handJointService, handedness, jointsToTrack[1]));
+
+                void UpdateMinMaxAvg(Vector3 jointPosition)
+                {
+                    _minJointCoordinates = new Vector3(
+                        Mathf.Min(_minJointCoordinates.x, jointPosition.x),
+                        Mathf.Min(_minJointCoordinates.y, jointPosition.y),
+                        Mathf.Min(_minJointCoordinates.z, jointPosition.z));
+                    _maxJointCoordinates = new Vector3(
+                        Mathf.Max(_maxJointCoordinates.x, jointPosition.x),
+                        Mathf.Max(_maxJointCoordinates.y, jointPosition.y),
+                        Mathf.Max(_maxJointCoordinates.z, jointPosition.z));
+                }
             }
+
+            _netJointDisplacement = _maxJointCoordinates - _minJointCoordinates;
 
             ClassifyHandPose();
         }
@@ -230,7 +274,9 @@ namespace Holofunk.HandComponents
             else if (AllFingerPose(FingerPose.Extended)
                 && GetFingerPose(Finger.Thumb) == FingerPose.Extended
                 && NoFingerExtension(FingerPairExtension.NotExtendedTogether)
-                && GetFingerPairExtension(Finger.Thumb) != FingerPairExtension.NotExtendedTogether)
+                && GetFingerPairExtension(Finger.Thumb) != FingerPairExtension.NotExtendedTogether
+                && _netJointDisplacement.x > HandPoseMagicNumbers.HandFlatnessFactor * _netJointDisplacement.y
+                && _netJointDisplacement.z > HandPoseMagicNumbers.HandFlatnessFactor * _netJointDisplacement.y)
             {
                 _handPose = HandPoseValue.Flat;
             }
