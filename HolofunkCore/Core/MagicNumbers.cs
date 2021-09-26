@@ -178,7 +178,7 @@ namespace Holofunk.Core
         /// <remarks>
         /// MinRatio = 1 / MaxRatio
         /// </remarks>
-        public static readonly float MaxVolumeRatio = 4;
+        public static readonly float MaxVolumeRatio = 2;
 
         /// <summary>
         /// Maximum distance in meters to reach the MaxRatio volume.
@@ -186,7 +186,7 @@ namespace Holofunk.Core
         /// <remarks>
         /// The same distance downwards will soften by the MinRatio amount.
         /// </remarks>
-        public static readonly float MaxVolumeHeightMeters = 0.03f; // 30 cm
+        public static readonly float MaxVolumeHeightMeters = 0.1f; // 100 cm
 
         #endregion
     }

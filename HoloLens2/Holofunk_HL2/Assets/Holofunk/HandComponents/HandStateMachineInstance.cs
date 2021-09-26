@@ -259,19 +259,21 @@ namespace Holofunk.HandComponents
 
                         float currentRatioOfMaxDistance = (currentHandYPosition - initialHandYPosition) / MagicNumbers.MaxVolumeHeightMeters;
                         // clamp this to (-1, 1) interval
-                        currentRatioOfMaxDistance = Math.Max(1f, Math.Min(-1f, currentRatioOfMaxDistance));
+                        currentRatioOfMaxDistance = Math.Min(1f, Math.Max(-1f, currentRatioOfMaxDistance));
 
                         float newRatio;
                         if (currentRatioOfMaxDistance > 0)
                         {
                             // map to interval (1, MaxVolumeRatio)
-                            newRatio = 1 + currentRatioOfMaxDistance * (MagicNumbers.MaxVolumeRatio - 1);
+                            newRatio = (1 + currentRatioOfMaxDistance) * MagicNumbers.MaxVolumeRatio;
                         }
                         else
                         {
                             // map to interval (1/MaxVolumeRatio, 1)
-                            newRatio = 1 / (1 + (-currentRatioOfMaxDistance * (MagicNumbers.MaxVolumeRatio - 1)));
+                            newRatio = 1 / ((1 + -currentRatioOfMaxDistance) * MagicNumbers.MaxVolumeRatio);
                         }
+
+                        HoloDebug.Log($"HandStateMachineInstance.LouderSofter: initialHandY {initialHandYPosition}, currentHandY {currentHandYPosition}, currentRatioOfMax {currentRatioOfMaxDistance}, lastVolRatio {lastVolumeRatio}, newRatio {newRatio}");
 
                         volumeRatio = newRatio;
 
@@ -299,14 +301,12 @@ namespace Holofunk.HandComponents
                     widget.Delete();
                 });
 
-            // TODO: stabilize this next
-            /*
+            AddTransition(stateMachine, initial, HandPoseEvent.Flat, loudenSoften);
             AddTransition(stateMachine, armed, HandPoseEvent.Flat, loudenSoften);
-            AddTransition(stateMachine, loudenSoften, HandPoseEvent.Closed, loudenSoften);
             AddTransition(stateMachine, loudenSoften, HandPoseEvent.Pointing1, loudenSoften);
-            AddTransition(stateMachine, loudenSoften, HandPoseEvent.Opened, armed);
+            AddTransition(stateMachine, loudenSoften, HandPoseEvent.Opened, loudenSoften);
             AddTransition(stateMachine, loudenSoften, HandPoseEvent.Closed, initial);
-            */
+
             #endregion
 
             #region Effect popup menus
