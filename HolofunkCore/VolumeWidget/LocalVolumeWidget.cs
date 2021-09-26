@@ -3,6 +3,7 @@
 using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
+using Holofunk.Viewpoint;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,8 @@ namespace Holofunk.VolumeWidget
     {
         private VolumeWidgetState state;
 
+        private Vector3 lastViewpointPosition;
+
         public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedVolumeWidget>();
 
         internal void Initialize(VolumeWidgetState state) => this.state = state;
@@ -29,6 +32,33 @@ namespace Holofunk.VolumeWidget
         #region MonoBehaviour
 
         public void Update()
+        {
+            UpdateViewpointPosition();
+
+            UpdateConeScale();
+        }
+
+        private void UpdateViewpointPosition()
+        {
+            if (lastViewpointPosition != state.ViewpointPosition)
+            {
+                Vector3 viewpointPosition = state.ViewpointPosition;
+
+                if (DistributedViewpoint.Instance != null)
+                {
+                    Matrix4x4 viewpointToLocalMatrix = DistributedViewpoint.Instance.ViewpointToLocalMatrix();
+                    Vector3 localLoopiePosition = viewpointToLocalMatrix.MultiplyPoint(viewpointPosition);
+                    lastViewpointPosition = viewpointPosition;
+
+                    transform.localPosition = localLoopiePosition;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Update the visual scale of the bi-cones appropriately.
+        /// </summary>
+        private void UpdateConeScale()
         {
             // Look up the state, to determine how tall which cone should be.
             if (state.VolumeRatio >= 1)
