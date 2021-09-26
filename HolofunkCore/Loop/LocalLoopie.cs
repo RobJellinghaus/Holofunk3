@@ -242,7 +242,7 @@ namespace Holofunk.Loop
                             float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, loopie.ViewpointPosition, log: true);
                             NowSoundTrackAPI.SetPan(trackId, panValue);
                             float updatedPan = NowSoundTrackAPI.Pan(trackId);
-                            HoloDebug.Log($"LocalLoopie.UpdateLoopiePanPosition: loopie {trackId}, viewpointPosition {loopie.ViewpointPosition}, panValue {panValue}, updatedPanValue {updatedPan}");
+                            // HoloDebug.Log($"LocalLoopie.UpdateLoopiePanPosition: loopie {trackId}, viewpointPosition {loopie.ViewpointPosition}, panValue {panValue}, updatedPanValue {updatedPan}");
                         }
                     }
                 }
@@ -628,7 +628,7 @@ namespace Holofunk.Loop
 
             if (log)
             {
-                HoloDebug.Log($"LocalLoopie.CalculatePanValue: soundPosition {soundPosition}, soundDirectionDotForwardDirection {soundDirectionDotSensorForwardDirection}, panValue {panValue}");
+                // HoloDebug.Log($"LocalLoopie.CalculatePanValue: soundPosition {soundPosition}, soundDirectionDotForwardDirection {soundDirectionDotSensorForwardDirection}, panValue {panValue}");
             }
 
             return panValue;

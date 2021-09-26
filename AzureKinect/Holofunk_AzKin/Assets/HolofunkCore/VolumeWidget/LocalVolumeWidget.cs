@@ -69,16 +69,11 @@ namespace Holofunk.VolumeWidget
 
         #endregion
 
-        #region IDistributedViewpoint
+        #region IDistributedVolumeWidget
 
         /// <summary>
-        /// Get the player with a given index.
+        /// Get the state.
         /// </summary>
-        /// <param name="index">Zero-based index of player to retrieve.</param>
-        /// <remarks>
-        /// Note that the index of the player here has nothing to do with the PlayerId field of the player;
-        /// this index is semantically meaningless and only used for iterating over currently known players.
-        /// </remarks>
         public VolumeWidgetState State => state;
 
         public void OnDelete()
@@ -95,6 +90,7 @@ namespace Holofunk.VolumeWidget
         /// </summary>
         public void UpdateState(VolumeWidgetState state)
         {
+            HoloDebug.Log($"LocalVolumeWidget.UpdateState: Updating to state {state}");
             this.state = state;
         }
 

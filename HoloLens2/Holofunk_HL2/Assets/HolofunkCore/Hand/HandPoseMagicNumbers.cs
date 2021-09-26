@@ -70,14 +70,9 @@ namespace Holofunk.Hand
         public static float FingertipSumDistanceToKnuckleSumDistanceRatioMaximum = 0.75f;
 
         /// <summary>
+        /// <summary>
         /// The required thumb tip altitude (above the proximal joint) to be considered "thumbs up".
         /// </summary>
-        /// <remarks>TODO: make this be hand-relative rather than world-space</remarks>
         public static readonly float ThumbTipAltitude = 0.02f; // 2 cm
-
-        /// <summary>Minimum ratio of the spread of hand joint X/Z coordinates to hand joint Y coordinates.</summary>
-        /// <remarks>In other words, the X/Z axes hand joint coordinate spread should be >3x the Y axis hand joint
-        /// coordinate spread.</remarks>
-        public static readonly float HandFlatnessFactor = 3;
     }
 }

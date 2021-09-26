@@ -42,5 +42,10 @@ namespace Holofunk.VolumeWidget
             writer.Put(ViewpointPosition);
             writer.Put(VolumeRatio);
         }
+
+        public override string ToString()
+        {
+            return $"VolumeWidget[pos {ViewpointPosition}, volRatio {VolumeRatio}]";
+        }
     }
 }
