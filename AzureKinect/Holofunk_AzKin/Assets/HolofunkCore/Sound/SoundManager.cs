@@ -334,6 +334,8 @@ namespace Holofunk.Sound
 
                 _isRecordingToFile = true;
                 NowSoundGraphAPI.StartRecording(recordingFile);
+
+                HoloDebug.Log($"SoundManger.StartRecording: started recording to {recordingFile}");
             }
         }
 
@@ -343,6 +345,8 @@ namespace Holofunk.Sound
             {
                 _isRecordingToFile = false;
                 NowSoundGraphAPI.StopRecording();
+
+                HoloDebug.Log($"SoundManger.StopRecording: stopped recording");
             }
         }
 

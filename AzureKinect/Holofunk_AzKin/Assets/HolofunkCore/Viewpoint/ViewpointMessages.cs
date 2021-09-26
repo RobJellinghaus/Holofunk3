@@ -51,12 +51,9 @@ namespace Holofunk.Viewpoint
                 DistributedObjectFactory.DistributedType.Viewpoint,
                 (local, message) => local.Initialize(message.Players));
 
-            Registrar.RegisterReliableMessage<UpdatePlayer, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
-                proxyCapability);
-            Registrar.RegisterReliableMessage<StartRecording, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
-                proxyCapability);
-            Registrar.RegisterReliableMessage<StopRecording, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(
-                proxyCapability);
+            Registrar.RegisterReliableMessage<UpdatePlayer, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(proxyCapability);
+            Registrar.RegisterReliableMessage<StartRecording, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(proxyCapability);
+            Registrar.RegisterReliableMessage<StopRecording, DistributedViewpoint, LocalViewpoint, IDistributedViewpoint>(proxyCapability);
         }
     }
 }
