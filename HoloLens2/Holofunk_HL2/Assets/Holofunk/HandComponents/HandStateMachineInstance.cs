@@ -274,7 +274,7 @@ namespace Holofunk.HandComponents
                         }
 
                         HoloDebug.Log($"HandStateMachineInstance.LouderSofter: initialHandY {initialHandYPosition}, currentHandY {currentHandYPosition}, currentRatioOfMax {currentRatioOfMaxDistance}, lastVolRatio {lastVolumeRatio}, newRatio {newRatio}");
-s
+
                         volumeRatio = newRatio;
 
                         VolumeWidgetState state = widget.State;
