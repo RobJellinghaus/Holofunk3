@@ -68,7 +68,7 @@ namespace Holofunk.VolumeWidget
             {
                 // the volume is increasing to some extent.
                 // What fraction of MaxVolumeRatio is it?
-                float upwardsFraction = state.VolumeRatio;
+                float upwardsFraction = state.VolumeRatio - 1;
 
                 // set the upward cone's scale equal to upwardsFraction
                 // we set the z scale because of the cone's rotation
@@ -79,7 +79,7 @@ namespace Holofunk.VolumeWidget
                 // set the downwards cone's Z scale to 0 (to flatten it)
                 Transform downCone = transform.GetChild(0).GetChild(1);
                 downCone.localScale = new Vector3(downCone.localScale.x, downCone.localScale.y, 0);
-                downCone.localPosition = new Vector3(upCone.localPosition.x, -1, upCone.localPosition.z);
+                downCone.localPosition = new Vector3(downCone.localPosition.x, -1, downCone.localPosition.z);
             }
             else
             {
@@ -95,8 +95,8 @@ namespace Holofunk.VolumeWidget
 
                 // set the downwards cone's Z scale to 0 (to flatten it)
                 Transform downCone = transform.GetChild(0).GetChild(1);
-                downCone.localScale = new Vector3(downCone.localScale.x, downCone.localScale.y, -downwardsFraction);
-                downCone.localPosition = new Vector3(downCone.localPosition.x, -downwardsFraction, downCone.localPosition.z);
+                downCone.localScale = new Vector3(downCone.localScale.x, downCone.localScale.y, downwardsFraction);
+                downCone.localPosition = new Vector3(downCone.localPosition.x, downwardsFraction, downCone.localPosition.z);
             }
         }
 
