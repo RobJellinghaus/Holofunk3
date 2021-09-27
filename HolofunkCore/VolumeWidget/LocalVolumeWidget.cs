@@ -47,10 +47,13 @@ namespace Holofunk.VolumeWidget
                 if (DistributedViewpoint.Instance != null)
                 {
                     Matrix4x4 viewpointToLocalMatrix = DistributedViewpoint.Instance.ViewpointToLocalMatrix();
-                    Vector3 localLoopiePosition = viewpointToLocalMatrix.MultiplyPoint(viewpointPosition);
-                    lastViewpointPosition = viewpointPosition;
+                    Vector3 localPosition = viewpointToLocalMatrix.MultiplyPoint(viewpointPosition);
 
-                    transform.localPosition = localLoopiePosition;
+                    transform.localPosition = localPosition;
+
+                    HoloDebug.Log($"LocalVolumeWidget.UpdateViewpointPosition: lastViewpointPosition {lastViewpointPosition}, stateViewpointPosition {state.ViewpointPosition}, local position {transform.localPosition}");
+
+                    lastViewpointPosition = viewpointPosition;
                 }
             }
         }
