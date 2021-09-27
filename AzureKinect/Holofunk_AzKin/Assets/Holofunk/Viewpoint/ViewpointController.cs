@@ -25,8 +25,8 @@ namespace Holofunk.Viewpoint
             }
             else
             {
-                SoundManager sm = SoundManager.Instance;
-                kinectManager.statusInfoText.text = $"AudioNow: {DistributedSoundClock.Instance?.TimeInfo.Value.TimeInSamples}";
+                // TODO: make this more useful? or conditional? something
+                kinectManager.statusInfoText.text = $"";
             }
         }
     }

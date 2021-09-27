@@ -12,7 +12,7 @@ namespace Holofunk.Core
         /// <summary>
         /// Number of frames over which to average, when smoothing positions and hand poses.
         /// </summary>
-        public static readonly int FramesToAverageWhenSmoothing = 20;
+        public static readonly int FramesToAverageWhenSmoothing = 10;
 
         /// <summary>
         /// The minimum dot product between the head's forward direction and the current head-to-sensor ray.
