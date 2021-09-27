@@ -89,7 +89,7 @@ namespace Holofunk.VolumeWidget
 
                 Transform upCone = transform.GetChild(0).GetChild(0);
                 upCone.localScale = new Vector3(upCone.localScale.x, upCone.localScale.y, 0);
-                upCone.localPosition = new Vector3(upCone.localPosition.x, 1, upCone.localPosition.z);
+                upCone.localPosition = new Vector3(upCone.localPosition.x, 0, upCone.localPosition.z);
 
                 // set the downward cone's scale equal to downwardsFraction
                 // we set the z scale because of the cone's rotation
