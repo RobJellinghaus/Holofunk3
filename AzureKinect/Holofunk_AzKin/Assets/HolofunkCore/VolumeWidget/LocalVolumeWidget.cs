@@ -85,7 +85,7 @@ namespace Holofunk.VolumeWidget
             {
                 // ratio is between 1/MaxVolumeRatio and 1.
                 // just take the reciprocal!
-                float downwardsFraction = 1 / state.VolumeRatio;
+                float downwardsFraction = (1 / state.VolumeRatio) - 1;
 
                 // set the upward cone's scale equal to upwardsFraction
                 // we set the z scale because of the cone's rotation
