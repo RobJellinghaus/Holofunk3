@@ -76,9 +76,9 @@ namespace Holofunk.VolumeWidget
                 upCone.localScale = new Vector3(upCone.localScale.x, upCone.localScale.y, upwardsFraction);
                 upCone.localPosition = new Vector3(upCone.localPosition.x, upwardsFraction, upCone.localPosition.z);
 
-                // set the downwards cone's Z scale to 0 (to flatten it)
+                // set the downwards cone's Z scale to almost 0 (to flatten it)
                 Transform downCone = transform.GetChild(0).GetChild(1);
-                downCone.localScale = new Vector3(downCone.localScale.x, downCone.localScale.y, 0);
+                downCone.localScale = new Vector3(downCone.localScale.x, downCone.localScale.y, 0.0001f);
                 downCone.localPosition = new Vector3(downCone.localPosition.x, -1, downCone.localPosition.z);
             }
             else
@@ -87,8 +87,9 @@ namespace Holofunk.VolumeWidget
                 // just take the reciprocal!
                 float downwardsFraction = (1 / state.VolumeRatio) - 1;
 
+                // set the upwards cone's Z scale to almost 0 (to flatten it)
                 Transform upCone = transform.GetChild(0).GetChild(0);
-                upCone.localScale = new Vector3(upCone.localScale.x, upCone.localScale.y, 0);
+                upCone.localScale = new Vector3(upCone.localScale.x, upCone.localScale.y, 0.0001f);
                 upCone.localPosition = new Vector3(upCone.localPosition.x, 0, upCone.localPosition.z);
 
                 // set the downward cone's scale equal to downwardsFraction
