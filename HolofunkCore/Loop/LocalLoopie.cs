@@ -476,7 +476,7 @@ namespace Holofunk.Loop
         public void MultiplyVolume(float ratio)
         {
             loopie.Volume *= ratio;
-            HoloDebug.Log($"LocalLoopie.MultiplyVolume: multiplied by {ratio}, volume is now {loopie.Volume}");
+            //HoloDebug.Log($"LocalLoopie.MultiplyVolume: multiplied by {ratio}, volume is now {loopie.Volume}");
 
             if (SoundManager.Instance != null)
             {

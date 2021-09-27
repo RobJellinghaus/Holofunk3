@@ -95,7 +95,7 @@ namespace Holofunk.Viewpoint
         /// </remarks>
         public void UpdatePlayer(PlayerState playerToUpdate)
         {
-            Core.HoloDebug.Log($"UpdatePlayer: updating player {playerToUpdate.PlayerId} with performer host address {playerToUpdate.PerformerHostAddress}");
+            //Core.HoloDebug.Log($"UpdatePlayer: updating player {playerToUpdate.PlayerId} with performer host address {playerToUpdate.PerformerHostAddress}");
             for (int i = 0; i < PlayerCount; i++)
             {
                 if (playerToUpdate.PlayerId == players[i].PlayerId)

@@ -120,7 +120,7 @@ namespace Holofunk.VolumeWidget
         /// </summary>
         public void UpdateState(VolumeWidgetState state)
         {
-            HoloDebug.Log($"LocalVolumeWidget.UpdateState: Updating to state {state}");
+            //HoloDebug.Log($"LocalVolumeWidget.UpdateState: Updating to state {state}");
             this.state = state;
         }
 
