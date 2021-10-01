@@ -62,19 +62,6 @@ namespace Holofunk.Perform
             {
                 ShowLoopieDistanceInTextPanel(textMesh, player, localPerformer);
             }
-
-            if (player.PlayerId != default(PlayerId))
-            {
-                if (player.ViewpointToPerformerMatrix != Matrix4x4.zero)
-                {
-                    // position the "FloatingTextPanel 2" at the transformed position of the sensor
-                    Vector3 sensorPosition = player.SensorPosition;
-                    Vector3 sensorPositionInPerformerSpace = player.ViewpointToPerformerMatrix.MultiplyPoint(sensorPosition);
-
-                    GameObject panel2 = GameObject.Find("StatusPanel2");
-                    panel2.transform.position = sensorPositionInPerformerSpace;
-                }
-            }
         }
 
         private void ShowLoopieDistanceInTextPanel(TextMesh textMesh, PlayerState player, LocalPerformer localPerformer)
