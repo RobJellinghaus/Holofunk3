@@ -1,14 +1,10 @@
 ﻿/// Copyright by Rob Jellinghaus.  All rights reserved.
 
-using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Hand;
 using Holofunk.HandComponents;
 using Holofunk.Loop;
 using Holofunk.Viewpoint;
-using Microsoft.MixedReality.Toolkit;
-using Microsoft.MixedReality.Toolkit.Input;
-using Microsoft.MixedReality.Toolkit.Utilities;
 using System;
 using System.Linq;
 using UnityEngine;
