@@ -159,7 +159,8 @@ namespace Holofunk.Sound
                 MagicNumbers.CentralFrequency,
                 MagicNumbers.OctaveDivisions,
                 MagicNumbers.CentralFrequencyBin,
-                MagicNumbers.FftBinSize);
+                MagicNumbers.FftBinSize,
+                (float)MagicNumbers.PreRecordingDuration);
 
             // now there should be some log messages
             WriteAllLogMessagesToUnityDebugConsole();

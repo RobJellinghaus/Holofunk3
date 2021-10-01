@@ -7,6 +7,7 @@ using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Loop;
 using Holofunk.Sound;
+using System;
 using UnityEngine;
 
 namespace Holofunk.Viewpoint
@@ -27,6 +28,8 @@ namespace Holofunk.Viewpoint
         private Vector3Averager leftHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
         private Vector3Averager rightHandAverager = new Vector3Averager(MagicNumbers.FramesToAverageWhenSmoothing);
 
+        private DateTime trackingLostTime = default;
+
         public void Update()
         {
             KinectManager kinectManager = KinectManager.Instance;
@@ -41,24 +44,38 @@ namespace Holofunk.Viewpoint
 
                 if (!tracked)
                 {
-                    currentPlayer = new PlayerState()
+                    if (currentPlayer.PerformerHostAddress == default)
                     {
-                        PlayerId = new PlayerId((byte)(playerIndex + 1)),
-                        Tracked = false,
-                        UserId = default(UserId),
-                        PerformerHostAddress = default(SerializedSocketAddress),
-                        SensorPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                        SensorForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
-                        HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                        HeadForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
-                        LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                        RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                        PerformerToViewpointMatrix = Matrix4x4.zero,
-                        ViewpointToPerformerMatrix = Matrix4x4.zero
-                    };
+                        currentPlayer = CreateDefaultPlayerState(playerIndex);
+                    }
+                    else
+                    {
+                        // currentPlayer was previously recognized but tracking is currently lost.
+                        // If this just occurred, start a timer.
+                        // If the timer is already set and has now expired, wipe the player state.
+                        if (trackingLostTime == default)
+                        {
+                            HoloDebug.Log($"Tracking lost");
+                            trackingLostTime = DateTime.Now;
+                        }
+                        else if (DateTime.Now - trackingLostTime > TimeSpan.FromSeconds((float)MagicNumbers.RecognitionLossDuration))
+                        {
+                            HoloDebug.Log($"Lost recognition after {MagicNumbers.RecognitionLossDuration} seconds");
+                            // we hardly knew ye
+                            currentPlayer = CreateDefaultPlayerState(playerIndex);
+                        }
+                    }
                 }
                 else
                 {
+                    if (trackingLostTime != default)
+                    {
+                        // we don't have to track anymore, we found them again
+                        // TODO: actually handle multiple person recognition (sob)
+                        HoloDebug.Log("Regained tracking before recognition loss; resuming tracking");
+                        trackingLostTime = default;
+                    }
+
                     ulong userId = kinectManager.GetUserIdByIndex(playerIndex);
 
                     headPositionAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.Nose));
@@ -103,6 +120,25 @@ namespace Holofunk.Viewpoint
 
                 // We currently use the prototype Viewpoint as the owned instance for this app.
                 distributedViewpoint.UpdatePlayer(currentPlayer);
+            }
+
+            static PlayerState CreateDefaultPlayerState(int playerIndex)
+            {
+                return new PlayerState()
+                {
+                    PlayerId = new PlayerId((byte)(playerIndex + 1)),
+                    Tracked = false,
+                    UserId = default,
+                    PerformerHostAddress = default,
+                    SensorPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                    SensorForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
+                    HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                    HeadForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
+                    LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                    RightHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                    PerformerToViewpointMatrix = Matrix4x4.zero,
+                    ViewpointToPerformerMatrix = Matrix4x4.zero
+                };
             }
         }
 

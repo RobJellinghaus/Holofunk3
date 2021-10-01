@@ -27,6 +27,23 @@ namespace Holofunk.Core
         /// </summary>
         public static readonly float HandRadius = 0.15f; // 15 cm = 6 inches. Pretty big but let's start there
 
+        /// <summary>
+        /// The number of seconds before we decide that recognition of a player is lost and we give up.
+        /// </summary>
+        public static readonly ContinuousDuration<Second> RecognitionLossDuration = 5;
+
+        #endregion
+
+        #region Sound
+
+        /// <summary>
+        /// Number of seconds worth of sound to "pre-record" when starting a new track.
+        /// </summary>
+        /// <remarks>
+        /// Functionally, this is latency compensation for the relatively slow and conservative gesture recognition.
+        /// </remarks>
+        public static readonly ContinuousDuration<Second> PreRecordingDuration = 0.1f;
+
         #endregion
 
         #region FFT
