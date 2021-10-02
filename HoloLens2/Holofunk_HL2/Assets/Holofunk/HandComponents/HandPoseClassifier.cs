@@ -100,6 +100,11 @@ namespace Holofunk.HandComponents
         float _thumbVectorDotUp;
 
         /// <summary>
+        /// True if the thumb tip is vertically above (e.g. higher Y coordinate than) all other fingertips.
+        /// </summary>
+        bool _thumbTipAboveAllOtherFingertips;
+
+        /// <summary>
         /// The minimum values of all joint coordinates (in X, Y, Z axes).
         /// </summary>
         Vector3 _minJointCoordinates;
@@ -150,6 +155,13 @@ namespace Holofunk.HandComponents
             _minJointCoordinates = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
             _maxJointCoordinates = new Vector3(float.MinValue, float.MinValue, float.MinValue);
 
+            _thumbTipAboveAllOtherFingertips = true;
+
+            Vector3 thumbTipPosition = JointPosition(handJointService, handedness, TrackedHandJoint.ThumbTip);
+            Vector3 thumbProximalPosition = JointPosition(handJointService, handedness, TrackedHandJoint.ThumbProximalJoint);
+            _thumbTipAltitude = thumbTipPosition.y - thumbProximalPosition.y;
+            _thumbVectorDotUp = Vector3.Dot((thumbTipPosition - thumbProximalPosition).normalized, Vector3.up);
+
             for (Finger finger = Finger.Thumb; finger <= Finger.Max; finger++)
             {
                 (FingerPose pose, float fingerColinearity) = CalculateFingerPose(handJointService, handedness, finger);
@@ -160,36 +172,37 @@ namespace Holofunk.HandComponents
                 float fingerEyeColinearity = CalculateFingerEyeColinearity(handJointService, gazeProvider, handedness, finger);
                 _fingerEyeColinearities[(int)finger] = fingerEyeColinearity;
 
+                // Now the finger pair extensions.
                 if (finger < Finger.Pinky)
                 {
-                    // Now the finger extensions.
                     (FingerPairExtension fingerExtension, float fingerPairColinearity) = CalculateFingerExtension(handJointService, handedness, finger);
                     _fingerPairExtensions[(int)finger] = fingerExtension;
                     _fingerPairColinearities[(int)finger] = fingerPairColinearity;
-
-                    // Now add in the distances between fingertips and knuckles, for bloom gesture detection.
-                    TrackedHandJoint[] finger0Joints = finger == Finger.Thumb ? _thumbPoseJoints : _fingerPoseJoints[(int)finger - 1];
-                    TrackedHandJoint[] finger1Joints = _fingerPoseJoints[(int)finger];
-                    // add in the fingertip-to-fingertip and knuckle-to-knuckle distances
-                    Vector3 finger0knuckle = JointPosition(handJointService, handedness, finger0Joints[1]);
-                    Vector3 finger1knuckle = JointPosition(handJointService, handedness, finger1Joints[1]);
-
-                    Vector3 finger0tip = JointPosition(handJointService, handedness, finger0Joints[finger0Joints.Length - 1]);
-                    Vector3 finger1tip = JointPosition(handJointService, handedness, finger1Joints[finger1Joints.Length - 1]);
-
-                    _sumPairwiseKnuckleDistances += (finger0knuckle - finger1knuckle).magnitude;
-                    _sumPairwiseFingertipDistances += (finger0tip - finger1tip).magnitude;
                 }
 
-                Vector3 thumbTipPosition = JointPosition(handJointService, handedness, TrackedHandJoint.ThumbTip);
-                Vector3 thumbProximalPosition = JointPosition(handJointService, handedness, TrackedHandJoint.ThumbProximalJoint);
-                _thumbTipAltitude = thumbTipPosition.y - thumbProximalPosition.y;
-                _thumbVectorDotUp = Vector3.Dot((thumbTipPosition - thumbProximalPosition).normalized, Vector3.up);
+                TrackedHandJoint[] fingerJoints = finger == Finger.Thumb ? _thumbPoseJoints : _fingerPoseJoints[(int)finger - 1];
+
+                // Now the inter-finger tip and knuckle distances.
+                if (finger > Finger.Thumb)
+                {
+                    // Now add in the distances between fingertips and knuckles, for bloom gesture detection.
+                    TrackedHandJoint[] priorFingerJoints = finger == Finger.Index ? _thumbPoseJoints : _fingerPoseJoints[(int)finger - 1];
+                    // add in the fingertip-to-fingertip and knuckle-to-knuckle distances
+                    Vector3 priorFingerKnuckle = JointPosition(handJointService, handedness, priorFingerJoints[1]);
+                    Vector3 fingerKnuckle = JointPosition(handJointService, handedness, fingerJoints[1]);
+
+                    Vector3 priorFingertip = JointPosition(handJointService, handedness, priorFingerJoints[priorFingerJoints.Length - 1]);
+                    Vector3 currentFingertip = JointPosition(handJointService, handedness, fingerJoints[fingerJoints.Length - 1]);
+
+                    _sumPairwiseKnuckleDistances += (priorFingerKnuckle - fingerKnuckle).magnitude;
+                    _sumPairwiseFingertipDistances += (priorFingertip - currentFingertip).magnitude;
+
+                    _thumbTipAboveAllOtherFingertips = _thumbTipAboveAllOtherFingertips && (currentFingertip.y < thumbTipPosition.y);
+                }
 
                 // Now the min/avg/max joint positions.
-                TrackedHandJoint[] jointsToTrack = finger == Finger.Thumb ? _thumbPoseJoints : _fingerPoseJoints[(int)finger - 1];
-                UpdateMinMaxAvg(JointPosition(handJointService, handedness, jointsToTrack[0]));
-                UpdateMinMaxAvg(JointPosition(handJointService, handedness, jointsToTrack[1]));
+                UpdateMinMaxAvg(JointPosition(handJointService, handedness, fingerJoints[1]));
+                UpdateMinMaxAvg(JointPosition(handJointService, handedness, fingerJoints[fingerJoints.Length - 1]));
 
                 void UpdateMinMaxAvg(Vector3 jointPosition)
                 {
@@ -262,7 +275,8 @@ namespace Holofunk.HandComponents
             else if (NoFingerPose(FingerPose.Extended))
             {
                 if (GetFingerPose(Finger.Thumb) == FingerPose.Extended
-                    && _thumbVectorDotUp > HandPoseMagicNumbers.ThumbVectorDotUpMinimum)
+                    && _thumbVectorDotUp > HandPoseMagicNumbers.ThumbVectorDotUpMinimum
+                    && _thumbTipAboveAllOtherFingertips)
                 {
                     _handPose = HandPoseValue.ThumbsUp;
                 }
