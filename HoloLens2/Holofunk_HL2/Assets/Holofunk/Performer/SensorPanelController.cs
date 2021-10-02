@@ -14,6 +14,13 @@ namespace Holofunk.Perform
     /// </summary>
     public class SensorPanelController : MonoBehaviour
     {
+        private Vector3 originalLocalScale;
+
+        public void Start()
+        {
+            originalLocalScale = transform.localScale;
+        }
+
         public void Update()
         {
             // do we currently have a Viewpoint?
@@ -35,6 +42,9 @@ namespace Holofunk.Perform
                 Vector3 sensorPosition = player.SensorPosition;
                 Vector3 sensorPositionInPerformerSpace = player.ViewpointToPerformerMatrix.MultiplyPoint(sensorPosition);
                 transform.position = sensorPositionInPerformerSpace;
+
+                // stabilize the scale
+                transform.localScale = originalLocalScale;
 
                 Text.text = "We see you!\nYou're ready to Holofunk!";
             }
