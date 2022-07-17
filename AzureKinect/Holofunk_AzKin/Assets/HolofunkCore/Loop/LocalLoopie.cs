@@ -231,18 +231,26 @@ namespace Holofunk.Loop
                     Vector3 localLoopiePosition = viewpointToLocalMatrix.MultiplyPoint(loopieViewpointPosition);
                     lastViewpointPosition = loopie.ViewpointPosition;
 
-                    transform.localPosition = localLoopiePosition;
-
-                    // if this is the sound manager, set the panning properly for the moving loopie
-                    if (SoundManager.Instance != null)
+                    // why the heck are there apparently some NaNs creeping in here?!?!
+                    if (float.IsNaN(localLoopiePosition.x) || float.IsNaN(localLoopiePosition.y) || float.IsNaN(localLoopiePosition.z))
                     {
-                        PlayerState firstPlayer = DistributedViewpoint.Instance.GetPlayer(0);
-                        if (firstPlayer.Tracked)
+                        // DEBUG LIKE MAD
+                    }   
+                    else
+                    {
+                        transform.localPosition = localLoopiePosition;
+
+                        // if this is the sound manager, set the panning properly for the moving loopie
+                        if (SoundManager.Instance != null)
                         {
-                            float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, loopie.ViewpointPosition, log: true);
-                            NowSoundTrackAPI.SetPan(trackId, panValue);
-                            float updatedPan = NowSoundTrackAPI.Pan(trackId);
-                            // HoloDebug.Log($"LocalLoopie.UpdateLoopiePanPosition: loopie {trackId}, viewpointPosition {loopie.ViewpointPosition}, panValue {panValue}, updatedPanValue {updatedPan}");
+                            PlayerState firstPlayer = DistributedViewpoint.Instance.GetPlayer(0);
+                            if (firstPlayer.Tracked)
+                            {
+                                float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, loopie.ViewpointPosition, log: true);
+                                NowSoundTrackAPI.SetPan(trackId, panValue);
+                                float updatedPan = NowSoundTrackAPI.Pan(trackId);
+                                // HoloDebug.Log($"LocalLoopie.UpdateLoopiePanPosition: loopie {trackId}, viewpointPosition {loopie.ViewpointPosition}, panValue {panValue}, updatedPanValue {updatedPan}");
+                            }
                         }
                     }
                 }
