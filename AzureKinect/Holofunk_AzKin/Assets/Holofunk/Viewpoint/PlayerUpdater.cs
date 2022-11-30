@@ -2,9 +2,7 @@
 
 using com.rfilkov.components;
 using com.rfilkov.kinect;
-using Distributed.State;
 using Holofunk.Core;
-using Holofunk.Distributed;
 using Holofunk.Loop;
 using Holofunk.Sound;
 using System;
