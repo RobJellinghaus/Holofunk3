@@ -81,6 +81,23 @@ namespace Holofunk.Controller
             hashCode = hashCode * -1521134295 + _isCaptured.GetHashCode();
             return hashCode;
         }
+
+        /// <summary>
+        /// Trigger is pressed.
+        /// </summary>
+        public static readonly JoyconEvent TriggerPressed = new JoyconEvent(Joycon.Button.SL, isDown: true);
+        /// <summary>
+        /// Trigger is released.
+        /// </summary>
+        public static readonly JoyconEvent TriggerReleased = new JoyconEvent(Joycon.Button.SL, isDown: false);
+        /// <summary>
+        /// Shoulder is pressed.
+        /// </summary>
+        public static readonly JoyconEvent ShoulderPressed = new JoyconEvent(Joycon.Button.SHOULDER_1, isDown: true);
+        /// <summary>
+        /// Shoulder is released.
+        /// </summary>
+        public static readonly JoyconEvent ShoulderReleased = new JoyconEvent(Joycon.Button.SHOULDER_1, isDown: false);
     }
 
     public class JoyconEventComparer : IComparer<JoyconEvent>

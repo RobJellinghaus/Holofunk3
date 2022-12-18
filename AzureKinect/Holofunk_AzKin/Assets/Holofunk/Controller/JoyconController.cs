@@ -16,10 +16,10 @@ using UnityEngine;
 
 namespace Holofunk.Controller
 {
-    using HandStateMachineInstance = StateMachineInstance<JoyconEvent>;
+    using ControllerStateMachineInstance = StateMachineInstance<JoyconEvent>;
 
     /// <summary>
-    /// Tracks the state and interactions of a player's controller.
+    /// Tracks the state and interactions of a single player's controller.
     /// </summary>
     /// <remarks>
     /// Arguably this is a horrible amount of code duplication vs. the HandController in the HoloLens 2 code
@@ -27,13 +27,23 @@ namespace Holofunk.Controller
     /// </remarks>
     public class JoyconController : MonoBehaviour, IModel
     {
+        /// <summary>
+        /// Index of the JoyCon selected by this Controller; -1 means "unknown".
+        /// </summary>
+        /// <remarks>
+        /// This is the index into the JoyconManager.Instance.j array. (Yes, JoyconManager
+        /// uses public instance variables... oh well)
+        /// </remarks>
+        [Tooltip("Joycon index in JoyconManager")]
+        public int joyconIndex = -1;
+
         [Tooltip("Which hand.")]
         public Side handSide = Side.Left;
 
         /// <summary>
         /// The state machine for handling the player's state.
         /// </summary>
-        private HandStateMachineInstance stateMachineInstance;
+        private ControllerStateMachineInstance stateMachineInstance;
 
         /// <summary>
         /// The loopie currently being held by this controller.
@@ -137,33 +147,37 @@ namespace Holofunk.Controller
         // Update is called once per frame
         void Update()
         {
-            PerformerState performer = DistributedPerformer.GetPerformer();
-
-            if (PerformerController.OurPlayer.PerformerHostAddress == default(SerializedSocketAddress))
+            if (joyconIndex == -1)
             {
-                // if we have a state machine, shut it down now.
+                // No joyCon yet associated with this player; nothing to do.
+                return;
+            }
+
+            Joycon thisJoycon = JoyconManager.Instance.j[joyconIndex];
+
+            if (thisJoycon.state == Joycon.state_.DROPPED)
+            {
                 if (stateMachineInstance != null)
                 {
                     stateMachineInstance.OnCompleted();
                     stateMachineInstance = null;
                 }
-
-                // we aren't recognized yet... state machine not running.
                 return;
             }
 
             // if we don't have a state machine instance yet, then we should now create one!
             // (it exists only as long as we are recognized by the viewpoint.)
             if (stateMachineInstance == null)
-            {
-                stateMachineInstance = new HandStateMachineInstance(HandPoseEvent.Opened, HandStateMachine.Instance, this);
+O           {
+                stateMachineInstance = new ControllerStateMachineInstance(JoyconEvent.TriggerReleased, ControllerStateMachine.Instance, this);
             }
 
-            // Update the hand state, based on the latest known Kinect hand state.
-            HandPoseValue currentHandPose = HandPose(ref performer);
-
-            // Pass the performer state down by ref for efficiency (no mutation please, it'll be lost)
-            UpdateHandState(currentHandPose, ref performer);
+            // Create any pressed/released events as appropriate.
+            if (thisJoycon.isLeft)
+            {
+                CheckButton(thisJoycon, Joycon.Button.SL, JoyconEvent.TriggerPressed, JoyconEvent.TriggerReleased);
+                CheckButton(thisJoycon, Joycon.Button.SHOULDER_1, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
+            }
 
             // Update the loopie's position while the user is holding it.
             if (currentlyHeldLoopie != null && DistributedViewpoint.Instance != null)
@@ -198,6 +212,18 @@ namespace Holofunk.Controller
             }
 
             ApplyToTouchedLoopies(touchedLoopieAction);
+        }
+
+        private void CheckButton(Joycon joycon, Joycon.Button button, JoyconEvent downEvent, JoyconEvent upEvent)
+        {
+            if (joycon.GetButtonDown(button))
+            {
+                stateMachineInstance.OnNext(downEvent);
+            }
+            if (joycon.GetButtonUp(button))
+            {
+                stateMachineInstance.OnNext(upEvent);
+            }
         }
 
         /// <summary>
@@ -256,39 +282,16 @@ namespace Holofunk.Controller
             : performer.RightHandPosition;
 
         /// <summary>
-        /// Update the hand state, and if appropriate, create an event and pass it to the state machine.
-        /// Note that BodyRelativeHandPosition may override currentHandState.
+        /// Update the controller state, and if appropriate, create an event and pass it to the state machine.
         /// </summary>
         /// <param name="handPose">Current (smoothed) hand pose from the performer</param>
         /// <param name="performer">The actual performer, passed by ref for efficiency (no mutation please)</param>
-        private void UpdateHandState(HandPoseValue handPose, ref PerformerState performer)
+        private void UpdateControllerState(Joycon thisJoycon)
         {
-            HandPoseEvent handPoseEvent = HandPoseEvent.FromHandPose(handPose);
-
-            if (!lastHandPose.HasValue)
+            if (thisJoycon.isLeft)
             {
-                // This is the very first hand state ever.
-                lastHandPose = handPose;
-
-                // Create state machine instance.
-                stateMachineInstance = new HandStateMachineInstance(HandPoseEvent.Unknown, HandStateMachine.Instance, this);
-
-                // TODO: do we do an immediate OnNext? If not, then shouldn't we be setting lastHandPose to Unknown here?
-                if (handPose != HandPoseValue.Unknown)
-                {
-                    stateMachineInstance.OnNext(handPoseEvent);
-                }
-            }
-            else
-            {
-                if (lastHandPose.Value != handPose)
-                {
-                    lastHandPose = handPose;
-                    
-                    stateMachineInstance.OnNext(handPoseEvent);
-
-                    HoloDebug.Log(HandStateMachineInstanceString);
-                }
+                // check left side buttons
+                if 
             }
         }
 
