@@ -6,7 +6,7 @@ using Holofunk.Menu;
 using Holofunk.Perform;
 using UnityEngine;
 
-namespace Holofunk.HandComponents
+namespace Holofunk.Controller
 {
     /// <summary>
     /// Component which manages the interaction between a JoyconController and a LocalMenu, possibly

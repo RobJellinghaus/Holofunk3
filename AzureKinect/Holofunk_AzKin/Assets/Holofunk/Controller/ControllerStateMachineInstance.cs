@@ -109,41 +109,11 @@ namespace Holofunk.Controller
 
             #endregion
 
-#if COMMENTED_OUT
-
-            #region Pointing
-
-            // Super-state of all pointing states.  Exists to provide a single place for "unknown" hand pose to
-            // be handled.
-            ControllerState pointing = new ControllerState(
-                "pointing",
-                armed,
-                (evt, joyconController) => { },
-                (evt, joyconController) => { });
-
-            AddTransition(stateMachine, pointing, JoyconEvent.Unknown, initial);
-            AddTransition(stateMachine, pointing, JoyconEvent.Opened, armed);
-
-            // EXPERIMENT: don't make flat leave pointing
-            AddTransition(stateMachine, pointing, JoyconEvent.Flat, pointing);
-
-            #endregion
-
             #region Mute/unmute
-
-            // we're pointing, and about to possibly mute/unmute
-            ControllerState pointingMuteUnmute = new ControllerState(
-                "pointingMuteUnmute",
-                pointing,
-                (evt, joyconController) => { },
-                (evt, joyconController) => { });
-
-            AddTransition(stateMachine, armed, JoyconEvent.Pointing1, pointingMuteUnmute);
-            AddTransition(stateMachine, initial, JoyconEvent.Pointing1, pointingMuteUnmute);
 
             ControllerState mute = new ControllerState(
                 "mute",
-                pointingMuteUnmute,
+                initial,
                 (evt, joyconController) =>
                 {
                     // initialize whether we are deleting the loopies we touch
@@ -185,13 +155,12 @@ namespace Holofunk.Controller
                 },
                 (evt, joyconController) => joyconController.SetTouchedLoopieAction(null));
 
-            AddTransition(stateMachine, pointingMuteUnmute, JoyconEvent.Closed, mute);
-            AddTransition(stateMachine, mute, JoyconEvent.Opened, armed);
-            AddTransition(stateMachine, mute, JoyconEvent.Pointing1, pointingMuteUnmute);
+            AddTransition(stateMachine, initial, JoyconEvent.DPadDownPressed, mute);
+            AddTransition(stateMachine, mute, JoyconEvent.DPadDownReleased, initial);
 
             ControllerState unmute = new ControllerState(
                 "unmute",
-                pointingMuteUnmute,
+                initial,
                 (evt, joyconController) =>
                 {
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
@@ -207,9 +176,8 @@ namespace Holofunk.Controller
                 },
                 (evt, joyconController) => joyconController.SetTouchedLoopieAction(null));
 
-            AddTransition(stateMachine, pointingMuteUnmute, JoyconEvent.Opened, unmute);
-            AddTransition(stateMachine, unmute, JoyconEvent.Closed, initial);
-            AddTransition(stateMachine, unmute, JoyconEvent.Pointing1, pointingMuteUnmute);
+            AddTransition(stateMachine, initial, JoyconEvent.DPadUpPressed, unmute);
+            AddTransition(stateMachine, unmute, JoyconEvent.DPadUpReleased, initial);
 
             #endregion
 
@@ -221,14 +189,14 @@ namespace Holofunk.Controller
             // we're pointing, and about to possibly mute/unmute
             ControllerState loudenSoften = new ControllerState(
                 "loudenSoften",
-                armed,
+                initial,
                 (evt, joyconController) =>
                 {
                     // keep the set of touched loopies stable, so whatever we originally touched is still what we louden/soften
                     joyconController.KeepTouchedLoopiesStable = true;
 
                     widget = joyconController.CreateVolumeWidget().GetComponent<DistributedVolumeWidget>();
-                    float initialHandYPosition = joyconController.GetLocalHandPosition().y;
+                    float initialHandYPosition = joyconController.GetViewpointHandPosition().y;
                     float lastVolumeRatio = 1;
                     float volumeRatio = 1;
 
@@ -236,7 +204,7 @@ namespace Holofunk.Controller
                     {
                         lastVolumeRatio = volumeRatio;
 
-                        float currentHandYPosition = joyconController.GetLocalHandPosition().y;
+                        float currentHandYPosition = joyconController.GetViewpointHandPosition().y;
 
                         float currentRatioOfMaxDistance = (currentHandYPosition - initialHandYPosition) / MagicNumbers.MaxVolumeHeightMeters;
                         // clamp this to (-1, 1) interval
@@ -285,11 +253,8 @@ namespace Holofunk.Controller
                     widget.Delete();
                 });
 
-            AddTransition(stateMachine, initial, JoyconEvent.Flat, loudenSoften);
-            AddTransition(stateMachine, armed, JoyconEvent.Flat, loudenSoften);
-            AddTransition(stateMachine, loudenSoften, JoyconEvent.Pointing1, loudenSoften);
-            AddTransition(stateMachine, loudenSoften, JoyconEvent.Opened, loudenSoften);
-            AddTransition(stateMachine, loudenSoften, JoyconEvent.Closed, initial);
+            AddTransition(stateMachine, initial, JoyconEvent.ShoulderPressed, loudenSoften);
+            AddTransition(stateMachine, loudenSoften, JoyconEvent.ShoulderReleased, initial);
 
             #endregion
 
@@ -297,51 +262,23 @@ namespace Holofunk.Controller
 
             // State machine construction ensures there will only be one of these per hand state machine instance,
             // so we can safely use a local variable here to close over this menu
-            GameObject menuGameObject = null;
+            var soundEffectMenu = CreateMenuState(initial, MenuKinds.SoundEffects);
 
-            var soundEffectMenu = new ControllerState(
-                "soundEffectMenu",
-                armed,
-                (evt, joyconController) =>
-                {
-                    // keep the set of touched loopies stable, so whatever we originally touched is still what we apply sound effects to
-                    joyconController.KeepTouchedLoopiesStable = true;
-
-                    menuGameObject = CreateMenu(joyconController, MenuKinds.SoundEffects);
-                    menuGameObject.GetComponent<MenuController>().Initialize(joyconController);
-                },
-                (evt, joyconController) => {
-                    // let loopies get (un)touched again
-                    joyconController.KeepTouchedLoopiesStable = false;
-
-                    HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(joyconController.TouchedLoopieIds);
-
-                    DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
-                    if (evt == JoyconEvent.Closed || evt == JoyconEvent.ThumbsUp)
-                    {
-                        HoloDebug.Log($"ControllerStateMachineInstance.soundEffectPopupMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
-                        menu.InvokeSelectedAction(touchedLoopies);
-                    }
-
-                    // delete it in the distributed sense.
-                    // note that locally, this will synchronously destroy the game object
-                    HoloDebug.Log($"ControllerStateMachineInstance.soundEffectPopupMenu.exit: deleting menu {menu.Id}");
-                    menu.Delete();
-                });
-
-            AddTransition(stateMachine, armed, JoyconEvent.Bloom, soundEffectMenu);
-            AddTransition(stateMachine, soundEffectMenu, JoyconEvent.Opened, armed);
-            AddTransition(stateMachine, soundEffectMenu, JoyconEvent.Closed, initial);
-            // debatable transition... but thumbs up looks like an intermediate pose on the way from bloom to closed
-            AddTransition(stateMachine, soundEffectMenu, JoyconEvent.ThumbsUp, initial);
-            AddTransition(stateMachine, soundEffectMenu, JoyconEvent.Flat, initial); // flaky recognition
-            AddTransition(stateMachine, soundEffectMenu, JoyconEvent.Pointing1, pointingMuteUnmute);
+            AddTransition(stateMachine, initial, JoyconEvent.DPadLeftPressed, soundEffectMenu);
+            AddTransition(stateMachine, soundEffectMenu, JoyconEvent.DPadLeftReleased, initial);
 
             #endregion
 
-#endif // COMMENTED_OUT
+            #region System popup menu
 
-#if ORIGINAL_CODE
+            ControllerState systemMenu = CreateMenuState(initial, MenuKinds.System);
+
+            AddTransition(stateMachine, initial, JoyconEvent.DPadRightPressed, systemMenu);
+            AddTransition(stateMachine, systemMenu, JoyconEvent.DPadRightReleased, initial);
+
+            #endregion
+
+#if PRE_DISTRIBUTED_MENU_CODE
 
             #region Effect popup menu
 
@@ -582,9 +519,45 @@ namespace Holofunk.Controller
 
             #endregion
 
-#endif // ORIGINAL_CODE
+#endif // PRE_DISTRIBUTED_MENU_CODE
 
             return stateMachine;
+        }
+
+        private static ControllerState CreateMenuState(ControllerState initial, MenuKinds menuKind)
+        {
+            // State machine construction ensures there will only be one of these per hand state machine instance,
+            // so we can safely use a local variable here to close over this menu
+            GameObject menuGameObject = null;
+
+            var menu = new ControllerState(
+                menuKind.ToString(),
+                initial,
+                (evt, joyconController) =>
+                {
+                    // keep the set of touched loopies stable, so whatever we originally touched is still what we apply sound effects to
+                    joyconController.KeepTouchedLoopiesStable = true;
+
+                    menuGameObject = CreateMenu(joyconController, menuKind);
+                    menuGameObject.GetComponent<MenuController>().Initialize(joyconController);
+                },
+                (evt, joyconController) => {
+                    // let loopies get (un)touched again
+                    joyconController.KeepTouchedLoopiesStable = false;
+
+                    HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(joyconController.TouchedLoopieIds);
+
+                    DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
+                    HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
+                    menu.InvokeSelectedAction(touchedLoopies);
+
+                    // delete it in the distributed sense.
+                    // note that locally, this will synchronously destroy the game object
+                    HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: deleting menu {menu.Id}");
+                    menu.Delete();
+                });
+
+            return menu;
         }
 
         private static GameObject CreateMenu(JoyconController joyconController, MenuKinds menuKind)
@@ -593,18 +566,10 @@ namespace Holofunk.Controller
             // get the forward direction towards the camera from the hand location
             Vector3 localHandPosition = joyconController.GetViewpointHandPosition();
 
-            // get the performer's head position
-            Vector3 localHeadPosition = joyconController.GetViewpointHeadPosition();
+            Vector3 viewpointHandPosition = localHandPosition;
+            // was previously: DistributedViewpoint.Instance.LocalToViewpointMatrix().MultiplyPoint(localHandPosition);
 
-            // default direction is BACKWARDS on Z so we actually want head facing towards hand vector
-            Vector3 localHandToHeadDirection = (localHandPosition - localHeadPosition).normalized;
-
-            // TODO: fix this up so Z is always towards viewpoint
-            Vector3 viewpointHandPosition = DistributedViewpoint.Instance.LocalToViewpointMatrix()
-                .MultiplyPoint(localHandPosition);
-
-            Vector3 viewpointForwardDirection = DistributedViewpoint.Instance.LocalToViewpointMatrix()
-                .MultiplyVector(localHandToHeadDirection);
+            Vector3 viewpointForwardDirection = Vector3.back; // TODO: or forward? Positive Z seems to be into scene, so try this first
 
             menuGameObject = DistributedMenu.Create(
                 menuKind,

@@ -191,17 +191,18 @@ namespace Holofunk.Controller
                 CheckButton(thisJoycon, Joycon.Button.SHOULDER_2, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
             }
 
-            /*
             // Update the loopie's position while the user is holding it.
             if (currentlyHeldLoopie != null && DistributedViewpoint.Instance != null)
             {
-                Vector3 performerHandPosition = HandPosition(ref performer);
+                Vector3 viewpointHandPosition = GetViewpointHandPosition();
+                /*
                 Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
                 if (localToViewpointMatrix != Matrix4x4.zero)
                 {
                     Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
-                    currentlyHeldLoopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
                 }
+                */
+                currentlyHeldLoopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
             }
 
             // Update touched loopies first, before updating hand position and state.
@@ -215,7 +216,7 @@ namespace Holofunk.Controller
             else
             {
                 // freely update the touched loopie list of the performer
-                UpdateTouchedLoopieList(ref performer);
+                UpdateTouchedLoopieList();
             }
 
             // apply the update action, if any
@@ -225,7 +226,6 @@ namespace Holofunk.Controller
             }
 
             ApplyToTouchedLoopies(touchedLoopieAction);
-            */
         }
 
         private void CheckButton(Joycon joycon, Joycon.Button button, JoyconEvent downEvent, JoyconEvent upEvent)

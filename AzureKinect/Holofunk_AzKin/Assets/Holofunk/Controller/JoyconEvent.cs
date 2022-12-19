@@ -98,6 +98,38 @@ namespace Holofunk.Controller
         /// Shoulder is released.
         /// </summary>
         public static readonly JoyconEvent ShoulderReleased = new JoyconEvent(Joycon.Button.SHOULDER_1, isDown: false);
+        /// <summary>
+        /// D-pad up is pressed.
+        /// </summary>
+        public static readonly JoyconEvent DPadUpPressed = new JoyconEvent(Joycon.Button.DPAD_UP, isDown: true);
+        /// <summary>
+        /// D-pad up is released.
+        /// </summary>
+        public static readonly JoyconEvent DPadUpReleased = new JoyconEvent(Joycon.Button.DPAD_UP, isDown: false);
+        /// <summary>
+        /// D-pad left is pressed.
+        /// </summary>
+        public static readonly JoyconEvent DPadLeftPressed = new JoyconEvent(Joycon.Button.DPAD_LEFT, isDown: true);
+        /// <summary>
+        /// D-pad left is released.
+        /// </summary>
+        public static readonly JoyconEvent DPadLeftReleased = new JoyconEvent(Joycon.Button.DPAD_LEFT, isDown: false);
+        /// <summary>
+        /// D-pad right is pressed.
+        /// </summary>
+        public static readonly JoyconEvent DPadRightPressed = new JoyconEvent(Joycon.Button.DPAD_RIGHT, isDown: true);
+        /// <summary>
+        /// D-pad right is released.
+        /// </summary>
+        public static readonly JoyconEvent DPadRightReleased = new JoyconEvent(Joycon.Button.DPAD_RIGHT, isDown: false);
+        /// <summary>
+        /// D-pad down is pressed.
+        /// </summary>
+        public static readonly JoyconEvent DPadDownPressed = new JoyconEvent(Joycon.Button.DPAD_DOWN, isDown: true);
+        /// <summary>
+        /// D-pad down is released.
+        /// </summary>
+        public static readonly JoyconEvent DPadDownReleased = new JoyconEvent(Joycon.Button.DPAD_DOWN, isDown: false);
     }
 
     public class JoyconEventComparer : IComparer<JoyconEvent>
