@@ -73,8 +73,8 @@ namespace Holofunk.Controller
             var initial = new ControllerState(
                 "initial",
                 root,
-                (evt, handController) => { },
-                (evt, handController) => { });
+                (evt, joyconController) => { },
+                (evt, joyconController) => { });
 
             var stateMachine = new ControllerStateMachine(initial, JoyconEventComparer.Instance);
 
@@ -84,18 +84,18 @@ namespace Holofunk.Controller
             ControllerState recording = new ControllerState(
                 "recording",
                 initial,
-                (evt, handController) =>
+                (evt, joyconController) =>
                 {
-                    //handController.PushSprite(SpriteId.HollowCircle, Color.red);
+                    //joyconController.PushSprite(SpriteId.HollowCircle, Color.red);
 
                     // Creating the loopie here assigns it as the currently held loopie.
                     // Note that this implicitly starts recording.
-                    handController.CreateLoopie();
+                    joyconController.CreateLoopie();
                 },
-                (evt, handController) =>
+                (evt, joyconController) =>
                 {
-                    //handController.PopGameObject();
-                    handController.ReleaseLoopie();
+                    //joyconController.PopGameObject();
+                    joyconController.ReleaseLoopie();
                 });
 
             AddTransition(
@@ -103,7 +103,7 @@ namespace Holofunk.Controller
                 initial,
                 JoyconEvent.TriggerPressed,
                 // Start recording if and only if 1) the UI didn't capture this, and 2) recording is enabled.
-                (evt, handController) => (!evt.IsCaptured /* && HolofunkController.Instance.IsRecordingEnabled */) ? recording : initial);
+                (evt, joyconController) => (!evt.IsCaptured /* && HolofunkController.Instance.IsRecordingEnabled */) ? recording : initial);
 
             AddTransition(stateMachine, recording, JoyconEvent.TriggerReleased, initial);
 
@@ -118,8 +118,8 @@ namespace Holofunk.Controller
             ControllerState pointing = new ControllerState(
                 "pointing",
                 armed,
-                (evt, handController) => { },
-                (evt, handController) => { });
+                (evt, joyconController) => { },
+                (evt, joyconController) => { });
 
             AddTransition(stateMachine, pointing, JoyconEvent.Unknown, initial);
             AddTransition(stateMachine, pointing, JoyconEvent.Opened, armed);
@@ -135,8 +135,8 @@ namespace Holofunk.Controller
             ControllerState pointingMuteUnmute = new ControllerState(
                 "pointingMuteUnmute",
                 pointing,
-                (evt, handController) => { },
-                (evt, handController) => { });
+                (evt, joyconController) => { },
+                (evt, joyconController) => { });
 
             AddTransition(stateMachine, armed, JoyconEvent.Pointing1, pointingMuteUnmute);
             AddTransition(stateMachine, initial, JoyconEvent.Pointing1, pointingMuteUnmute);
@@ -144,7 +144,7 @@ namespace Holofunk.Controller
             ControllerState mute = new ControllerState(
                 "mute",
                 pointingMuteUnmute,
-                (evt, handController) =>
+                (evt, joyconController) =>
                 {
                     // initialize whether we are deleting the loopies we touch
                     Option<bool> deletingTouchedLoopies = Option<bool>.None;
@@ -152,7 +152,7 @@ namespace Holofunk.Controller
                     // Collection of loopies that makes sure we don't flip loopies back and forth between states.
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
-                    handController.SetTouchedLoopieAction(loopie =>
+                    joyconController.SetTouchedLoopieAction(loopie =>
                     {
                         HoloDebug.Log($"ControllerStateMachineInstance.Mute.TouchedLoopieAction: loopie {loopie.Id}, IsMuted {loopie.GetLoopie().IsMuted}");
                         // the first loopie touched, if it's a double-mute, puts us into delete mode
@@ -183,7 +183,7 @@ namespace Holofunk.Controller
                         }
                     });
                 },
-                (evt, handController) => handController.SetTouchedLoopieAction(null));
+                (evt, joyconController) => joyconController.SetTouchedLoopieAction(null));
 
             AddTransition(stateMachine, pointingMuteUnmute, JoyconEvent.Closed, mute);
             AddTransition(stateMachine, mute, JoyconEvent.Opened, armed);
@@ -192,11 +192,11 @@ namespace Holofunk.Controller
             ControllerState unmute = new ControllerState(
                 "unmute",
                 pointingMuteUnmute,
-                (evt, handController) =>
+                (evt, joyconController) =>
                 {
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
-                    handController.SetTouchedLoopieAction(loopie =>
+                    joyconController.SetTouchedLoopieAction(loopie =>
                     {
                         if (!toggledLoopies.Contains(loopie.Id))
                         {
@@ -205,7 +205,7 @@ namespace Holofunk.Controller
                         }
                     });
                 },
-                (evt, handController) => handController.SetTouchedLoopieAction(null));
+                (evt, joyconController) => joyconController.SetTouchedLoopieAction(null));
 
             AddTransition(stateMachine, pointingMuteUnmute, JoyconEvent.Opened, unmute);
             AddTransition(stateMachine, unmute, JoyconEvent.Closed, initial);
@@ -222,21 +222,21 @@ namespace Holofunk.Controller
             ControllerState loudenSoften = new ControllerState(
                 "loudenSoften",
                 armed,
-                (evt, handController) =>
+                (evt, joyconController) =>
                 {
                     // keep the set of touched loopies stable, so whatever we originally touched is still what we louden/soften
-                    handController.KeepTouchedLoopiesStable = true;
+                    joyconController.KeepTouchedLoopiesStable = true;
 
-                    widget = handController.CreateVolumeWidget().GetComponent<DistributedVolumeWidget>();
-                    float initialHandYPosition = handController.GetLocalHandPosition().y;
+                    widget = joyconController.CreateVolumeWidget().GetComponent<DistributedVolumeWidget>();
+                    float initialHandYPosition = joyconController.GetLocalHandPosition().y;
                     float lastVolumeRatio = 1;
                     float volumeRatio = 1;
 
-                    handController.SetUpdateAction(() =>
+                    joyconController.SetUpdateAction(() =>
                     {
                         lastVolumeRatio = volumeRatio;
 
-                        float currentHandYPosition = handController.GetLocalHandPosition().y;
+                        float currentHandYPosition = joyconController.GetLocalHandPosition().y;
 
                         float currentRatioOfMaxDistance = (currentHandYPosition - initialHandYPosition) / MagicNumbers.MaxVolumeHeightMeters;
                         // clamp this to (-1, 1) interval
@@ -266,7 +266,7 @@ namespace Holofunk.Controller
                             new VolumeWidgetState { ViewpointPosition = state.ViewpointPosition, VolumeRatio = volumeRatio });
                     });
 
-                    handController.SetTouchedLoopieAction(loopie =>
+                    joyconController.SetTouchedLoopieAction(loopie =>
                     {
                         if (lastVolumeRatio != volumeRatio)
                         {
@@ -274,13 +274,13 @@ namespace Holofunk.Controller
                         }
                     });
                 },
-                (evt, handController) =>
+                (evt, joyconController) =>
                 {
                     // technically this should revert to whatever it was before, but we know in this case this was false before
-                    handController.KeepTouchedLoopiesStable = false;
+                    joyconController.KeepTouchedLoopiesStable = false;
 
-                    handController.SetUpdateAction(null);
-                    handController.SetTouchedLoopieAction(null);
+                    joyconController.SetUpdateAction(null);
+                    joyconController.SetTouchedLoopieAction(null);
 
                     widget.Delete();
                 });
@@ -302,19 +302,19 @@ namespace Holofunk.Controller
             var soundEffectMenu = new ControllerState(
                 "soundEffectMenu",
                 armed,
-                (evt, handController) =>
+                (evt, joyconController) =>
                 {
                     // keep the set of touched loopies stable, so whatever we originally touched is still what we apply sound effects to
-                    handController.KeepTouchedLoopiesStable = true;
+                    joyconController.KeepTouchedLoopiesStable = true;
 
-                    menuGameObject = CreateMenu(handController, MenuKinds.SoundEffects);
-                    menuGameObject.GetComponent<MenuController>().Initialize(handController);
+                    menuGameObject = CreateMenu(joyconController, MenuKinds.SoundEffects);
+                    menuGameObject.GetComponent<MenuController>().Initialize(joyconController);
                 },
-                (evt, handController) => {
+                (evt, joyconController) => {
                     // let loopies get (un)touched again
-                    handController.KeepTouchedLoopiesStable = false;
+                    joyconController.KeepTouchedLoopiesStable = false;
 
-                    HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(handController.TouchedLoopieIds);
+                    HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(joyconController.TouchedLoopieIds);
 
                     DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
                     if (evt == JoyconEvent.Closed || evt == JoyconEvent.ThumbsUp)
@@ -348,14 +348,14 @@ namespace Holofunk.Controller
             var effectPopupMenu = new HandToHandMenuState(
                 "effectPopupMenu",
                 pointing,
-                (evt, handController) => { },
-                (evt, handController) => { },
-                entryConversionFunc: handController =>
+                (evt, joyconController) => { },
+                (evt, joyconController) => { },
+                entryConversionFunc: joyconController =>
                 {
                     // ignore hand position changes, to prevent them from kicking out of popup mode
-                    handController.IgnoreHandPositionForHandPose = true;
+                    joyconController.IgnoreHandPositionForHandPose = true;
                     // keep the set of touched loopies stable, so whatever we originally touched is still what we apply sound effects to
-                    handController.KeepTouchedLoopiesStable = true;
+                    joyconController.KeepTouchedLoopiesStable = true;
 
                     GameObject menuControllerGameObject;
                     MenuController menuController;
@@ -364,12 +364,12 @@ namespace Holofunk.Controller
 
                     menuItems.Add(new MenuItem<JoyconController>(
                         "WIPE FX",
-                        _ => handController.RemoveAllSoundEffects()));
+                        _ => joyconController.RemoveAllSoundEffects()));
 
                     List<MenuItem<JoyconController>> volumeMenuSubitems = new List<MenuItem<JoyconController>>
                     {
-                        new MenuItem<JoyconController>("Louder", _ => handController.ChangeVolume(louder: true)),
-                        new MenuItem<JoyconController>("Softer", _ => handController.ChangeVolume(louder: false))
+                        new MenuItem<JoyconController>("Louder", _ => joyconController.ChangeVolume(louder: true)),
+                        new MenuItem<JoyconController>("Softer", _ => joyconController.ChangeVolume(louder: false))
                     };
 
                     MenuItem<JoyconController> volumeMenu = new MenuItem<JoyconController>("Volume", subItems: volumeMenuSubitems);
@@ -398,28 +398,28 @@ namespace Holofunk.Controller
                     }
 
                     MenuModel<JoyconController> handMenuModel = new MenuModel<JoyconController>(
-                        handController,
+                        joyconController,
                         // exit action: delete menu when exiting this state
                         () => UnityEngine.Object.Destroy(menuControllerGameObject),
                         menuItems.ToArray());
 
                     menuController.Initialize(
                         handMenuModel,
-                        handController,
-                        handController.HandPosition);
+                        joyconController,
+                        joyconController.HandPosition);
 
                     return handMenuModel;
                 },
                 exitConversionFunc: menuModel =>
                 {
-                    JoyconController handController = menuModel.Exit();
+                    JoyconController joyconController = menuModel.Exit();
 
                     // start paying attention to hand position again
-                    handController.IgnoreHandPositionForHandPose = false;
+                    joyconController.IgnoreHandPositionForHandPose = false;
                     // let loopies get (un)touched again
-                    handController.KeepTouchedLoopiesStable = false;
+                    joyconController.KeepTouchedLoopiesStable = false;
 
-                    return handController;
+                    return joyconController;
                 }
                 );
 
@@ -438,12 +438,12 @@ namespace Holofunk.Controller
             var systemPopupMenu = new ControllerState(
                 "systemMenu",
                 armed,
-                (evt, handController) =>
+                (evt, joyconController) =>
                 {
-                    menuGameObject = CreateMenu(handController, MenuKinds.System);
-                    menuGameObject.GetComponent<MenuController>().Initialize(handController);
+                    menuGameObject = CreateMenu(joyconController, MenuKinds.System);
+                    menuGameObject.GetComponent<MenuController>().Initialize(joyconController);
                 },
-                (evt, handController) => {
+                (evt, joyconController) => {
                     DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
                     if (evt == JoyconEvent.Closed)
                     {
@@ -467,17 +467,17 @@ namespace Holofunk.Controller
             var systemPopupMenu = new HandToHandMenuState(
                 "systemPopupMenu",
                 pointing,
-                (evt, handController) => { },
-                (evt, handController) => { },
-                entryConversionFunc: handController =>
+                (evt, joyconController) => { },
+                (evt, joyconController) => { },
+                entryConversionFunc: joyconController =>
                 {
                     // ignore hand position changes, to prevent them from kicking out of popup mode
-                    handController.IgnoreHandPositionForHandPose = true;
+                    joyconController.IgnoreHandPositionForHandPose = true;
 
                     bool areAnyLoopiesMine = false;
                     LoopieController.Apply(loopie =>
                     {
-                        if (loopie.CreatorPlayerIndex == handController.PlayerIndex)
+                        if (loopie.CreatorPlayerIndex == joyconController.PlayerIndex)
                         {
                             areAnyLoopiesMine = true;
                         }
@@ -486,7 +486,7 @@ namespace Holofunk.Controller
                     // Parent the menu in world space so it will hold still.
                     GameObject menuControllerGameObject = GameObject.Instantiate(
                         GameObject.Find(nameof(MenuController)),
-                        handController.transform.parent.parent);
+                        joyconController.transform.parent.parent);
 
                     MenuController menuController = menuControllerGameObject.GetComponent<MenuController>();
 
@@ -494,7 +494,7 @@ namespace Holofunk.Controller
                     {
                         LoopieController.Apply(loopie =>
                         {
-                            if (!areAnyLoopiesMine || loopie.CreatorPlayerIndex == handController.PlayerIndex)
+                            if (!areAnyLoopiesMine || loopie.CreatorPlayerIndex == joyconController.PlayerIndex)
                             {
                                 loopie.Delete();
                             }
@@ -507,7 +507,7 @@ namespace Holofunk.Controller
                         null);
 
                     MenuModel<JoyconController> handMenuModel = new MenuModel<JoyconController>(
-                        handController,
+                        joyconController,
                         () => UnityEngine.Object.Destroy(menuControllerGameObject),
                         deleteSoundsItem,
                         new MenuItem<JoyconController>(
@@ -548,24 +548,24 @@ namespace Holofunk.Controller
                             _ => NowSoundGraphAPI.SetBeatsPerMinute(NowSoundGraphAPI.TimeInfo().BeatsPerMinute - 1),
                             enabledFunc: _ => !LoopieController.AnyLoopiesExist),
                         new MenuItem<JoyconController>(
-                            handController.playerController.showBones ? "Hide bones" : "Show bones",
-                            _ => handController.playerController.showBones = !handController.playerController.showBones)
+                            joyconController.playerController.showBones ? "Hide bones" : "Show bones",
+                            _ => joyconController.playerController.showBones = !joyconController.playerController.showBones)
                         );
 
                     menuController.Initialize(
                         handMenuModel,
-                        handController,
-                        handController.HandPosition);
+                        joyconController,
+                        joyconController.HandPosition);
 
                     return handMenuModel;
 
                 },
                 exitConversionFunc: menuModel =>
                 {
-                    JoyconController handController = menuModel.Exit();
+                    JoyconController joyconController = menuModel.Exit();
                     // start paying attention to hand position again
-                    handController.IgnoreHandPositionForHandPose = false;
-                    return handController;
+                    joyconController.IgnoreHandPositionForHandPose = false;
+                    return joyconController;
                 }
                 );
 
@@ -587,19 +587,19 @@ namespace Holofunk.Controller
             return stateMachine;
         }
 
-        private static GameObject CreateMenu(JoyconController handController, MenuKinds menuKind)
+        private static GameObject CreateMenu(JoyconController joyconController, MenuKinds menuKind)
         {
             GameObject menuGameObject;
             // get the forward direction towards the camera from the hand location
-            PerformerState performerState = handController.DistributedPerformer.GetPerformer();
-            Vector3 localHandPosition = handController.HandPosition(ref performerState);
+            Vector3 localHandPosition = joyconController.GetViewpointHandPosition();
 
             // get the performer's head position
-            Vector3 localHeadPosition = performerState.HeadPosition;
+            Vector3 localHeadPosition = joyconController.GetViewpointHeadPosition();
 
             // default direction is BACKWARDS on Z so we actually want head facing towards hand vector
             Vector3 localHandToHeadDirection = (localHandPosition - localHeadPosition).normalized;
 
+            // TODO: fix this up so Z is always towards viewpoint
             Vector3 viewpointHandPosition = DistributedViewpoint.Instance.LocalToViewpointMatrix()
                 .MultiplyPoint(localHandPosition);
 

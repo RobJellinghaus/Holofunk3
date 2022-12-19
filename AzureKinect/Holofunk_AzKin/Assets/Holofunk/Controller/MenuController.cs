@@ -1,5 +1,6 @@
 ﻿/// Copyright by Rob Jellinghaus. All rights reserved.
 
+using Holofunk.Controller;
 using Holofunk.Core;
 using Holofunk.Menu;
 using Holofunk.Perform;
@@ -8,7 +9,7 @@ using UnityEngine;
 namespace Holofunk.HandComponents
 {
     /// <summary>
-    /// Component which manages the interaction between a HandController and a LocalMenu, possibly
+    /// Component which manages the interaction between a JoyconController and a LocalMenu, possibly
     /// selecting a different menu item.
     /// </summary>
     /// <remarks>
@@ -20,7 +21,7 @@ namespace Holofunk.HandComponents
         /// <summary>
         /// The hand manipulating this menu.
         /// </summary>
-        HandController _handController;
+        JoyconController _joyconController;
 
         /// <summary>
         /// The menu this controller controls is expected to be a sibling component in the same menu
@@ -36,23 +37,22 @@ namespace Holofunk.HandComponents
         /// <param name="rootPosition">The world space position the menu tree is being popped up at.</param>
         /// <param name="rootRelativePosition">The position of this (possibly multiply nested) child relative to
         /// the root of the whole menu tree; None if this is the root menu.</param>
-        public void Initialize(HandController handController)
+        public void Initialize(JoyconController joyconController)
         {
             Contract.Assert(Menu != null);
 
-            _handController = handController;
+            _joyconController = joyconController;
         }
 
         void Update()
         {
             // Find the hand.
-            if (_handController.DistributedPerformer == null)
+            if (_joyconController.DistributedPerformer == null)
             {
                 return;
             }
 
-            PerformerState performer = _handController.DistributedPerformer.GetPerformer();
-            Vector3 handPosition = _handController.HandPosition(ref performer);
+            Vector3 handPosition = _joyconController.GetViewpointHandPosition();
 
             // Find the closest item.
             Option<(int, MenuItemId)> closestItem = ((LocalMenu)Menu.LocalObject).GetClosestMenuItemIfAny(handPosition);

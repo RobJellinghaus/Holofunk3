@@ -37,6 +37,12 @@ namespace Holofunk.Controller
         [Tooltip("Joycon index in JoyconManager")]
         public int joyconIndex = -1;
 
+        /// <summary>
+        /// The player ID of this player, in the current viewpoint's view.
+        /// </summary>
+        [Tooltip("Player index in current viewpoint")]
+        public int playerIndex;
+
         [Tooltip("Which hand.")]
         public Side handSide = Side.Left;
 
@@ -168,17 +174,24 @@ namespace Holofunk.Controller
             // if we don't have a state machine instance yet, then we should now create one!
             // (it exists only as long as we are recognized by the viewpoint.)
             if (stateMachineInstance == null)
-O           {
+            {
                 stateMachineInstance = new ControllerStateMachineInstance(JoyconEvent.TriggerReleased, ControllerStateMachine.Instance, this);
             }
 
-            // Create any pressed/released events as appropriate.
+            // Create any pressed/released events as appropriate; we don't track each shoulder/trigger button
+            // separately.
             if (thisJoycon.isLeft)
             {
                 CheckButton(thisJoycon, Joycon.Button.SL, JoyconEvent.TriggerPressed, JoyconEvent.TriggerReleased);
                 CheckButton(thisJoycon, Joycon.Button.SHOULDER_1, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
             }
+            else
+            {
+                CheckButton(thisJoycon, Joycon.Button.SR, JoyconEvent.TriggerPressed, JoyconEvent.TriggerReleased);
+                CheckButton(thisJoycon, Joycon.Button.SHOULDER_2, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
+            }
 
+            /*
             // Update the loopie's position while the user is holding it.
             if (currentlyHeldLoopie != null && DistributedViewpoint.Instance != null)
             {
@@ -212,6 +225,7 @@ O           {
             }
 
             ApplyToTouchedLoopies(touchedLoopieAction);
+            */
         }
 
         private void CheckButton(Joycon joycon, Joycon.Button button, JoyconEvent downEvent, JoyconEvent upEvent)
@@ -229,11 +243,11 @@ O           {
         /// <summary>
         /// Update the local lists of loopies touched by this hand.
         /// </summary>
-        private void UpdateTouchedLoopieList(ref PerformerState performer)
+        private void UpdateTouchedLoopieList()
         {
             touchedLoopieIds.Clear();
 
-            Vector3 handPosition = HandPosition(ref performer);
+            Vector3 handPosition = GetViewpointHandPosition();
 
             foreach (LocalLoopie localLoopie in
                 DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
@@ -273,28 +287,6 @@ O           {
             return true;
         }
 
-        public HandPoseValue HandPose(ref PerformerState performer) => handSide == Side.Left
-            ? performer.LeftHandPose
-            : performer.RightHandPose;
-
-        public Vector3 HandPosition(ref PerformerState performer) => handSide == Side.Left
-            ? performer.LeftHandPosition
-            : performer.RightHandPosition;
-
-        /// <summary>
-        /// Update the controller state, and if appropriate, create an event and pass it to the state machine.
-        /// </summary>
-        /// <param name="handPose">Current (smoothed) hand pose from the performer</param>
-        /// <param name="performer">The actual performer, passed by ref for efficiency (no mutation please)</param>
-        private void UpdateControllerState(Joycon thisJoycon)
-        {
-            if (thisJoycon.isLeft)
-            {
-                // check left side buttons
-                if 
-            }
-        }
-
         /// <summary>
         /// Create a new loopie at the current hand's position, and set it as the currentlyHeldLoopie.
         /// </summary>
@@ -331,22 +323,19 @@ O           {
             return newWidget;
         }
 
-        public Vector3 GetViewpointHandPosition()
+        public Vector3 GetViewpointHeadPosition()
         {
-            // performer space hand position
-            Vector3 localHandPosition = GetLocalHandPosition();
-            Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
-            Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(localHandPosition);
-            return viewpointHandPosition;
+            // hand of this player
+            PlayerState thisPlayer = DistributedViewpoint.Instance.GetPlayer(playerIndex);
+            return thisPlayer.HeadPosition;
         }
 
-        public Vector3 GetLocalHandPosition()
+        public Vector3 GetViewpointHandPosition()
         {
-            PerformerState performer = DistributedPerformer.GetPerformer();
-
-            // performer space hand position
-            Vector3 performerHandPosition = HandPosition(ref performer);
-            return performerHandPosition;
+            // hand of this player
+            PlayerState thisPlayer = DistributedViewpoint.Instance.GetPlayer(playerIndex);
+            Vector3 viewpointHandPosition = handSide == Side.Left ? thisPlayer.LeftHandPosition : thisPlayer.RightHandPosition;
+            return viewpointHandPosition;
         }
 
         /// <summary>
@@ -382,5 +371,4 @@ O           {
             }
         }
     }
-    */
 }
