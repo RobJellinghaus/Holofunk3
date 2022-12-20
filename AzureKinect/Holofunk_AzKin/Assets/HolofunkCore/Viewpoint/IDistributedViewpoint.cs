@@ -35,19 +35,19 @@ namespace Holofunk.Viewpoint
         /// this index is semantically meaningless and only used for iterating over currently known players.
         /// </remarks>
         [LocalMethod]
-        PlayerState GetPlayer(int index);
+        PlayerState GetPlayerByIndex(int index);
 
         /// <summary>
         /// Try to get the player with this ID.
         /// </summary>
         /// <param name="playerId">The player ID to look for.</param>
         [LocalMethod]
-        bool TryGetPlayer(PlayerId playerId, out PlayerState player);
+        bool TryGetPlayerById(PlayerId playerId, out PlayerState player);
 
         /// <summary>
         /// Try to get the player that has been identified as being from the given host.
         /// </summary>
-        bool TryGetPlayer(SerializedSocketAddress hostAddress, out PlayerState player);
+        bool TryGetPlayerByHostAddress(SerializedSocketAddress hostAddress, out PlayerState player);
 
         /// <summary>
         /// Update the given player.

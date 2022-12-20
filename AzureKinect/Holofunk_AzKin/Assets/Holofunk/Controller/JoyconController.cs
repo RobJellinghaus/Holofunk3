@@ -35,7 +35,7 @@ namespace Holofunk.Controller
         /// uses public instance variables... oh well)
         /// </remarks>
         [Tooltip("Joycon index in JoyconManager")]
-        public int joyconIndex = -1;
+        public int joyconIndex = 0;
 
         /// <summary>
         /// The player ID of this player, in the current viewpoint's view.
@@ -153,7 +153,7 @@ namespace Holofunk.Controller
         // Update is called once per frame
         void Update()
         {
-            if (joyconIndex == -1)
+            if (joyconIndex == -1 || JoyconManager.Instance == null)
             {
                 // No joyCon yet associated with this player; nothing to do.
                 return;
@@ -192,7 +192,7 @@ namespace Holofunk.Controller
             }
 
             // Update the loopie's position while the user is holding it.
-            if (currentlyHeldLoopie != null && DistributedViewpoint.Instance != null)
+            if (currentlyHeldLoopie != null && DistributedViewpoint.Instance != null && DistributedViewpoint.Instance.PlayerCount > playerIndex)
             {
                 Vector3 viewpointHandPosition = GetViewpointHandPosition();
                 /*
@@ -326,14 +326,14 @@ namespace Holofunk.Controller
         public Vector3 GetViewpointHeadPosition()
         {
             // hand of this player
-            PlayerState thisPlayer = DistributedViewpoint.Instance.GetPlayer(playerIndex);
+            PlayerState thisPlayer = DistributedViewpoint.Instance.GetPlayerByIndex(playerIndex);
             return thisPlayer.HeadPosition;
         }
 
         public Vector3 GetViewpointHandPosition()
         {
             // hand of this player
-            PlayerState thisPlayer = DistributedViewpoint.Instance.GetPlayer(playerIndex);
+            PlayerState thisPlayer = DistributedViewpoint.Instance.GetPlayerByIndex(playerIndex);
             Vector3 viewpointHandPosition = handSide == Side.Left ? thisPlayer.LeftHandPosition : thisPlayer.RightHandPosition;
             return viewpointHandPosition;
         }

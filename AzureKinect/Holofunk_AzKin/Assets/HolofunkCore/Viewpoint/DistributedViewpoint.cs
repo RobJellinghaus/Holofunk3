@@ -65,19 +65,19 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// Get the player with a given index.
         /// </summary>
-        public PlayerState GetPlayer(int index) => GetLocalViewpoint().GetPlayer(index);
+        public PlayerState GetPlayerByIndex(int index) => GetLocalViewpoint().GetPlayerByIndex(index);
 
         /// <summary>
         /// Try to get the player with this ID.
         /// </summary>
-        public bool TryGetPlayer(PlayerId playerId, out PlayerState player)
-            => GetLocalViewpoint().TryGetPlayer(playerId, out player);
+        public bool TryGetPlayerById(PlayerId playerId, out PlayerState player)
+            => GetLocalViewpoint().TryGetPlayerById(playerId, out player);
 
         /// <summary>
         /// Try to get the player who's performing from this host.
         /// </summary>
-        public bool TryGetPlayer(SerializedSocketAddress hostAddress, out PlayerState player)
-            => GetLocalViewpoint().TryGetPlayer(hostAddress, out player);
+        public bool TryGetPlayerByHostAddress(SerializedSocketAddress hostAddress, out PlayerState player)
+            => GetLocalViewpoint().TryGetPlayerByHostAddress(hostAddress, out player);
 
         /// <summary>
         /// Update the given player.

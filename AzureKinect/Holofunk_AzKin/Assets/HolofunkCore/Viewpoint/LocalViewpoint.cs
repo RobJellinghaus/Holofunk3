@@ -55,7 +55,7 @@ namespace Holofunk.Viewpoint
         /// Note that the index of the player here has nothing to do with the PlayerId field of the player;
         /// this index is semantically meaningless and only used for iterating over currently known players.
         /// </remarks>
-        public PlayerState GetPlayer(int index)
+        public PlayerState GetPlayerByIndex(int index)
         {
             Contract.Requires(index >= 0);
             Contract.Requires(index < PlayerCount);
@@ -66,7 +66,7 @@ namespace Holofunk.Viewpoint
         /// <summary>
         /// Try to get the player with a given Id.
         /// </summary>
-        public bool TryGetPlayer(PlayerId playerId, out PlayerState player)
+        public bool TryGetPlayerById(PlayerId playerId, out PlayerState player)
         {
             for (int i = 0; i < players.Count; i++)
             {
@@ -127,19 +127,19 @@ namespace Holofunk.Viewpoint
 
             // what is our current host?
             SerializedSocketAddress hostAddress = DistributedObject.Host.SocketAddress;
-            TryGetPlayer(hostAddress, out PlayerState p);
+            TryGetPlayerByHostAddress(hostAddress, out PlayerState p);
             return p;
         }
 
         /// <summary>
         /// Try to get the player associated with the performer from the given host.
         /// </summary>
-        public bool TryGetPlayer(SerializedSocketAddress hostAddress, out PlayerState player)
+        public bool TryGetPlayerByHostAddress(SerializedSocketAddress hostAddress, out PlayerState player)
         {
             // do we have a player that has been recognized as being from here?
             for (int i = 0; i < PlayerCount; i++)
             {
-                PlayerState p = GetPlayer(i);
+                PlayerState p = GetPlayerByIndex(i);
                 if (p.PerformerHostAddress == hostAddress)
                 {
                     // found it!

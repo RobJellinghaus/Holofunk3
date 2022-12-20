@@ -86,7 +86,7 @@ namespace Holofunk.Perform
                 // we assigned it a player already and from that player we can get their assigned audio input
                 // (which we, the viewpoint, are in charge of assigning).
                 // TODO: add audio input ID assignment to player state
-                bool foundPlayer = DistributedViewpoint.Instance.TryGetPlayer(
+                bool foundPlayer = DistributedViewpoint.Instance.TryGetPlayerByHostAddress(
                     new SerializedSocketAddress(DistributedObject.OwningPeer),
                     out PlayerState playerState);
 
@@ -119,7 +119,7 @@ namespace Holofunk.Perform
                 // we assigned it a player already and from that player we can get their assigned audio input
                 // (which we, the viewpoint, are in charge of assigning).
                 // TODO: add audio input ID assignment to player state
-                bool foundPlayer = DistributedViewpoint.Instance.TryGetPlayer(
+                bool foundPlayer = DistributedViewpoint.Instance.TryGetPlayerByHostAddress(
                     new SerializedSocketAddress(DistributedObject.OwningPeer),
                     out PlayerState playerState);
 

@@ -243,7 +243,7 @@ namespace Holofunk.Loop
                         // if this is the sound manager, set the panning properly for the moving loopie
                         if (SoundManager.Instance != null)
                         {
-                            PlayerState firstPlayer = DistributedViewpoint.Instance.GetPlayer(0);
+                            PlayerState firstPlayer = DistributedViewpoint.Instance.GetPlayerByIndex(0);
                             if (firstPlayer.Tracked)
                             {
                                 float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, loopie.ViewpointPosition, log: true);

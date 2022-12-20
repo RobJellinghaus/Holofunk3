@@ -108,7 +108,7 @@ namespace Holofunk.Viewpoint
             bool trackedButUnidentified = false;
             for (int i = 0; i < theViewpoint.PlayerCount; i++)
             {
-                PlayerState player = theViewpoint.GetPlayer(i);
+                PlayerState player = theViewpoint.GetPlayerByIndex(i);
                 if (player.Tracked && player.PerformerHostAddress == default(SerializedSocketAddress))
                 {
                     trackedButUnidentified = true;
@@ -130,7 +130,7 @@ namespace Holofunk.Viewpoint
                 // Look for players that are raising one hand and looking at the Kinect
                 for (int i = 0; i < theViewpoint.PlayerCount; i++)
                 {
-                    PlayerState player = theViewpoint.GetPlayer(i);
+                    PlayerState player = theViewpoint.GetPlayerByIndex(i);
                     if (player.Tracked && player.PerformerHostAddress == default(SerializedSocketAddress))
                     {
                         // Are the player and the camera looking at each other?
