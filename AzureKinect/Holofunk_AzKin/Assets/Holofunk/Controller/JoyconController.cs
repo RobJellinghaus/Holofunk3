@@ -153,14 +153,21 @@ namespace Holofunk.Controller
         // Update is called once per frame
         void Update()
         {
-            if (joyconIndex == -1 || JoyconManager.Instance == null)
+            if (joyconIndex == -1 || JoyconManager.Instance == null || JoyconManager.Instance.j.Count <= joyconIndex)
             {
                 // No joyCon yet associated with this player; nothing to do.
                 return;
             }
 
+            if (DistributedViewpoint.Instance == null || DistributedViewpoint.Instance.PlayerCount <= playerIndex)
+            {
+                // No Kinect player recognized yet.
+                return;
+            }
+
             Joycon thisJoycon = JoyconManager.Instance.j[joyconIndex];
 
+            // Joycon bailed, we're done
             if (thisJoycon.state == Joycon.state_.DROPPED)
             {
                 if (stateMachineInstance != null)
@@ -192,7 +199,7 @@ namespace Holofunk.Controller
             }
 
             // Update the loopie's position while the user is holding it.
-            if (currentlyHeldLoopie != null && DistributedViewpoint.Instance != null && DistributedViewpoint.Instance.PlayerCount > playerIndex)
+            if (currentlyHeldLoopie != null)
             {
                 Vector3 viewpointHandPosition = GetViewpointHandPosition();
                 /*
@@ -232,10 +239,12 @@ namespace Holofunk.Controller
         {
             if (joycon.GetButtonDown(button))
             {
+                HoloDebug.Log($"Joycon button down: {button}: posting downEvent {downEvent}");
                 stateMachineInstance.OnNext(downEvent);
             }
             if (joycon.GetButtonUp(button))
             {
+                HoloDebug.Log($"Joycon button up: {button}: posting upEvent {upEvent}");
                 stateMachineInstance.OnNext(upEvent);
             }
         }

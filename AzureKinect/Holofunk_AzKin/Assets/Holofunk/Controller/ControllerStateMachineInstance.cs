@@ -101,11 +101,11 @@ namespace Holofunk.Controller
             AddTransition(
                 stateMachine,
                 initial,
-                JoyconEvent.TriggerPressed,
+                JoyconEvent.ShoulderPressed,
                 // Start recording if and only if 1) the UI didn't capture this, and 2) recording is enabled.
                 (evt, joyconController) => (!evt.IsCaptured /* && HolofunkController.Instance.IsRecordingEnabled */) ? recording : initial);
 
-            AddTransition(stateMachine, recording, JoyconEvent.TriggerReleased, initial);
+            AddTransition(stateMachine, recording, JoyconEvent.ShoulderReleased, initial);
 
             #endregion
 
@@ -252,9 +252,10 @@ namespace Holofunk.Controller
 
                     widget.Delete();
                 });
-
+            /*
             AddTransition(stateMachine, initial, JoyconEvent.ShoulderPressed, loudenSoften);
             AddTransition(stateMachine, loudenSoften, JoyconEvent.ShoulderReleased, initial);
+            */
 
             #endregion
 
