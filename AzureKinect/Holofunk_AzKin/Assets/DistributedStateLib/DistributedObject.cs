@@ -53,6 +53,9 @@ namespace Distributed.State
         /// </remarks>
         public bool IsOwner => OwningPeer == null;
 
+        /// <summary>The address of the owner.</summary>
+        public SerializedSocketAddress OwnerAddress => IsOwner ? Host.SocketAddress : new SerializedSocketAddress(OwningPeer);
+
         /// <summary>
         /// The id of this object; unique within its owning DistributedPeer.
         /// </summary>

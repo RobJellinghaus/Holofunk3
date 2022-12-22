@@ -63,10 +63,10 @@ namespace Holofunk.Loop
             RouteReliableMessage(isRequest => new ClearSoundEffects(Id, isRequest: !IsOwner));
 
         public void SetCurrentInfo(SignalInfo signalInfo, TrackInfo trackInfo, ulong timestamp) =>
-            RouteBroadcastMessage(new SetCurrentInfo(Id, new SerializedSocketAddress(OwningPeer), signalInfo, trackInfo, timestamp));
+            RouteBroadcastMessage(new SetCurrentInfo(Id, OwnerAddress, signalInfo, trackInfo, timestamp));
 
         public void SetCurrentWaveform(float[] frequencyBins, ulong timestamp) =>
-            RouteBroadcastMessage(new SetCurrentWaveform(Id, new SerializedSocketAddress(OwningPeer), frequencyBins, timestamp));
+            RouteBroadcastMessage(new SetCurrentWaveform(Id, OwnerAddress, frequencyBins, timestamp));
 
         #endregion
 

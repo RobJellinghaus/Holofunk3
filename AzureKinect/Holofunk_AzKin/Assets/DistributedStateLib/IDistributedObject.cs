@@ -33,6 +33,11 @@ namespace Distributed.State
         NetPeer OwningPeer { get; }
 
         /// <summary>
+        /// The address of the owner.
+        /// </summary>
+        SerializedSocketAddress OwnerAddress { get; }
+
+        /// <summary>
         /// Is this object the original, owning instance?
         /// </summary>
         /// <remarks>

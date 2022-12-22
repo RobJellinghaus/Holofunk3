@@ -26,6 +26,9 @@ namespace Holofunk.Distributed
 
         public NetPeer OwningPeer { get; private set; }
 
+        /// <summary>The address of the owner.</summary>
+        public SerializedSocketAddress OwnerAddress => IsOwner ? Host.SocketAddress : new SerializedSocketAddress(OwningPeer);
+
         public bool IsOwner => OwningPeer == null;
 
         public abstract ILocalObject LocalObject { get; }

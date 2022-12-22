@@ -169,7 +169,7 @@ namespace Holofunk.Viewpoint
                                 if (performance.LeftHandPose == HandPoseValue.Opened
                                     || performance.RightHandPose == HandPoseValue.Opened)
                                 {
-                                    var owningPeerAddress = new SerializedSocketAddress(thePerformer.OwningPeer);
+                                    var owningPeerAddress = thePerformer.OwnerAddress;
                                     if (player.PerformerHostAddress == owningPeerAddress)
                                     {
                                         HoloDebug.Log($"Recognized known performer at address {player.PerformerHostAddress}!");
@@ -177,7 +177,7 @@ namespace Holofunk.Viewpoint
                                     else
                                     {
                                         // you're the one for us
-                                        player.PerformerHostAddress = new SerializedSocketAddress(thePerformer.OwningPeer);
+                                        player.PerformerHostAddress = thePerformer.OwnerAddress;
 
                                         // The point of this code is to calculate the transformation matrices between viewpoint
                                         // space and performer space, using the performer's head as the origin of the conversion.
