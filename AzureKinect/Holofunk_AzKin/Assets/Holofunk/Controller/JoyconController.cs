@@ -185,23 +185,9 @@ namespace Holofunk.Controller
                 stateMachineInstance = new ControllerStateMachineInstance(JoyconEvent.TriggerReleased, ControllerStateMachine.Instance, this);
             }
 
-            // TEMP: Spam any pressed buttons.
-            {
-                for (Joycon.Button b = Joycon.Button.DPAD_DOWN; b <= Joycon.Button.SHOULDER_2; b++)
-                {
-                    if (thisJoycon.GetButtonDown(b))
-                    {
-                        HoloDebug.Log($"Joycon button down: {b}");
-                    }
-                }
-            }
-
             // Create any pressed/released events as appropriate; we don't track each shoulder/trigger button
             // separately.
-            CheckButton(thisJoycon, Joycon.Button.SL, JoyconEvent.TriggerPressed, JoyconEvent.TriggerReleased);
-            CheckButton(thisJoycon, Joycon.Button.SHOULDER_1, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
-            CheckButton(thisJoycon, Joycon.Button.SR, JoyconEvent.TriggerPressed, JoyconEvent.TriggerReleased);
-            CheckButton(thisJoycon, Joycon.Button.SHOULDER_2, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
+            CheckButtons(thisJoycon);
 
             // Update the loopie's position while the user is holding it.
             if (currentlyHeldLoopie != null)
@@ -241,17 +227,24 @@ namespace Holofunk.Controller
             ApplyToTouchedLoopies(touchedLoopieAction);
         }
 
-        private void CheckButton(Joycon joycon, Joycon.Button button, JoyconEvent downEvent, JoyconEvent upEvent)
+        /// <summary>
+        /// Fire down/up events for any pressed/released buttons in the past interval.
+        /// </summary>
+        /// <param name="joycon"></param>
+        private void CheckButtons(Joycon joycon)
         {
-            if (joycon.GetButtonDown(button))
+            for (Joycon.Button b = Joycon.Button.DPAD_DOWN; b <= Joycon.Button.SHOULDER_2; b++)
             {
-                HoloDebug.Log($"Joycon button down: {button}: posting downEvent {downEvent}");
-                stateMachineInstance.OnNext(downEvent);
-            }
-            if (joycon.GetButtonUp(button))
-            {
-                HoloDebug.Log($"Joycon button up: {button}: posting upEvent {upEvent}");
-                stateMachineInstance.OnNext(upEvent);
+                if (joycon.GetButtonDown(b))
+                {
+                    HoloDebug.Log($"Joycon button down: {b}: posting down event");
+                    stateMachineInstance.OnNext(new JoyconEvent(b, isDown: true));
+                }
+                if (joycon.GetButtonUp(b))
+                {
+                    HoloDebug.Log($"Joycon button up: {b}: posting up event");
+                    stateMachineInstance.OnNext(new JoyconEvent(b, isDown: false));
+                }
             }
         }
 

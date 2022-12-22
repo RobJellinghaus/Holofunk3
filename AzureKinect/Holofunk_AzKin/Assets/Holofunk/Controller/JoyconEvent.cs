@@ -85,11 +85,11 @@ namespace Holofunk.Controller
         /// <summary>
         /// Trigger is pressed.
         /// </summary>
-        public static readonly JoyconEvent TriggerPressed = new JoyconEvent(Joycon.Button.SL, isDown: true);
+        public static readonly JoyconEvent TriggerPressed = new JoyconEvent(Joycon.Button.SHOULDER_2, isDown: true);
         /// <summary>
         /// Trigger is released.
         /// </summary>
-        public static readonly JoyconEvent TriggerReleased = new JoyconEvent(Joycon.Button.SL, isDown: false);
+        public static readonly JoyconEvent TriggerReleased = new JoyconEvent(Joycon.Button.SHOULDER_2, isDown: false);
         /// <summary>
         /// Shoulder is pressed.
         /// </summary>
