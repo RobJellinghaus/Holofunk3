@@ -70,8 +70,9 @@ namespace com.rfilkov.components
                 lines = new LineRenderer[jointsCount];
             }
 
-            // always mirrored OR NOT
-            initialRotation = Quaternion.Euler(new Vector3(0f, /*180f*/0f, 0f));
+            // always mirrored OR NOT; see also Kinect4AzureInterface.cs:442
+            bool isFlipped = true;
+            initialRotation = Quaternion.Euler(new Vector3(0f, isFlipped ? 180f : 0f, 0f));
 
             //if (!foregroundCamera)
             //{

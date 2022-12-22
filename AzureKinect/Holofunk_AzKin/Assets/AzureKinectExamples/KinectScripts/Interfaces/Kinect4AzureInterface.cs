@@ -439,7 +439,7 @@ namespace com.rfilkov.kinect
             sensorData.sensorCaps = sensorCaps;
 
             // flip color & depth image vertically
-            bool isFlipped = false; // HOLOFUNK: originally true
+            bool isFlipped = true; // HOLOFUNK: back to mirrorvania... see also SkeletonOverlayer.cs:73
             sensorData.colorImageScale = new Vector3(isFlipped ? -1f : 1f, -1f, 1f);
             sensorData.depthImageScale = new Vector3(isFlipped ? -1f : 1f, -1f, 1f);
             sensorData.infraredImageScale = new Vector3(isFlipped ? -1f : 1f, -1f, 1f);

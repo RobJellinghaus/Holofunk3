@@ -185,18 +185,23 @@ namespace Holofunk.Controller
                 stateMachineInstance = new ControllerStateMachineInstance(JoyconEvent.TriggerReleased, ControllerStateMachine.Instance, this);
             }
 
+            // TEMP: Spam any pressed buttons.
+            {
+                for (Joycon.Button b = Joycon.Button.DPAD_DOWN; b <= Joycon.Button.SHOULDER_2; b++)
+                {
+                    if (thisJoycon.GetButtonDown(b))
+                    {
+                        HoloDebug.Log($"Joycon button down: {b}");
+                    }
+                }
+            }
+
             // Create any pressed/released events as appropriate; we don't track each shoulder/trigger button
             // separately.
-            if (thisJoycon.isLeft)
-            {
-                CheckButton(thisJoycon, Joycon.Button.SL, JoyconEvent.TriggerPressed, JoyconEvent.TriggerReleased);
-                CheckButton(thisJoycon, Joycon.Button.SHOULDER_1, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
-            }
-            else
-            {
-                CheckButton(thisJoycon, Joycon.Button.SR, JoyconEvent.TriggerPressed, JoyconEvent.TriggerReleased);
-                CheckButton(thisJoycon, Joycon.Button.SHOULDER_2, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
-            }
+            CheckButton(thisJoycon, Joycon.Button.SL, JoyconEvent.TriggerPressed, JoyconEvent.TriggerReleased);
+            CheckButton(thisJoycon, Joycon.Button.SHOULDER_1, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
+            CheckButton(thisJoycon, Joycon.Button.SR, JoyconEvent.TriggerPressed, JoyconEvent.TriggerReleased);
+            CheckButton(thisJoycon, Joycon.Button.SHOULDER_2, JoyconEvent.ShoulderPressed, JoyconEvent.ShoulderReleased);
 
             // Update the loopie's position while the user is holding it.
             if (currentlyHeldLoopie != null)
@@ -209,6 +214,7 @@ namespace Holofunk.Controller
                     Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
                 }
                 */
+                HoloDebug.Log($"Updated viewport hand position of loopie {currentlyHeldLoopie} to {viewpointHandPosition}");
                 currentlyHeldLoopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
             }
 
