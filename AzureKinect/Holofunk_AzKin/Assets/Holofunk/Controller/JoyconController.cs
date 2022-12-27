@@ -273,9 +273,9 @@ namespace Holofunk.Controller
             // logging changes in touched loopie list
             if (!EqualLists(previouslyTouchedLoopieIds, touchedLoopieIds))
             {
+                HoloDebug.Log($"Updating {handSide} touched loopies: prior [{string.Join(", ", previouslyTouchedLoopieIds)}], current [{string.Join(", ", touchedLoopieIds)}]");
                 previouslyTouchedLoopieIds.Clear();
                 previouslyTouchedLoopieIds.AddRange(touchedLoopieIds);
-                HoloDebug.Log($"Updating {handSide} touched loopies: prior [{string.Join(", ", previouslyTouchedLoopieIds)}], current [{string.Join(", ", touchedLoopieIds)}]");
             }
         }
 
