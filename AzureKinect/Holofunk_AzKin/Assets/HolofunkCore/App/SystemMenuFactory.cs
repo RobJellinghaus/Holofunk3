@@ -1,11 +1,13 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using Holofunk.Sound;
 using System;
+using Holofunk.Loop;
 using Holofunk.Menu;
+using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using System.Collections.Generic;
 using Distributed.State;
+using Holofunk.Distributed;
 
 namespace Holofunk.App
 {
@@ -64,6 +66,22 @@ namespace Holofunk.App
                 }
             };
 
+            Action deleteMySoundsAction = () =>
+            {
+                // Collect all the loopie IDs first
+                HashSet<DistributedLoopie> loopies = new HashSet<DistributedLoopie>();
+                foreach (DistributedLoopie loopie in DistributedObjectFactory.FindComponentInstances<DistributedLoopie>(
+                    DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
+                {
+                    loopies.Add(loopie);
+                };
+                foreach (DistributedLoopie loopie in loopies)
+                {
+                    // one-way, immediate message
+                    loopie.Delete();
+                }
+            };
+
             List<(string, Action<HashSet<DistributedId>>, MenuStructure)> items = 
                 new List<(string, Action<HashSet<DistributedId>>, MenuStructure)>();
 
@@ -71,7 +89,7 @@ namespace Holofunk.App
                     ($"=>{bpm + 10}", _ => setBPMAction(10), null),
                     ($"{bpm - 10}<=", _ => setBPMAction(-10), null))));
 
-            items.Add(("Delete My Sounds", _ => { }, null));
+            items.Add(("Delete My Sounds", _ => deleteMySoundsAction(), null));
 
             if (isViewpoint)
             {

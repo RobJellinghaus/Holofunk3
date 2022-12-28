@@ -76,13 +76,24 @@ namespace Holofunk.Viewpoint
 
                     ulong userId = kinectManager.GetUserIdByIndex(playerIndex);
 
-                    headPositionAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.Nose));
+                    Vector3 rawHeadPosition;
+                    if (TryGetJointWorldSpacePosition(userId, KinectInterop.JointType.Nose, out rawHeadPosition))
+                    {
+                        headPositionAverager.Update(rawHeadPosition);
+                    }
 
                     Vector3 headForwardDirection = GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.Nose);
                     headForwardDirectionAverager.Update(headForwardDirection);
 
-                    leftHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft));
-                    rightHandAverager.Update(GetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight));
+                    Vector3 rawLeftHandPosition, rawRightHandPosition;
+                    if (TryGetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft, out rawLeftHandPosition))
+                    {
+                        leftHandAverager.Update(rawLeftHandPosition);
+                    }
+                    if (TryGetJointWorldSpacePosition(userId, KinectInterop.JointType.HandRight, out rawRightHandPosition))
+                    {
+                        rightHandAverager.Update(rawRightHandPosition);
+                    }
 
                     // Keep the performer host address and the performer-to-viewpoint transform, if known.
                     currentPlayer = new PlayerState()
@@ -140,7 +151,7 @@ namespace Holofunk.Viewpoint
             }
         }
 
-        private Vector3 GetJointWorldSpacePosition(ulong userId, KinectInterop.JointType joint)
+        private bool TryGetJointWorldSpacePosition(ulong userId, KinectInterop.JointType joint, out Vector3 result)
         {
             KinectManager kinectManager = KinectManager.Instance;
 
@@ -150,7 +161,8 @@ namespace Holofunk.Viewpoint
             bool tracked = KinectManager.Instance.IsJointTracked(userId, joint);
             if (!tracked)
             {
-                return new Vector3(float.NaN, float.NaN, float.NaN);
+                result = Vector3.zero;
+                return false;
             }
             else
             {
@@ -166,7 +178,8 @@ namespace Holofunk.Viewpoint
                 }
                 */
 
-                return posJoint;
+                result = posJoint;
+                return true;
             }
         }
 

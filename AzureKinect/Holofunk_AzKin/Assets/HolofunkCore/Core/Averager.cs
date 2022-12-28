@@ -21,7 +21,7 @@ namespace Holofunk.Core
         T _total;
 
         // the current average, so we don't have race conditions about it
-        T m_average;
+        T _average;
 
         public Averager(int capacity)
         {
@@ -34,6 +34,7 @@ namespace Holofunk.Core
         /// <summary>Update this Averager with another data point.</summary>
         public void Update(T nextT)
         {
+            // don't update invalid values
             if (!IsValid(nextT)) {
                 return;
             }
@@ -50,7 +51,7 @@ namespace Holofunk.Core
             _total = Add(_total, nextT);
             _storage[_index] = nextT;
             _index++;
-            m_average = Divide(_total, _storageFull ? _storage.Length : _index);
+            _average = Divide(_total, _storageFull ? _storage.Length : _index);
         }
 
         /// <summary>Get the average; invalid if Average.IsEmpty.</summary>
@@ -58,7 +59,7 @@ namespace Holofunk.Core
         { 
             get 
             {
-                return m_average;
+                return _average;
             } 
         }
 
@@ -78,7 +79,7 @@ namespace Holofunk.Core
         protected override bool IsValid(float t)
         {
             // semi-arbitrary, but intended to filter out infinities and other extreme bogosities
-            return -100 < t && t < 2000;
+            return !float.IsNaN(t) && -100 < t && t < 2000;
         }
 
         protected override float Add(float total, float nextT)
@@ -107,7 +108,7 @@ namespace Holofunk.Core
         protected override bool IsValid(Vector3 t)
         {
             // semi-arbitrary, but intended to filter out infinities and other extreme bogosities
-            return -100 < t.x && t.x < 2000 && -100 < t.y && t.y < 2000;
+            return !float.IsNaN(t.x) && !float.IsNaN(t.y) && !float.IsNaN(t.z) && t != Vector3.zero && -100 < t.x && t.x < 100 && -100 < t.y && t.y < 100;
         }
 
         protected override Vector3 Add(Vector3 total, Vector3 nextT)

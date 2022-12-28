@@ -3251,13 +3251,14 @@ GameObject:
   - component: {fileID: 1612466418}
   - component: {fileID: 1612466417}
   - component: {fileID: 1612466421}
+  - component: {fileID: 1612466419}
   m_Layer: 0
   m_Name: Player 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1612466417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3290,6 +3291,21 @@ Transform:
   m_Father: {fileID: 162061334}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1612466419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1612466416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d97e43962d87b2248aa4ef6831761494, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  joyconIndex: 1
+  playerIndex: 1
+  handSide: 1
 --- !u!114 &1612466421
 MonoBehaviour:
   m_ObjectHideFlags: 0
