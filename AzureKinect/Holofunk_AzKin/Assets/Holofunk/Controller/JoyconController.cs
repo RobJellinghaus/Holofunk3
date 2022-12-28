@@ -150,18 +150,26 @@ namespace Holofunk.Controller
         /// </summary>
         internal string HandStateMachineInstanceString => stateMachineInstance?.ToString() ?? "";
 
-        // Update is called once per frame
-        void Update()
-        {
-            if (joyconIndex == -1 || JoyconManager.Instance == null || JoyconManager.Instance.j.Count <= joyconIndex)
-            {
+        public bool IsUpdatable()
+        { 
+            if (joyconIndex == -1 || JoyconManager.Instance == null || JoyconManager.Instance.j.Count <= joyconIndex){
                 // No joyCon yet associated with this player; nothing to do.
-                return;
+                return false;
             }
 
             if (DistributedViewpoint.Instance == null || DistributedViewpoint.Instance.PlayerCount <= playerIndex)
             {
                 // No Kinect player recognized yet.
+                return false;
+            }
+            return true; 
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            if (!IsUpdatable())
+            {
                 return;
             }
 

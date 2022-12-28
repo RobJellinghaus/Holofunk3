@@ -25,7 +25,7 @@ namespace Holofunk.Core
         /// <summary>
         /// The radius of the hand, in meters.
         /// </summary>
-        public static readonly float HandRadius = 0.15f; // 15 cm = 6 inches. Pretty big but let's start there
+        public static readonly float HandRadius = 0.20f; // 20 cm = 8 inches. Pretty big but let's start there
 
         /// <summary>
         /// The number of seconds before we decide that recognition of a player is lost and we give up.
@@ -183,7 +183,7 @@ namespace Holofunk.Core
         /// <summary>
         /// scale factor to apply to the distance of menu nodes
         /// </summary>
-        public static readonly float MenuScale = 0.4f;
+        public static readonly float MenuScale = 0.45f;
 
         #endregion
 

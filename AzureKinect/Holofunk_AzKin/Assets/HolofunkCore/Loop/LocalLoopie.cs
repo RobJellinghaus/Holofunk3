@@ -639,6 +639,14 @@ namespace Holofunk.Loop
                 // HoloDebug.Log($"LocalLoopie.CalculatePanValue: soundPosition {soundPosition}, soundDirectionDotForwardDirection {soundDirectionDotSensorForwardDirection}, panValue {panValue}");
             }
 
+            // because we are mirrored, invert the pan value
+            // TODO: make this a global constant
+            bool mirrored = true;
+            if (mirrored)
+            {
+                panValue = 1 - panValue;
+            }
+
             return panValue;
         }
 

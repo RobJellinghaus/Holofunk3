@@ -32,11 +32,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// Initialize a newly instantiated MenuController.
         /// </summary>
-        /// <param name="menuModel">The base model that will be passed to the menu item actions.</param>
-        /// <param name="playerHandModel">The player hand model which this menu will use for tracking interaction.</param>
-        /// <param name="rootPosition">The world space position the menu tree is being popped up at.</param>
-        /// <param name="rootRelativePosition">The position of this (possibly multiply nested) child relative to
-        /// the root of the whole menu tree; None if this is the root menu.</param>
+        /// <param name="joyconController">The controller which controls this menu.</param>
         public void Initialize(JoyconController joyconController)
         {
             Contract.Assert(Menu != null);
@@ -46,8 +42,8 @@ namespace Holofunk.Controller
 
         void Update()
         {
-            // Find the hand.
-            if (_joyconController.DistributedPerformer == null)
+            // Only update if the controller is a thing.
+            if (!_joyconController.IsUpdatable())
             {
                 return;
             }
@@ -62,6 +58,7 @@ namespace Holofunk.Controller
                 // no menu items were in range at all.  do nothing.  user can gesture to exit current menus
                 //_logBuffer.Append($"No menu items in range whatsoever.{Environment.NewLine}");
                 //GUIController.Instance.Text2 = _logBuffer.ToString();
+                HoloDebug.Log("No closest menu item");
                 return;
             }
 
