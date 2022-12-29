@@ -90,7 +90,10 @@ namespace Holofunk.Controller
 
                     // Creating the loopie here assigns it as the currently held loopie.
                     // Note that this implicitly starts recording.
-                    joyconController.CreateLoopie();
+                    joyconController.CreateLoopie(
+                        joyconController.playerIndex == 0 
+                            ? NowSoundLib.AudioInputId.AudioInput1
+                            : NowSoundLib.AudioInputId.AudioInput2);
                 },
                 (evt, joyconController) =>
                 {
@@ -297,8 +300,6 @@ namespace Holofunk.Controller
                     joyconController.KeepTouchedLoopiesStable = true;
 
                     menuGameObject = CreateMenu(joyconController, menuKind);
-                    HoloDebug.Log($"Creating menu kind {menuKind} for joyconController #{joyconController.playerIndex}{joyconController.handSide}");
-                    menuGameObject.GetComponent<MenuController>().Initialize(joyconController);
                 },
                 (evt, joyconController) => {
                     // let loopies get (un)touched again
@@ -321,7 +322,8 @@ namespace Holofunk.Controller
 
         private static GameObject CreateMenu(JoyconController joyconController, MenuKinds menuKind)
         {
-            GameObject menuGameObject;
+            HoloDebug.Log($"Creating menu kind {menuKind} for joyconController #{joyconController.playerIndex}{joyconController.handSide}");
+
             // get the forward direction towards the camera from the hand location
             Vector3 localHandPosition = joyconController.GetViewpointHandPosition();
 
@@ -330,10 +332,13 @@ namespace Holofunk.Controller
 
             Vector3 viewpointForwardDirection = Vector3.forward;
 
-            menuGameObject = DistributedMenu.Create(
+            GameObject menuGameObject = DistributedMenu.Create(
                 menuKind,
                 viewpointForwardDirection,
                 viewpointHandPosition);
+
+            menuGameObject.GetComponent<MenuController>().Initialize(joyconController);
+
             return menuGameObject;
         }
     }

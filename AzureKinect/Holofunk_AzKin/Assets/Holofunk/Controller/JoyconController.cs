@@ -306,7 +306,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// Create a new loopie at the current hand's position, and set it as the currentlyHeldLoopie.
         /// </summary>
-        public void CreateLoopie()
+        public void CreateLoopie(NowSoundLib.AudioInputId audioInputId)
         {
             Holofunk.Core.Contract.Requires(currentlyHeldLoopie == null);
 
@@ -318,7 +318,7 @@ namespace Holofunk.Controller
 
             Vector3 viewpointHandPosition = GetViewpointHandPosition();
 
-            GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition);
+            GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition, audioInputId);
             currentlyHeldLoopie = newLoopie;
         }
 

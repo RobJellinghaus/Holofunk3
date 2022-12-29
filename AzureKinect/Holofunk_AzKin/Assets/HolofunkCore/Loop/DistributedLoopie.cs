@@ -103,7 +103,7 @@ namespace Holofunk.Loop
         /// 
         /// TODO: figure out how to refactor out the shared plumbing here, similarly to the Registrar.
         /// </remarks>
-        public static GameObject Create(Vector3 viewpointPosition)
+        public static GameObject Create(Vector3 viewpointPosition, NowSoundLib.AudioInputId audioInputId)
         {
             GameObject prototypeLoopie = DistributedObjectFactory.FindPrototypeContainer(
                 DistributedObjectFactory.DistributedType.Loopie);
@@ -118,7 +118,7 @@ namespace Holofunk.Loop
             // First set up the Loopie state in distributed terms.
             localLoopie.Initialize(new LoopieState
             {
-                AudioInput = new Sound.AudioInputId(NowSoundLib.AudioInputId.AudioInput1),
+                AudioInput = new Sound.AudioInputId(audioInputId),
                 ViewpointPosition = viewpointPosition,
                 IsMuted = false,
                 Volume = 0.7f,
