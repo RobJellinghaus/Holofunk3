@@ -15,16 +15,19 @@ namespace Holofunk.Core
     {
         public static HoloDebug Instance = new HoloDebug();
 
+        [Conditional("LOG")]
         public static void Log(string message)
         {
             UnityEngine.Debug.Log(message);
         }
 
+        [Conditional("LOG")]
         public static void Warn(string message)
         {
             UnityEngine.Debug.LogWarning(message);
         }
 
+        [Conditional("LOG")]
         public static void Assert(bool condition, string message = "")
         {
             if (!condition)
@@ -36,7 +39,8 @@ namespace Holofunk.Core
 
         public void WriteNet(NetLogLevel level, string str, params object[] args)
         {
-            Log($"[{level}] {string.Format(str, args)}");
+            // TODO: restore logging?
+            // Log($"[{level}] {string.Format(str, args)}");
         }
     }
 }
