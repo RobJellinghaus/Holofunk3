@@ -1,6 +1,5 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using com.rfilkov.kinect;
 using Holofunk.Distributed;
 using Holofunk.Sound;
 using UnityEngine;
@@ -19,6 +18,8 @@ namespace Holofunk.Viewpoint
         public void Update()
         {
             KinectManager kinectManager = KinectManager.Instance;
+            // TODO: make KinectManager status info text public again (with a red hat)
+            /*
             if (SoundManager.Instance == null)
             {
                 kinectManager.statusInfoText.text = "No sound";
@@ -28,6 +29,7 @@ namespace Holofunk.Viewpoint
                 // TODO: make this more useful? or conditional? something
                 kinectManager.statusInfoText.text = $"";
             }
+            */
         }
     }
 }

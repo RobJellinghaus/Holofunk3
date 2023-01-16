@@ -9,16 +9,16 @@ namespace Holofunk.Viewpoint
     /// </summary>
     public struct UserId
     {
-        private ulong value;
+        private long value;
 
-        public UserId(ulong value)
+        public UserId(long value)
         {
             this.value = value;
         }
 
-        public static implicit operator UserId(ulong value) => new UserId(value);
+        public static implicit operator UserId(long value) => new UserId(value);
 
-        public static explicit operator ulong(UserId id) => id.value;
+        public static explicit operator long(UserId id) => id.value;
 
         public static bool operator ==(UserId left, UserId right) => left.Equals(right);
 
@@ -26,7 +26,7 @@ namespace Holofunk.Viewpoint
 
         public static void Serialize(NetDataWriter writer, UserId id) => writer.Put(id.value);
 
-        public static UserId Deserialize(NetDataReader reader) => new UserId(reader.GetULong());
+        public static UserId Deserialize(NetDataReader reader) => new UserId(reader.GetLong());
 
         public override bool Equals(object obj) => obj is UserId id && value == id.value;
 

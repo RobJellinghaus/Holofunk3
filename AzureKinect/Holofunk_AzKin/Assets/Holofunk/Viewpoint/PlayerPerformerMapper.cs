@@ -1,6 +1,5 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using com.rfilkov.kinect;
 using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
@@ -127,6 +126,10 @@ namespace Holofunk.Viewpoint
 
             if (kinectManager.IsInitialized())
             {
+                // Commented out for the time being as the K4W2 doesn't support a full sensor position matrix. Maybe hackable back in later
+                // but moot anyway for the time being.
+                // TODO: hack sensor position to restore awareness of whether user is looking at sensor
+/*
                 // Look for players that are raising one hand and looking at the Kinect
                 for (int i = 0; i < theViewpoint.PlayerCount; i++)
                 {
@@ -238,6 +241,7 @@ Player host address: {player.PerformerHostAddress}
                         }
                     }
                 }
+*/
             }
         }
     }

@@ -52,7 +52,8 @@ namespace Holofunk.Camera
                     // we want the viewpoint camera position
                     if (viewpoint.PlayerCount > 0)
                     {
-                        LastViewpointCameraPosition = viewpoint.GetPlayerByIndex(0).SensorPosition;
+                        // TODO: hack sensor position
+                        // LastViewpointCameraPosition = viewpoint.GetPlayerByIndex(0).SensorPosition;
                     }
                 }
                 else

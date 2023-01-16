@@ -1,7 +1,5 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using com.rfilkov.components;
-using com.rfilkov.kinect;
 using Holofunk.Core;
 using Holofunk.Loop;
 using Holofunk.Sound;
@@ -74,16 +72,7 @@ namespace Holofunk.Viewpoint
                         trackingLostTime = default;
                     }
 
-                    ulong userId = kinectManager.GetUserIdByIndex(playerIndex);
-
-                    Vector3 rawHeadPosition;
-                    if (TryGetJointWorldSpacePosition(userId, KinectInterop.JointType.Nose, out rawHeadPosition))
-                    {
-                        headPositionAverager.Update(rawHeadPosition);
-                    }
-
-                    Vector3 headForwardDirection = GetJointWorldSpaceForwardDirection(userId, KinectInterop.JointType.Nose);
-                    headForwardDirectionAverager.Update(headForwardDirection);
+                    long userId = kinectManager.GetUserIdByIndex(playerIndex);
 
                     Vector3 rawLeftHandPosition, rawRightHandPosition;
                     if (TryGetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft, out rawLeftHandPosition))
@@ -102,8 +91,8 @@ namespace Holofunk.Viewpoint
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         UserId = userId,
                         PerformerHostAddress = currentPlayer.PerformerHostAddress,
-                        SensorPosition = kinectManager.GetSensorTransform(0).position,
-                        SensorForwardDirection = kinectManager.GetSensorTransform(0).forward,
+                        //SensorPosition = kinectManager.GetSensorTransform(0).position,
+                        //SensorForwardDirection = kinectManager.GetSensorTransform(0).forward,
                         HeadPosition = headPositionAverager.Average,
                         HeadForwardDirection = headForwardDirectionAverager.Average,
                         LeftHandPosition = leftHandAverager.Average,
@@ -117,6 +106,8 @@ namespace Holofunk.Viewpoint
                     // TODO: handle multiple audio inputs.
                     if (SoundManager.Instance != null && SoundManager.Instance.IsRunning)
                     {
+                        // argh! TODO: hack sensor position
+                        /*
                         Vector3 sensorPosition = currentPlayer.SensorPosition;
                         Vector3 sensorForwardDirection = currentPlayer.SensorForwardDirection;
                         Vector3 soundPosition = currentPlayer.HeadPosition;
@@ -124,6 +115,7 @@ namespace Holofunk.Viewpoint
                         float panValue = LocalLoopie.CalculatePanValue(sensorPosition, sensorForwardDirection, soundPosition);
 
                         NowSoundLib.NowSoundGraphAPI.SetInputPan(NowSoundLib.AudioInputId.AudioInput1, panValue);
+                        */
                     }
                 }
 
@@ -139,8 +131,8 @@ namespace Holofunk.Viewpoint
                     Tracked = false,
                     UserId = default,
                     PerformerHostAddress = default,
-                    SensorPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                    SensorForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
+                    //SensorPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                    //SensorForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                     HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                     HeadForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                     LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
@@ -151,14 +143,14 @@ namespace Holofunk.Viewpoint
             }
         }
 
-        private bool TryGetJointWorldSpacePosition(ulong userId, KinectInterop.JointType joint, out Vector3 result)
+        private bool TryGetJointWorldSpacePosition(long userId, KinectInterop.JointType joint, out Vector3 result)
         {
             KinectManager kinectManager = KinectManager.Instance;
 
             Core.Contract.Requires(kinectManager != null);
             Core.Contract.Requires(kinectManager.IsInitialized());
 
-            bool tracked = KinectManager.Instance.IsJointTracked(userId, joint);
+            bool tracked = KinectManager.Instance.IsJointTracked(userId, (int)joint);
             if (!tracked)
             {
                 result = Vector3.zero;
@@ -183,14 +175,14 @@ namespace Holofunk.Viewpoint
             }
         }
 
-        private Vector3 GetJointWorldSpaceForwardDirection(ulong userId, KinectInterop.JointType joint)
+        private Vector3 GetJointWorldSpaceForwardDirection(long userId, KinectInterop.JointType joint)
         {
             KinectManager kinectManager = KinectManager.Instance;
 
             Core.Contract.Requires(kinectManager != null);
             Core.Contract.Requires(kinectManager.IsInitialized());
 
-            bool tracked = KinectManager.Instance.IsJointTracked(userId, joint);
+            bool tracked = KinectManager.Instance.IsJointTracked(userId, (int)joint);
             if (!tracked)
             {
                 return new Vector3(float.NaN, float.NaN, float.NaN);
@@ -198,7 +190,7 @@ namespace Holofunk.Viewpoint
             else
             {
                 // TODO: to flip or not to flip?
-                Quaternion jointOrientation = kinectManager.GetJointOrientation(userId, joint, flip: false);
+                Quaternion jointOrientation = kinectManager.GetJointOrientation(userId, (int)joint, flip: false);
                 // multiply orientation by a normalized forward Z vector
                 Vector3 jointForwardDirection = jointOrientation * new Vector3(0, 0, 1);
 

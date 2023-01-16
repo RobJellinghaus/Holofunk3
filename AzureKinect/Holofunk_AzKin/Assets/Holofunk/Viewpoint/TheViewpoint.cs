@@ -1,7 +1,5 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using com.rfilkov.components;
-using com.rfilkov.kinect;
 using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
