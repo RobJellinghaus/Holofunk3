@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using Holofunk.Core;
 //using Windows.Kinect;
 
 
@@ -31,6 +32,8 @@ public class SkeletonOverlayer : MonoBehaviour
 	// background rectangle
 	private Rect backgroundRect = Rect.zero;
 
+	private Vector3Averager[] averagers = null;
+
 
 	void Start()
 	{
@@ -44,6 +47,7 @@ public class SkeletonOverlayer : MonoBehaviour
 			{
 				// array holding the skeleton joints
 				joints = new GameObject[jointsCount];
+				averagers = new Vector3Averager[jointsCount];
 				
 				for(int i = 0; i < joints.Length; i++)
 				{
@@ -51,6 +55,9 @@ public class SkeletonOverlayer : MonoBehaviour
 					joints[i].transform.parent = transform;
 					joints[i].name = ((KinectInterop.JointType)i).ToString();
 					joints[i].SetActive(false);
+
+					// we'll average over five joint positions... arbitrary but nice and smooth
+					averagers[i] = new Vector3Averager(10);
 				}
 			}
 
@@ -111,13 +118,17 @@ public class SkeletonOverlayer : MonoBehaviour
 
 					if(manager.IsJointTracked(userId, joint))
 					{
-						Vector3 posJoint = manager.GetJointPosColorOverlay(userId, joint, foregroundCamera, backgroundRect);
+						Vector3 rawPosJoint = manager.GetJointPosColorOverlay(userId, joint, foregroundCamera, backgroundRect);
+						averagers[i].Update(rawPosJoint);
+						Vector3 posJoint = averagers[i].Average;
 						//Vector3 posJoint = manager.GetJointPosition(userId, joint);
 
 						if(joints != null)
 						{
-							// overlay the joint
-							if(posJoint != Vector3.zero)
+							// overlay the joint, only on the hands
+							if (posJoint != Vector3.zero
+								&& (joint == (int)KinectInterop.JointType.HandLeft 
+									|| joint == (int)KinectInterop.JointType.HandRight))
 							{
 //								if(debugText && joint == 0)
 //								{
@@ -127,10 +138,12 @@ public class SkeletonOverlayer : MonoBehaviour
 //								}
 								
 								joints[i].SetActive(true);
+								averagers[i].Update(posJoint);
 								joints[i].transform.position = posJoint;
 
 								Quaternion rotJoint = manager.GetJointOrientation(userId, joint, false);
 								rotJoint = initialRotation * rotJoint;
+								// we don't try to average joint rotation because we don't even care (Holofunk, that is)
 								joints[i].transform.rotation = rotJoint;
 							}
 							else
@@ -150,7 +163,9 @@ public class SkeletonOverlayer : MonoBehaviour
 						{
 							// overlay the line to the parent joint
 							int jointParent = (int)manager.GetParentJoint((KinectInterop.JointType)joint);
-							Vector3 posParent = manager.GetJointPosColorOverlay(userId, jointParent, foregroundCamera, backgroundRect);
+							// hopefully the parent got updated first lol
+							//Vector3 posParent = manager.GetJointPosColorOverlay(userId, jointParent, foregroundCamera, backgroundRect);
+							Vector3 posParent = averagers[jointParent].Average;
 
 							if(posJoint != Vector3.zero && posParent != Vector3.zero)
 							{
