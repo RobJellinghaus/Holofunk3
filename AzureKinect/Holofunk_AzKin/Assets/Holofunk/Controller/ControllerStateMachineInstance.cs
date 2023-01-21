@@ -287,8 +287,8 @@ namespace Holofunk.Controller
 
         private static ControllerState CreateMenuState(ControllerState initial, MenuKinds menuKind)
         {
-            // State machine construction ensures there will only be one of these per hand state machine instance,
-            // so we can safely use a local variable here to close over this menu
+            // State machine construction ensures there will only be one of these per state machine instance.
+            // But see bug below... there may be some incorrectness here....
             GameObject menuGameObject = null;
 
             var menu = new ControllerState(
@@ -302,19 +302,27 @@ namespace Holofunk.Controller
                     menuGameObject = CreateMenu(joyconController, menuKind);
                 },
                 (evt, joyconController) => {
-                    // let loopies get (un)touched again
-                    joyconController.KeepTouchedLoopiesStable = false;
+                    // got one crash on the "DistributeMenu menu = menuGameObject.GetComponent<...>(...)" line below.
+                    // Speculation is that there could be multiple events in flight, or something, such that this can
+                    // incorrectly be reached more than once on the way out of the state machine.
+                    // TODO: verify what could go wrong here, this fix may or may not have unintended consequences.
+                    if (menuGameObject != null)
+                    {
+                        // let loopies get (un)touched again
+                        joyconController.KeepTouchedLoopiesStable = false;
 
-                    HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(joyconController.TouchedLoopieIds);
+                        HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(joyconController.TouchedLoopieIds);
 
-                    DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
-                    HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
-                    menu.InvokeSelectedAction(touchedLoopies);
+                        DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
+                        HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
+                        menu.InvokeSelectedAction(touchedLoopies);
 
-                    // delete it in the distributed sense.
-                    // note that locally, this will synchronously destroy the game object
-                    HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: deleting menu {menu.Id}");
-                    menu.Delete();
+                        // delete it in the distributed sense.
+                        // note that locally, this will synchronously destroy the game object
+                        HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: deleting menu {menu.Id}");
+                        menu.Delete();
+                        menuGameObject = null;
+                    }
                 });
 
             return menu;
