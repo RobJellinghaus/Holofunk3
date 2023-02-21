@@ -67,7 +67,6 @@ namespace Holofunk.Viewpoint
                     if (trackingLostTime != default)
                     {
                         // we don't have to track anymore, we found them again
-                        // TODO: actually handle multiple person recognition (sob)
                         HoloDebug.Log("Regained tracking before recognition loss; resuming tracking");
                         trackingLostTime = default;
                     }
@@ -91,8 +90,9 @@ namespace Holofunk.Viewpoint
                         PlayerId = new PlayerId((byte)(playerIndex + 1)),
                         UserId = userId,
                         PerformerHostAddress = currentPlayer.PerformerHostAddress,
-                        //SensorPosition = kinectManager.GetSensorTransform(0).position,
-                        //SensorForwardDirection = kinectManager.GetSensorTransform(0).forward,
+                        // Hacks for K4W2: always 2 meters off the ground, always looking up positive Z
+                        SensorPosition = new Vector3(0, 2, 0),
+                        SensorForwardDirection = Vector3.forward,
                         HeadPosition = headPositionAverager.Average,
                         HeadForwardDirection = headForwardDirectionAverager.Average,
                         LeftHandPosition = leftHandAverager.Average,
@@ -103,11 +103,8 @@ namespace Holofunk.Viewpoint
                     };
 
                     // and now, pan the sound for this player.
-                    // TODO: handle multiple audio inputs.
                     if (SoundManager.Instance != null && SoundManager.Instance.IsRunning)
                     {
-                        // argh! TODO: hack sensor position
-                        /*
                         Vector3 sensorPosition = currentPlayer.SensorPosition;
                         Vector3 sensorForwardDirection = currentPlayer.SensorForwardDirection;
                         Vector3 soundPosition = currentPlayer.HeadPosition;
@@ -115,7 +112,6 @@ namespace Holofunk.Viewpoint
                         float panValue = LocalLoopie.CalculatePanValue(sensorPosition, sensorForwardDirection, soundPosition);
 
                         NowSoundLib.NowSoundGraphAPI.SetInputPan(NowSoundLib.AudioInputId.AudioInput1, panValue);
-                        */
                     }
                 }
 
@@ -131,8 +127,8 @@ namespace Holofunk.Viewpoint
                     Tracked = false,
                     UserId = default,
                     PerformerHostAddress = default,
-                    //SensorPosition = new Vector3(float.NaN, float.NaN, float.NaN),
-                    //SensorForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
+                    SensorPosition = new Vector3(float.NaN, float.NaN, float.NaN),
+                    SensorForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                     HeadPosition = new Vector3(float.NaN, float.NaN, float.NaN),
                     HeadForwardDirection = new Vector3(float.NaN, float.NaN, float.NaN),
                     LeftHandPosition = new Vector3(float.NaN, float.NaN, float.NaN),
@@ -197,7 +193,7 @@ namespace Holofunk.Viewpoint
                 // NOW, TOTAL HACK: reverse the Z direction.
                 // We observe that the camera's forward direction is (0, 0, 1).
                 // But looking straight at the camera also yields a forward direction of (0, 0, 1).
-                // This seems impossible. The forward direction should be the opposite of the camera
+                // This seems impossible. The onlooker's forward direction should be the opposite of the camera
                 // look direction. So, invert the Z coordinate before returning.
                 jointForwardDirection.z = -jointForwardDirection.z;
 

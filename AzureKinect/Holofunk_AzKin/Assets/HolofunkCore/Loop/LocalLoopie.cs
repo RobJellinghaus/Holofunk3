@@ -246,13 +246,10 @@ namespace Holofunk.Loop
                             PlayerState firstPlayer = DistributedViewpoint.Instance.GetPlayerByIndex(0);
                             if (firstPlayer.Tracked)
                             {
-                                // TODO: hack sensor position!!! to restore panning for great justice
-                                /*
                                 float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, loopie.ViewpointPosition, log: true);
                                 NowSoundTrackAPI.SetPan(trackId, panValue);
                                 float updatedPan = NowSoundTrackAPI.Pan(trackId);
                                 // HoloDebug.Log($"LocalLoopie.UpdateLoopiePanPosition: loopie {trackId}, viewpointPosition {loopie.ViewpointPosition}, panValue {panValue}, updatedPanValue {updatedPan}");
-                                */
                             }
                         }
                     }

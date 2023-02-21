@@ -52,10 +52,12 @@ namespace Holofunk.Viewpoint
 
         /// <summary>
         /// The sensor (viewpoint) position, in viewpoint coordinates.
-        /// 
-        /// Commented out because the Kinect V2 does not seem to support this.
         /// </summary>
-        //public Vector3 SensorPosition { get; set; }
+        /// <remarks>
+        /// For Kinect V2, we hack this to (0, 2, 0) assuming the Kinect is always two meters
+        /// off the ground.
+        /// </remarks>
+        public Vector3 SensorPosition { get; set; }
 
         /// <summary>
         /// The sensor (viewpoint) forward direction, in viewpoint coordinates.
@@ -63,9 +65,9 @@ namespace Holofunk.Viewpoint
         /// <remarks>
         /// This is the sensor orientation multiplied by a unit Z vector (e.g. (0, 0, 1)).
         /// 
-        /// Commented out because the Kinect V2 does not seem to support this.
+        /// For K4W2, we in fact hack this to (0, 0, 1).
         /// </remarks>
-        //public Vector3 SensorForwardDirection { get; set; }
+        public Vector3 SensorForwardDirection { get; set; }
 
         /// <summary>
         /// The position of the head, in viewpoint coordinates.
@@ -136,8 +138,8 @@ namespace Holofunk.Viewpoint
             UserId = UserId.Deserialize(reader);
             Tracked = reader.GetBool();
             PerformerHostAddress = SerializedSocketAddress.Deserialize(reader);
-            //SensorPosition = reader.GetVector3();
-            //SensorForwardDirection = reader.GetVector3();
+            SensorPosition = reader.GetVector3();
+            SensorForwardDirection = reader.GetVector3();
             HeadPosition = reader.GetVector3();
             HeadForwardDirection = reader.GetVector3();
             MostSensorAlignedHeadPosition = reader.GetVector3();
@@ -154,8 +156,8 @@ namespace Holofunk.Viewpoint
             UserId.Serialize(writer, UserId);
             writer.Put(Tracked);
             SerializedSocketAddress.Serialize(writer, PerformerHostAddress);
-            //writer.Put(SensorPosition);
-            //writer.Put(SensorForwardDirection);
+            writer.Put(SensorPosition);
+            writer.Put(SensorForwardDirection);
             writer.Put(HeadPosition);
             writer.Put(HeadForwardDirection);
             writer.Put(MostSensorAlignedHeadPosition);

@@ -61,9 +61,12 @@ namespace Holofunk.Core
         /// </summary>
         public static readonly int OctaveDivisions = 12;
         /// <summary>
-        /// The central frequency of the histogram; this is middle C.
+        /// The central frequency of the histogram; this is middle G.
         /// </summary>
-        public static readonly float CentralFrequency = 261.626f;
+        /// <remarks>
+        /// Middle C = 261.626 Hz. Middle G = 391.995 Hz.
+        /// </remarks>
+        public static readonly float CentralFrequency = 391.995f;
         /// <summary>
         /// The bin (out of OutputBinCount) in which the central frequency should be mapped; zero-indexed.
         /// </summary>

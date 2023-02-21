@@ -128,8 +128,11 @@ namespace Holofunk.Menu
                 // what if these are not orthogonal? let's try
                 Quaternion localOrientation = Quaternion.LookRotation(localForwardDirection, Vector3.up);
 
-                transform.localPosition = localPosition;
-                transform.localRotation = localOrientation;
+                if (!float.IsNaN(transform.localPosition.x))
+                {
+                    transform.localPosition = localPosition;
+                    transform.localRotation = localOrientation;
+                }
             }
         }
 
