@@ -231,7 +231,7 @@ public class Joycon
         int attempts = 0;
         while (!stop_polling & state > state_.NO_JOYCONS)
         {
-            SendRumble(rumble_obj.GetData());
+            //SendRumble(rumble_obj.GetData());
             int a = ReceiveRaw();
             a = ReceiveRaw();
             if (a > 0)
@@ -269,36 +269,21 @@ public class Joycon
                     rep = reports.Dequeue();
                     rep.CopyBuffer(report_buf);
                 }
-                if (imu_enabled)
-                {
-                    if (do_localize)
-                    {
-                        ProcessIMU(report_buf);
-                    }
-                    else
-                    {
-                        ExtractIMUValues(report_buf, 0);
-                    }
-                }
+
                 if (ts_de == report_buf[1])
                 {
                     DebugPrint(string.Format("Duplicate timestamp dequeued. TS: {0:X2}", ts_de), DebugType.THREADING);
                 }
+
                 ts_de = report_buf[1];
-                /*
-                DebugPrint(string.Format("Dequeue. Queue length: {0:d}. Packet ID: {1:X2}. Timestamp: {2:X2}. Lag to dequeue: {3:s}. Lag between packets (expect 15ms): {4:s}",
-                    reports.Count, report_buf[0], report_buf[1], System.DateTime.Now.Subtract(rep.GetTime()), rep.GetTime().Subtract(ts_prev)), DebugType.THREADING);
-                */
+                if (s_debugPrint)
+                {
+                    DebugPrint(string.Format("Dequeue. Queue length: {0:d}. Packet ID: {1:X2}. Timestamp: {2:X2}. Lag to dequeue: {3:s}. Lag between packets (expect 15ms): {4:s}",
+                        reports.Count, report_buf[0], report_buf[1], System.DateTime.Now.Subtract(rep.GetTime()), rep.GetTime().Subtract(ts_prev)), DebugType.THREADING);
+                }
                 ts_prev = rep.GetTime();
             }
-            ProcessButtonsAndStick(report_buf);
-			if (rumble_obj.timed_rumble) {
-				if (rumble_obj.t < 0) {
-					rumble_obj.set_vals (160, 320, 0, 0);
-				} else {
-					rumble_obj.t -= Time.deltaTime;
-				}
-			}
+            ProcessButtonsAndStick(report_buf);			
         }
     }
     private int ProcessButtonsAndStick(byte[] report_buf)
@@ -347,90 +332,14 @@ public class Joycon
         }
         return 0;
     }
-    private void ExtractIMUValues(byte[] report_buf, int n = 0)
-    {
-        gyr_r[0] = (Int16)(report_buf[19 + n * 12] | ((report_buf[20 + n * 12] << 8) & 0xff00));
-        gyr_r[1] = (Int16)(report_buf[21 + n * 12] | ((report_buf[22 + n * 12] << 8) & 0xff00));
-        gyr_r[2] = (Int16)(report_buf[23 + n * 12] | ((report_buf[24 + n * 12] << 8) & 0xff00));
-        acc_r[0] = (Int16)(report_buf[13 + n * 12] | ((report_buf[14 + n * 12] << 8) & 0xff00));
-        acc_r[1] = (Int16)(report_buf[15 + n * 12] | ((report_buf[16 + n * 12] << 8) & 0xff00));
-        acc_r[2] = (Int16)(report_buf[17 + n * 12] | ((report_buf[18 + n * 12] << 8) & 0xff00));
-        for (int i = 0; i < 3; ++i)
-        {
-            acc_g[i] = acc_r[i] * 0.00025f;
-            gyr_g[i] = (gyr_r[i] - gyr_neutral[i]) * 0.00122187695f;
-            if (Math.Abs(acc_g[i]) > Math.Abs(max[i]))
-                max[i] = acc_g[i];
-        }
-    }
-
-	private float err;
+    
+    private float err;
     public Vector3 i_b, j_b, k_b, k_acc;
 	private Vector3 d_theta;
 	private Vector3 i_b_;
 	private Vector3 w_a, w_g;
     private Quaternion vec;
 	
-    private int ProcessIMU(byte[] report_buf)
-    {
-
-		// Direction Cosine Matrix method
-		// http://www.starlino.com/dcm_tutorial.html
-
-        if (!imu_enabled | state < state_.IMU_DATA_OK)
-            return -1;
-
-        if (report_buf[0] != 0x30) return -1; // no gyro data
-
-        // read raw IMU values
-        int dt = (report_buf[1] - timestamp);
-        if (report_buf[1] < timestamp) dt += 0x100;
-
-        for (int n = 0; n < 3; ++n)
-        {
-            ExtractIMUValues(report_buf, n);
-            
-			float dt_sec = 0.005f * dt;
-            sum[0] += gyr_g.x * dt_sec;
-            sum[1] += gyr_g.y * dt_sec;
-            sum[2] += gyr_g.z * dt_sec;
-
-            if (isLeft)
-            {
-                gyr_g.y *= -1;
-                gyr_g.z *= -1;
-                acc_g.y *= -1;
-                acc_g.z *= -1;
-            }
-
-            if (first_imu_packet)
-            {
-                i_b = new Vector3(1, 0, 0);
-                j_b = new Vector3(0, 1, 0);
-                k_b = new Vector3(0, 0, 1);
-                first_imu_packet = false;
-            }
-            else
-            {
-                k_acc = -Vector3.Normalize(acc_g);
-                w_a = Vector3.Cross(k_b, k_acc);
-                w_g = -gyr_g * dt_sec;
-                d_theta = (filterweight * w_a + w_g) / (1f + filterweight);
-                k_b += Vector3.Cross(d_theta, k_b);
-                i_b += Vector3.Cross(d_theta, i_b);
-                j_b += Vector3.Cross(d_theta, j_b);
-                //Correction, ensure new axes are orthogonal
-                err = Vector3.Dot(i_b, j_b) * 0.5f;
-                i_b_ = Vector3.Normalize(i_b - err * j_b);
-                j_b = Vector3.Normalize(j_b - err * i_b);
-                i_b = i_b_;
-                k_b = Vector3.Cross(i_b, j_b);
-            }
-            dt = 1;
-        }
-        timestamp = report_buf[1] + 2;
-        return 0;
-    }
     public void Begin()
     {
         if (PollThreadObj == null)
@@ -462,25 +371,7 @@ public class Joycon
         }
         return s;
     }
-    public void SetRumble(float low_freq, float high_freq, float amp, int time = 0)
-    {
-        if (state <= Joycon.state_.ATTACHED) return;
-		if (rumble_obj.timed_rumble == false || rumble_obj.t < 0)
-        {
-            rumble_obj = new Rumble(low_freq, high_freq, amp, time);
-        }
-    }
-    private void SendRumble(byte[] buf)
-    {
-        byte[] buf_ = new byte[report_len];
-        buf_[0] = 0x10;
-        buf_[1] = global_count;
-        if (global_count == 0xf) global_count = 0;
-        else ++global_count;
-        Array.Copy(buf, 0, buf_, 2, 8);
-        PrintArray(buf_, DebugType.RUMBLE, format: "Rumble data sent: {0:S}");
-        HIDapi.hid_write(handle, buf_, new UIntPtr(report_len));
-    }
+
     private byte[] Subcommand(byte sc, byte[] buf, uint len, bool print = true)
     {
         byte[] buf_ = new byte[report_len];
@@ -499,6 +390,7 @@ public class Joycon
         else if (print) { PrintArray(response, DebugType.COMMS, report_len - 1, 1, "Response ID 0x" + string.Format("{0:X2}", response[0]) + ". Data: 0x{0:S}"); }
         return response;
     }
+
     private void dump_calibration_data()
     {
         byte[] buf_ = ReadSPI(0x80, (isLeft ? (byte)0x12 : (byte)0x1d), 9); // get user calibration data if possible
