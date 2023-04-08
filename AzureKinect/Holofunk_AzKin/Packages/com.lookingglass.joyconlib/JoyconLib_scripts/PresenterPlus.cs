@@ -8,7 +8,7 @@ using System;
 using System.Threading;
 using UnityEngine;
 
-public class Joycon
+public class PresenterPlus
 {
     private const bool s_debugPrint = true;
 
@@ -105,9 +105,10 @@ public class Joycon
     private byte global_count = 0;
     private string debug_str;
 
-	public Joycon(IntPtr handle_, float alpha, bool left)
+	public PresenterPlus(IntPtr handle_, bool localize, float alpha, bool left)
     {
 		handle = handle_;
+		do_localize = localize;
 		filterweight = alpha;
 		isLeft = left;
     }

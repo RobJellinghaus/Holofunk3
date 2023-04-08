@@ -152,7 +152,7 @@ namespace Holofunk.Controller
 
         public bool IsUpdatable()
         { 
-            if (joyconIndex == -1 || JoyconManager.Instance == null || JoyconManager.Instance.j.Count <= joyconIndex){
+            if (joyconIndex == -1 || ControllerManager.Instance == null || ControllerManager.Instance.connected_joycons.Count <= joyconIndex){
                 // No joyCon yet associated with this player; nothing to do.
                 return false;
             }
@@ -173,7 +173,7 @@ namespace Holofunk.Controller
                 return;
             }
 
-            Joycon thisJoycon = JoyconManager.Instance.j[joyconIndex];
+            Joycon thisJoycon = ControllerManager.Instance.connected_joycons[joyconIndex];
 
             // Joycon bailed, we're done
             if (thisJoycon.state == Joycon.state_.DROPPED)

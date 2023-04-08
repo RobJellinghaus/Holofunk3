@@ -18,7 +18,7 @@ public class JoyconDemo : MonoBehaviour {
         gyro = new Vector3(0, 0, 0);
         accel = new Vector3(0, 0, 0);
         // get the public Joycon array attached to the JoyconManager in scene
-        joycons = JoyconManager.Instance.j;
+        joycons = ControllerManager.Instance.connected_joycons;
 		if (joycons.Count < jc_ind+1){
 			Destroy(gameObject);
 		}
@@ -59,8 +59,7 @@ public class JoyconDemo : MonoBehaviour {
             // Accel values:  x, y, z axis values (in Gs)
             accel = j.GetAccel();
 
-            orientation = j.GetVector();
-			if (j.GetButton(Joycon.Button.DPAD_UP)){
+            if (j.GetButton(Joycon.Button.DPAD_UP)){
 				gameObject.GetComponent<Renderer>().material.color = Color.red;
 			} else{
 				gameObject.GetComponent<Renderer>().material.color = Color.blue;
