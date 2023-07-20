@@ -1,5 +1,5 @@
 # Holofunk3
-The true mixed reality looper.
+The formerly true formerly mixed reality still looper.
 
 ## Notes on naming
 It is always hard!
