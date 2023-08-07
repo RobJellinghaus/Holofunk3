@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/HolofunkScene.unity
+    guid: ea183846fc3628c4e823c64960c7c7e5
   m_configObjects: {}

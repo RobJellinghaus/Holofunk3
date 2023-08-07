@@ -44,7 +44,7 @@ public class JoyconManager: MonoBehaviour
 			if (ptr == IntPtr.Zero)
 			{ 
 				HIDapi.hid_free_enumeration(ptr);
-				Debug.Log ("No Joy-Cons found!");
+				Debug.Log ("No Joy-Cons found. Oh well. So sad.");
 			}
 		}
 		hid_device_info enumerate;
@@ -55,10 +55,10 @@ public class JoyconManager: MonoBehaviour
 				if (enumerate.product_id == product_l || enumerate.product_id == product_r) {
 					if (enumerate.product_id == product_l) {
 						isLeft = true;
-						Debug.Log ("Left Joy-Con connected.");
+						Debug.Log ("Left Joy-Con connected!!!");
 					} else if (enumerate.product_id == product_r) {
 						isLeft = false;
-						Debug.Log ("Right Joy-Con connected.");
+						Debug.Log ("Right Joy-Con connected!!!");
 					} else {
 						Debug.Log ("Non Joy-Con input device skipped.");
 					}

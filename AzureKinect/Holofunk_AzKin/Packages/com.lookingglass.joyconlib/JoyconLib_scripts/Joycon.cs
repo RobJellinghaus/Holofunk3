@@ -19,7 +19,7 @@ public class Joycon
         IMU,
         RUMBLE,
     };
-	public DebugType debug_type = DebugType.NONE;
+	public DebugType debug_type = DebugType.THREADING;
     public bool isLeft;
     public enum state_ : uint
     {
@@ -306,10 +306,10 @@ public class Joycon
             }
             if (ts_en == raw_buf[1])
             {
-                DebugPrint(string.Format("Duplicate timestamp enqueued. TS: {0:X2}", ts_en), DebugType.THREADING);
+                //DebugPrint(string.Format("Duplicate timestamp enqueued. TS: {0:X2}", ts_en), DebugType.THREADING);
             }
             ts_en = raw_buf[1];
-            DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Timestamp: {1:X2}", ret, raw_buf[1]), DebugType.THREADING);
+            //DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Timestamp: {1:X2}", ret, raw_buf[1]), DebugType.THREADING);
         }
         return ret;
     }
@@ -344,42 +344,44 @@ public class Joycon
     }
     float[] max = { 0, 0, 0 };
     float[] sum = { 0, 0, 0 };
+    byte[] last_report_buf = new byte[report_len];
+    byte[] this_report_buf = new byte[report_len];
+    List<int> skip_indices = new List<int> { 1, 10, 13, 15, 16, 17, 19, 21, 23, 27, 28, 29, 31, 33, 35, 37, 39, 40, 41, 43, 45, 47 };
     public void Update()
     {
         if (state > state_.NO_JOYCONS)
         {
-            byte[] report_buf = new byte[report_len];
             while (reports.Count > 0)
             {
                 Report rep;
                 lock (reports)
                 {
                     rep = reports.Dequeue();
-                    rep.CopyBuffer(report_buf);
+                    rep.CopyBuffer(this_report_buf);
                 }
                 if (imu_enabled)
                 {
                     if (do_localize)
                     {
-                        ProcessIMU(report_buf);
+                        ProcessIMU(this_report_buf);
                     }
                     else
                     {
-                        ExtractIMUValues(report_buf, 0);
+                        ExtractIMUValues(this_report_buf, 0);
                     }
                 }
-                if (ts_de == report_buf[1])
+                if (ts_de == this_report_buf[1])
                 {
-                    DebugPrint(string.Format("Duplicate timestamp dequeued. TS: {0:X2}", ts_de), DebugType.THREADING);
+                    //DebugPrint(string.Format("Duplicate timestamp dequeued. TS: {0:X2}", ts_de), DebugType.THREADING);
                 }
-                ts_de = report_buf[1];
+                ts_de = this_report_buf[1];
                 /*
                 DebugPrint(string.Format("Dequeue. Queue length: {0:d}. Packet ID: {1:X2}. Timestamp: {2:X2}. Lag to dequeue: {3:s}. Lag between packets (expect 15ms): {4:s}",
                     reports.Count, report_buf[0], report_buf[1], System.DateTime.Now.Subtract(rep.GetTime()), rep.GetTime().Subtract(ts_prev)), DebugType.THREADING);
                 */
                 ts_prev = rep.GetTime();
             }
-            ProcessButtonsAndStick(report_buf);
+            ProcessButtonsAndStick(this_report_buf);
 			if (rumble_obj.timed_rumble) {
 				if (rumble_obj.t < 0) {
 					rumble_obj.set_vals (160, 320, 0, 0);
@@ -387,6 +389,29 @@ public class Joycon
 					rumble_obj.t -= Time.deltaTime;
 				}
 			}
+
+            System.Text.StringBuilder stringBuilder = null;
+            for (int i = 0; i < this_report_buf.Length; i++)
+            {
+                if (this_report_buf[i] != last_report_buf[i]
+                    && !skip_indices.Contains(i))
+                { 
+                    if (stringBuilder == null)
+                    {
+                        stringBuilder = new System.Text.StringBuilder();
+                    }
+                    stringBuilder.Append($"[{i}]: {last_report_buf[i]:X2} => {this_report_buf[i]:X2}\n");
+                }
+                last_report_buf[i] = this_report_buf[i];
+            }
+            if (stringBuilder != null)
+            {
+                DebugPrint($"Report bufs differ for joycon #{this.handle.ToInt64():0x}:\n{stringBuilder.ToString()}", DebugType.THREADING);
+            }
+            else
+            {
+                //DebugPrint("Report bufs are identical.", DebugType.THREADING);
+            }
         }
     }
     private int ProcessButtonsAndStick(byte[] report_buf)

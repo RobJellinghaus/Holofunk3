@@ -22,9 +22,12 @@ namespace Holofunk.Camera
                     .MultiplyPoint(viewpointCameraPosition.Value);
                 Vector3 localForwardDirection = (transform.position - localCameraPosition).normalized;
                 localForwardDirection.y = 0;
-                Quaternion rotation = Quaternion.LookRotation(localForwardDirection, Vector3.up);
-
-                transform.rotation = rotation;
+                if (localForwardDirection != Vector3.zero)
+                {
+                    // this spams if it's zero
+                    Quaternion rotation = Quaternion.LookRotation(localForwardDirection, Vector3.up);
+                    transform.rotation = rotation;
+                }
             }
         }
     }
