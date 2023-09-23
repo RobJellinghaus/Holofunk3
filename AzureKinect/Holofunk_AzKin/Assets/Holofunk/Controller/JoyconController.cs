@@ -31,10 +31,10 @@ namespace Holofunk.Controller
         /// Index of the JoyCon selected by this Controller; -1 means "unknown".
         /// </summary>
         /// <remarks>
-        /// This is the index into the JoyconManager.Instance.j array. (Yes, JoyconManager
+        /// This is the index into the HidManager.Instance.j array. (Yes, HidManager
         /// uses public instance variables... oh well)
         /// </remarks>
-        [Tooltip("Joycon index in JoyconManager")]
+        [Tooltip("Joycon index in HidManager")]
         public int joyconIndex = 0;
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace Holofunk.Controller
 
         public bool IsUpdatable()
         { 
-            if (joyconIndex == -1 || JoyconManager.Instance == null || JoyconManager.Instance.j.Count <= joyconIndex){
+            if (joyconIndex == -1 || HidManager.Instance == null || HidManager.Instance.j.Count <= joyconIndex){
                 // No joyCon yet associated with this player; nothing to do.
                 return false;
             }
@@ -173,7 +173,7 @@ namespace Holofunk.Controller
                 return;
             }
 
-            Joycon thisJoycon = JoyconManager.Instance.j[joyconIndex];
+            Joycon thisJoycon = HidManager.Instance.j[joyconIndex];
 
             // Joycon bailed, we're done
             if (thisJoycon.state == Joycon.state_.DROPPED)
