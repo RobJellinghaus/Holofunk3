@@ -390,6 +390,7 @@ public class Joycon
 				}
 			}
 
+            /*
             System.Text.StringBuilder stringBuilder = null;
             for (int i = 0; i < this_report_buf.Length; i++)
             {
@@ -412,6 +413,7 @@ public class Joycon
             {
                 //DebugPrint("Report bufs are identical.", DebugType.THREADING);
             }
+            */
         }
     }
     private int ProcessButtonsAndStick(byte[] report_buf)

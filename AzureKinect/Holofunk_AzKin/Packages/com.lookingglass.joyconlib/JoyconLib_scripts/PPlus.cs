@@ -25,7 +25,7 @@ public class PPlus
     {
         NOT_ATTACHED,
         DROPPED,
-        NO_JOYCONS,
+        NO_PPLUSES,
         ATTACHED,
         INPUT_MODE_0x30,
     };
@@ -52,31 +52,28 @@ public class PPlus
 
     // PPlus HID report IDs from my PPlus HID sleuthing
     private static readonly int[] REPORT_IDS = new[] { 1, 2, 3, 4, 5, 9, 39, 42, 49, 57, -101 };
+    private static readonly int REPORT_ID_COUNT = REPORT_IDS.Length;
     private const int KEYBOARD_REPORT_ID = 1;
 
+    private Dictionary<int, int> report_id_counts = new Dictionary<int, int>();
 
-    //private const uint report_len = 49;
+    private const uint MAX_REPORT_LEN = 256;
 
     private struct Report
     {
         byte[] r;
         System.DateTime t;
-        public Report(byte[] report, System.DateTime time)
+        public Report(byte[] report, int len, System.DateTime time)
         {
-            r = report;
+            r = new byte[len];
+            Array.Copy(report, r, len);
             t = time;
         }
         public System.DateTime GetTime()
         {
             return t;
         }
-        public void CopyBuffer(byte[] b)
-        {
-            for (int i = 0; i < REPORT_LEN_BOGUS; ++i)
-            {
-                b[i] = r[i];
-            }
-        }
+        public byte[] Bytes => r;
     };
     private Queue<Report> reports = new Queue<Report>();
     
@@ -86,6 +83,7 @@ public class PPlus
 	public PPlus(IntPtr handle_)
     {
 		handle = handle_;
+        debug_type = DebugType.THREADING;
     }
     public void DebugPrint(String s, DebugType d)
     {
@@ -121,28 +119,28 @@ public class PPlus
         }
         state = state_.NOT_ATTACHED;
     }
-    private byte ts_en;
-    private byte ts_de;
+    private byte ts_enqueue;
+    private byte ts_dequeue;
     private System.DateTime ts_prev;
-    private const int REPORT_LEN_BOGUS = 0;
+    private byte[] raw_buf = new byte[MAX_REPORT_LEN]; // should be indexed by report ID
     private int ReceiveRaw()
     {
         if (handle == IntPtr.Zero) return -2;
         HIDapi.hid_set_nonblocking(handle, 0);
-        byte[] raw_buf = new byte[REPORT_LEN_BOGUS]; // should be indexed by report ID
-        int ret = HIDapi.hid_read(handle, raw_buf, new UIntPtr(REPORT_LEN_BOGUS));
+        int ret = HIDapi.hid_read(handle, raw_buf, new UIntPtr(MAX_REPORT_LEN));
+
         if (ret > 0)
         {
             lock (reports)
             {
-                reports.Enqueue(new Report(raw_buf, System.DateTime.Now));
+                reports.Enqueue(new Report(raw_buf, ret, System.DateTime.Now));
             }
-            if (ts_en == raw_buf[1])
+            if (ts_enqueue == raw_buf[1])
             {
                 //DebugPrint(string.Format("Duplicate timestamp enqueued. TS: {0:X2}", ts_en), DebugType.THREADING);
             }
-            ts_en = raw_buf[1];
-            //DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Timestamp: {1:X2}", ret, raw_buf[1]), DebugType.THREADING);
+            ts_enqueue = raw_buf[1];
+            DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Report ID: {1:X2}. Timestamp: {1:X2}", ret, raw_buf[0], raw_buf[1]), DebugType.THREADING);
         }
         return ret;
     }
@@ -150,7 +148,7 @@ public class PPlus
     private void Poll()
     {
         int attempts = 0;
-        while (!stop_polling & state > state_.NO_JOYCONS)
+        while (!stop_polling & state > state_.NO_PPLUSES)
         {
             int a = ReceiveRaw();
             a = ReceiveRaw();
@@ -162,7 +160,7 @@ public class PPlus
             else if (attempts > 1000)
             {
                 state = state_.DROPPED;
-                DebugPrint("Connection lost. Is the Joy-Con connected?", DebugType.ALL);
+                DebugPrint("Connection lost. Is the PPlus connected?", DebugType.ALL);
                 break;
             }
             else
@@ -174,14 +172,13 @@ public class PPlus
         }
         DebugPrint("End poll loop.", DebugType.THREADING);
     }
-    float[] max = { 0, 0, 0 };
-    float[] sum = { 0, 0, 0 };
-    byte[] last_report_buf = new byte[REPORT_LEN_BOGUS];
-    byte[] this_report_buf = new byte[REPORT_LEN_BOGUS];
-    List<int> skip_indices = new List<int> { 1, 10, 13, 15, 16, 17, 19, 21, 23, 27, 28, 29, 31, 33, 35, 37, 39, 40, 41, 43, 45, 47 };
+    byte[] last_report_buf = new byte[MAX_REPORT_LEN];
+    int last_report_len = 0;
+    byte[] this_report_buf = new byte[MAX_REPORT_LEN];
+    int this_report_len = 0;
     public void Update()
     {
-        if (state > state_.NO_JOYCONS)
+        if (state > state_.NO_PPLUSES)
         {
             while (reports.Count > 0)
             {
@@ -189,21 +186,21 @@ public class PPlus
                 lock (reports)
                 {
                     rep = reports.Dequeue();
-                    rep.CopyBuffer(this_report_buf);
+                    Array.Copy(rep.Bytes, this_report_buf, rep.Bytes.Length);
+                    this_report_len = rep.Bytes.Length;
                 }
-                if (ts_de == this_report_buf[1])
+                if (ts_dequeue == this_report_buf[1])
                 {
                     //DebugPrint(string.Format("Duplicate timestamp dequeued. TS: {0:X2}", ts_de), DebugType.THREADING);
                 }
-                ts_de = this_report_buf[1];
-                /*
-                DebugPrint(string.Format("Dequeue. Queue length: {0:d}. Packet ID: {1:X2}. Timestamp: {2:X2}. Lag to dequeue: {3:s}. Lag between packets (expect 15ms): {4:s}",
-                    reports.Count, report_buf[0], report_buf[1], System.DateTime.Now.Subtract(rep.GetTime()), rep.GetTime().Subtract(ts_prev)), DebugType.THREADING);
-                */
+                ts_dequeue = this_report_buf[1];
+                DebugPrint(string.Format("Dequeue. Queue length: {0:d}. Packet length: {1:d}. Packet ID: {2:X2}. Timestamp: {3:X2}. Lag to dequeue: {4:s}. Lag between packets: {5:s}",
+                    reports.Count, this_report_len, this_report_buf[0], this_report_buf[1], System.DateTime.Now.Subtract(rep.GetTime()), rep.GetTime().Subtract(ts_prev)), DebugType.THREADING);
                 ts_prev = rep.GetTime();
             }
             ProcessButtonsAndStick(this_report_buf);
 
+            /*
             System.Text.StringBuilder stringBuilder = null;
             for (int i = 0; i < this_report_buf.Length; i++)
             {
@@ -226,6 +223,7 @@ public class PPlus
             {
                 //DebugPrint("Report bufs are identical.", DebugType.THREADING);
             }
+            */
         }
     }
     private int ProcessButtonsAndStick(byte[] report_buf)

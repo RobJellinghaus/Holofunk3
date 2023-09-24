@@ -10,12 +10,15 @@ public class HidManager: MonoBehaviour
     public bool EnableIMU = true;
     public bool EnableLocalize = true;
 
-	private const ushort vendor_id = 0x057e;
-	private const ushort product_l = 0x2006;
-	private const ushort product_r = 0x2007;
+	private const ushort joycon_vendor_id = 0x057e;
+	private const ushort joycon_product_l_id = 0x2006;
+	private const ushort joycon_product_r_id = 0x2007;
 
-    public List<Joycon> j; // Array of all connected Joy-Cons
-	public List<PPlus> pplusList; // Array of all connected PPluses
+	private const ushort pplus_vendor_id = 0x045e;
+	private const ushort pplus_product_id = 0x0851;
+
+    public List<Joycon> joycon_list = new List<Joycon>(); // Array of all connected Joy-Cons
+	public List<PPlus> pplus_list = new List<PPlus>(); // Array of all connected PPluses
     static HidManager instance;
 
     public static HidManager Instance
@@ -35,17 +38,15 @@ public class HidManager: MonoBehaviour
 
 	void AwakePplus()
     {
-		pplusList = new List<PPlus>();
+		pplus_list = new List<PPlus>();
 
-		bool isLeft = false;
-
-		IntPtr ptr = HIDapi.hid_enumerate(vendor_id, 0x0);
+		IntPtr ptr = HIDapi.hid_enumerate(pplus_vendor_id, 0x0);
 		IntPtr top_ptr = ptr;
 
 		if (ptr == IntPtr.Zero)
 		{
 			HIDapi.hid_free_enumeration(ptr);
-			Debug.Log("No Joy-Cons found. Oh well. So sad.");
+			Debug.Log("No PPluses found. Oh well. So sad.");
 		}
 		hid_device_info enumerate;
 		int i = 0;
@@ -54,26 +55,17 @@ public class HidManager: MonoBehaviour
 			enumerate = (hid_device_info)Marshal.PtrToStructure(ptr, typeof(hid_device_info));
 
 			Debug.Log(enumerate.product_id);
-			if (enumerate.product_id == product_l || enumerate.product_id == product_r)
+			if (enumerate.product_id == pplus_product_id)
 			{
-				if (enumerate.product_id == product_l)
-				{
-					isLeft = true;
-					Debug.Log("Left Joy-Con connected!!!");
-				}
-				else if (enumerate.product_id == product_r)
-				{
-					isLeft = false;
-					Debug.Log("Right Joy-Con connected!!!");
-				}
-				else
-				{
-					Debug.Log("Non Joy-Con input device skipped.");
-				}
+				Debug.Log("PPlus detected!!!");
 				IntPtr handle = HIDapi.hid_open_path(enumerate.path);
 				HIDapi.hid_set_nonblocking(handle, 1);
-				j.Add(new Joycon(handle, EnableIMU, EnableLocalize & EnableIMU, 0.05f, isLeft));
+				pplus_list.Add(new PPlus(handle));
 				++i;
+			}
+			else
+			{
+				Debug.Log("Non Joy-Con input device skipped.");
 			}
 			ptr = enumerate.next;
 		}
@@ -82,10 +74,10 @@ public class HidManager: MonoBehaviour
 
 	void AwakeJoycons()
 	{
-		j = new List<Joycon>();
+		joycon_list = new List<Joycon>();
 		bool isLeft = false;
 
-		IntPtr ptr = HIDapi.hid_enumerate(vendor_id, 0x0);
+		IntPtr ptr = HIDapi.hid_enumerate(joycon_vendor_id, 0x0);
 		IntPtr top_ptr = ptr;
 
 		if (ptr == IntPtr.Zero)
@@ -99,11 +91,11 @@ public class HidManager: MonoBehaviour
 			enumerate = (hid_device_info)Marshal.PtrToStructure (ptr, typeof(hid_device_info));
 
 			Debug.Log (enumerate.product_id);
-				if (enumerate.product_id == product_l || enumerate.product_id == product_r) {
-					if (enumerate.product_id == product_l) {
+				if (enumerate.product_id == joycon_product_l_id || enumerate.product_id == joycon_product_r_id) {
+					if (enumerate.product_id == joycon_product_l_id) {
 						isLeft = true;
 						Debug.Log ("Left Joy-Con connected!!!");
-					} else if (enumerate.product_id == product_r) {
+					} else if (enumerate.product_id == joycon_product_r_id) {
 						isLeft = false;
 						Debug.Log ("Right Joy-Con connected!!!");
 					} else {
@@ -111,7 +103,7 @@ public class HidManager: MonoBehaviour
 					}
 					IntPtr handle = HIDapi.hid_open_path (enumerate.path);
 					HIDapi.hid_set_nonblocking (handle, 1);
-					j.Add (new Joycon (handle, EnableIMU, EnableLocalize & EnableIMU, 0.05f, isLeft));
+					joycon_list.Add (new Joycon (handle, EnableIMU, EnableLocalize & EnableIMU, 0.05f, isLeft));
 					++i;
 				}
 				ptr = enumerate.next;
@@ -121,30 +113,46 @@ public class HidManager: MonoBehaviour
 
     void Start()
     {
-		for (int i = 0; i < j.Count; ++i)
+		for (int i = 0; i < joycon_list.Count; ++i)
 		{
-			Debug.Log (i);
-			Joycon jc = j [i];
+			Debug.Log(i);
+			Joycon jc = joycon_list[i];
 			byte LEDs = 0x0;
 			LEDs |= (byte)(0x1 << i);
-			jc.Attach (leds_: LEDs);
-			jc.Begin ();
+			jc.Attach(leds_: LEDs);
+			jc.Begin();
 		}
-    }
 
-    void Update()
-    {
-		for (int i = 0; i < j.Count; ++i)
+		for (int i = 0; i < pplus_list.Count; ++i)
 		{
-			j[i].Update();
+			Debug.Log(i);
+			PPlus pp = pplus_list[i];
+			pp.Attach();
+			pp.Begin();
 		}
-    }
+	}
 
-    void OnApplicationQuit()
+	void Update()
     {
-		for (int i = 0; i < j.Count; ++i)
+		for (int i = 0; i < joycon_list.Count; ++i)
 		{
-			j[i].Detach ();
+			joycon_list[i].Update();
 		}
-    }
+		for (int i = 0; i < pplus_list.Count; ++i)
+		{
+			pplus_list[i].Update();
+		}
+	}
+
+	void OnApplicationQuit()
+    {
+		for (int i = 0; i < joycon_list.Count; ++i)
+		{
+			joycon_list[i].Detach();
+		}
+		for (int i = 0; i < pplus_list.Count; ++i)
+		{
+			pplus_list[i].Detach();
+		}
+	}
 }

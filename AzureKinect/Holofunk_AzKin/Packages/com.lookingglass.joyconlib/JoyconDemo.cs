@@ -18,7 +18,7 @@ public class JoyconDemo : MonoBehaviour {
         gyro = new Vector3(0, 0, 0);
         accel = new Vector3(0, 0, 0);
         // get the public Joycon array attached to the HidManager in scene
-        joycons = HidManager.Instance.j;
+        joycons = HidManager.Instance.joycon_list;
 		if (joycons.Count < jc_ind+1){
 			Destroy(gameObject);
 		}
