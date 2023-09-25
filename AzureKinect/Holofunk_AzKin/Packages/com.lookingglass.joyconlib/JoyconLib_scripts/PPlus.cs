@@ -21,7 +21,7 @@ public class PPlus
     };
 	public DebugType debug_type = DebugType.THREADING;
     public bool isLeft;
-    public enum state_ : uint
+    public enum State : uint
     {
         NOT_ATTACHED,
         DROPPED,
@@ -29,7 +29,7 @@ public class PPlus
         ATTACHED,
         INPUT_MODE_0x30,
     };
-    public state_ state;
+    public State state;
     public enum Button : int
     {
         MICROPHONE = 0,
@@ -47,7 +47,7 @@ public class PPlus
     private 
 	IntPtr handle;
 
-    private bool stop_polling = false;
+    private bool keep_polling = false;
     private int timestamp;
 
     // PPlus HID report IDs from my PPlus HID sleuthing
@@ -107,17 +107,18 @@ public class PPlus
     }
 	public int Attach(byte leds_ = 0x0)
     {
-        // DO NOTHING YET
+        state = State.ATTACHED;
+        keep_polling = true;
         return 0;
     }
     public void Detach()
     {
-        stop_polling = true;
-        if (state > state_.DROPPED)
+        keep_polling = false;
+        if (state > State.DROPPED)
         {
             HIDapi.hid_close(handle);
         }
-        state = state_.NOT_ATTACHED;
+        state = State.NOT_ATTACHED;
     }
     private byte ts_enqueue;
     private byte ts_dequeue;
@@ -145,22 +146,27 @@ public class PPlus
         return ret;
     }
     private Thread PollThreadObj;
+    private const int attempts_before_drop = 10000;
     private void Poll()
     {
+        Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: polling", handle.ToInt64()));
+
         int attempts = 0;
-        while (!stop_polling & state > state_.NO_PPLUSES)
+        while (keep_polling && state > State.NO_PPLUSES)
         {
             int a = ReceiveRaw();
             a = ReceiveRaw();
             if (a > 0)
             {
+                Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: received", handle.ToInt64()));
+
                 //state = state_.IMU_DATA_OK;
                 attempts = 0;
             }
-            else if (attempts > 1000)
+            else if (attempts > attempts_before_drop)
             {
-                state = state_.DROPPED;
-                DebugPrint("Connection lost. Is the PPlus connected?", DebugType.ALL);
+                state = State.DROPPED;
+                Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: Connection lost. Is the PPlus connected?", handle.ToInt64()));
                 break;
             }
             else
@@ -170,7 +176,7 @@ public class PPlus
             }
             ++attempts;
         }
-        DebugPrint("End poll loop.", DebugType.THREADING);
+        Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: End poll loop.", handle.ToInt64()));
     }
     byte[] last_report_buf = new byte[MAX_REPORT_LEN];
     int last_report_len = 0;
@@ -178,7 +184,7 @@ public class PPlus
     int this_report_len = 0;
     public void Update()
     {
-        if (state > state_.NO_PPLUSES)
+        if (state > State.NO_PPLUSES)
         {
             while (reports.Count > 0)
             {
@@ -270,6 +276,8 @@ public class PPlus
 	
     public void Begin()
     {
+        Debug.Log(string.Format("PPlus.Begin(): beginning for handle 0x{0:X8}", handle.ToInt64()));
+
         if (PollThreadObj == null)
         {
             PollThreadObj = new Thread(new ThreadStart(Poll));

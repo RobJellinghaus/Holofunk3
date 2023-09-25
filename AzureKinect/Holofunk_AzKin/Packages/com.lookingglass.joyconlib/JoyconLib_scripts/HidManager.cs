@@ -33,13 +33,12 @@ public class HidManager: MonoBehaviour
 
 		HIDapi.hid_init();
 
-		AwakeJoycons();
+		//AwakeJoycons();
+		AwakePplus();
 	}
 
 	void AwakePplus()
     {
-		pplus_list = new List<PPlus>();
-
 		IntPtr ptr = HIDapi.hid_enumerate(pplus_vendor_id, 0x0);
 		IntPtr top_ptr = ptr;
 
@@ -48,6 +47,8 @@ public class HidManager: MonoBehaviour
 			HIDapi.hid_free_enumeration(ptr);
 			Debug.Log("No PPluses found. Oh well. So sad.");
 		}
+
+		Debug.Log("Found device(s) with PPlus vendor ID.");
 		hid_device_info enumerate;
 		int i = 0;
 		while (ptr != IntPtr.Zero)
@@ -57,9 +58,9 @@ public class HidManager: MonoBehaviour
 			Debug.Log(enumerate.product_id);
 			if (enumerate.product_id == pplus_product_id)
 			{
-				Debug.Log("PPlus detected!!!");
 				IntPtr handle = HIDapi.hid_open_path(enumerate.path);
-				HIDapi.hid_set_nonblocking(handle, 1);
+				Debug.Log(string.Format("PPlus detected!!! Handle is 0x{0:X8}", handle.ToInt64()));
+				//HIDapi.hid_set_nonblocking(handle, 1);
 				pplus_list.Add(new PPlus(handle));
 				++i;
 			}
@@ -74,7 +75,6 @@ public class HidManager: MonoBehaviour
 
 	void AwakeJoycons()
 	{
-		joycon_list = new List<Joycon>();
 		bool isLeft = false;
 
 		IntPtr ptr = HIDapi.hid_enumerate(joycon_vendor_id, 0x0);
@@ -115,7 +115,6 @@ public class HidManager: MonoBehaviour
     {
 		for (int i = 0; i < joycon_list.Count; ++i)
 		{
-			Debug.Log(i);
 			Joycon jc = joycon_list[i];
 			byte LEDs = 0x0;
 			LEDs |= (byte)(0x1 << i);
@@ -125,7 +124,6 @@ public class HidManager: MonoBehaviour
 
 		for (int i = 0; i < pplus_list.Count; ++i)
 		{
-			Debug.Log(i);
 			PPlus pp = pplus_list[i];
 			pp.Attach();
 			pp.Begin();
