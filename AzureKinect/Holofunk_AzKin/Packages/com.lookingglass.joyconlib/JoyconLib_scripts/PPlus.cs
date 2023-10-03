@@ -57,7 +57,8 @@ public class PPlus
 
     private Dictionary<int, int> report_id_counts = new Dictionary<int, int>();
 
-    private const uint MAX_REPORT_LEN = 256;
+    // Report ID 4 (usage 0xFF37) is always 8 bytes, and seems to have all the button info we need...?!
+    private const uint MAX_REPORT_LEN = 8;
 
     private struct Report
     {
@@ -123,25 +124,25 @@ public class PPlus
     private byte ts_enqueue;
     private byte ts_dequeue;
     private System.DateTime ts_prev;
-    private byte[] raw_buf = new byte[MAX_REPORT_LEN]; // should be indexed by report ID
+    private byte[] enqueue_buf = new byte[MAX_REPORT_LEN]; // should be indexed by report ID
     private int ReceiveRaw()
     {
         if (handle == IntPtr.Zero) return -2;
         HIDapi.hid_set_nonblocking(handle, 0);
-        int ret = HIDapi.hid_read(handle, raw_buf, new UIntPtr(MAX_REPORT_LEN));
+        int ret = HIDapi.hid_read(handle, enqueue_buf, new UIntPtr(MAX_REPORT_LEN));
 
         if (ret > 0)
         {
             lock (reports)
             {
-                reports.Enqueue(new Report(raw_buf, ret, System.DateTime.Now));
+                reports.Enqueue(new Report(enqueue_buf, ret, System.DateTime.Now));
             }
-            if (ts_enqueue == raw_buf[1])
+            if (ts_enqueue == enqueue_buf[1])
             {
                 //DebugPrint(string.Format("Duplicate timestamp enqueued. TS: {0:X2}", ts_en), DebugType.THREADING);
             }
-            ts_enqueue = raw_buf[1];
-            DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Report ID: {1:X2}. Timestamp: {1:X2}", ret, raw_buf[0], raw_buf[1]), DebugType.THREADING);
+            ts_enqueue = enqueue_buf[1];
+            DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Report ID: {1:X2}. Timestamp: {1:X2}", ret, enqueue_buf[0], enqueue_buf[1]), DebugType.THREADING);
         }
         return ret;
     }
@@ -171,17 +172,15 @@ public class PPlus
             }
             else
             {
-                DebugPrint("Pause 5ms", DebugType.THREADING);
+                //DebugPrint("Pause 5ms", DebugType.THREADING);
                 Thread.Sleep((Int32)5);
             }
             ++attempts;
         }
         Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: End poll loop.", handle.ToInt64()));
     }
-    byte[] last_report_buf = new byte[MAX_REPORT_LEN];
-    int last_report_len = 0;
-    byte[] this_report_buf = new byte[MAX_REPORT_LEN];
-    int this_report_len = 0;
+    byte[] last_dequeue_buf = new byte[MAX_REPORT_LEN];
+    byte[] dequeue_buf = new byte[MAX_REPORT_LEN];
     public void Update()
     {
         if (state > State.NO_PPLUSES)
@@ -192,19 +191,37 @@ public class PPlus
                 lock (reports)
                 {
                     rep = reports.Dequeue();
-                    Array.Copy(rep.Bytes, this_report_buf, rep.Bytes.Length);
-                    this_report_len = rep.Bytes.Length;
+                    Array.Copy(rep.Bytes, dequeue_buf, MAX_REPORT_LEN);
                 }
-                if (ts_dequeue == this_report_buf[1])
+                if (ts_dequeue == dequeue_buf[1])
                 {
                     //DebugPrint(string.Format("Duplicate timestamp dequeued. TS: {0:X2}", ts_de), DebugType.THREADING);
                 }
-                ts_dequeue = this_report_buf[1];
-                DebugPrint(string.Format("Dequeue. Queue length: {0:d}. Packet length: {1:d}. Packet ID: {2:X2}. Timestamp: {3:X2}. Lag to dequeue: {4:s}. Lag between packets: {5:s}",
-                    reports.Count, this_report_len, this_report_buf[0], this_report_buf[1], System.DateTime.Now.Subtract(rep.GetTime()), rep.GetTime().Subtract(ts_prev)), DebugType.THREADING);
+                ts_dequeue = dequeue_buf[1];
+                DebugPrint(string.Format("Dequeue message. Queue length: {0:d}. Report ID: {1:X2}. Timestamp: {2:X2} Lag to dequeue: {3}ms. Lag between packets: {4}ms",
+                    reports.Count, dequeue_buf[0], dequeue_buf[1], System.DateTime.Now.Subtract(rep.GetTime()).TotalMilliseconds, rep.GetTime().Subtract(ts_prev).TotalMilliseconds), DebugType.THREADING);
                 ts_prev = rep.GetTime();
             }
-            ProcessButtonsAndStick(this_report_buf);
+
+            bool equals_last_buf = true;
+            for (int i = 0; i < MAX_REPORT_LEN; i++)
+            {
+                if (dequeue_buf[i] != last_dequeue_buf[i])
+                {
+                    equals_last_buf = false;
+                    break;
+                }
+            }
+
+            if (equals_last_buf)
+            {
+                // ignore duplicate messages, of which we seem to get a lot
+                return;
+            }
+
+            Array.Copy(dequeue_buf, last_dequeue_buf, MAX_REPORT_LEN);
+
+            ProcessButtonsAndStick(dequeue_buf);
 
             /*
             System.Text.StringBuilder stringBuilder = null;
@@ -235,6 +252,12 @@ public class PPlus
     private int ProcessButtonsAndStick(byte[] report_buf)
     {
         if (report_buf[0] == 0x00) return -1;
+
+        if (report_buf[0] != 0x04) return -1;
+
+        // 0x04 report (keyboard) is 8 bytes
+        DebugPrint(string.Format("{0:X2}{1:X2}{2:X2}{3:X2}{4:X2}{5:X2}{6:X2}{7:X2}",
+            report_buf[0], report_buf[1], report_buf[2], report_buf[3], report_buf[4], report_buf[5], report_buf[6], report_buf[7]), DebugType.THREADING);
 
         lock (buttons)
         {

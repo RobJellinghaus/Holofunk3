@@ -16,6 +16,34 @@ public class HidManager: MonoBehaviour
 
 	private const ushort pplus_vendor_id = 0x045e;
 	private const ushort pplus_product_id = 0x0851;
+	// The reports we receive from button presses are all for report ID 4, which is this:
+    //	Report Descriptor: (23 bytes)
+    //0x06, 0x00, 0xff, 0x0a, 0x37, 0xff, 0xa1, 0x01, 0x85, 0x04,
+    //0x09, 0x03, 0x15, 0x00, 0x25, 0xff, 0x75, 0x08, 0x95, 0x07,
+    //0x81, 0x02, 0xc0,
+    //Device Found
+    //  type: 045e 0851
+    //  path: \\?\HID#{00001812-0000-1000-8000-00805f9b34fb}_Dev_VID&02045e_PID&0851_REV&0125_ec5a511e8abe&Col06#9&2105eab6&0&0005#{4d1e55b2-f16f-11cf-88cb-001111000030}
+    //  serial_number: ec5a511e8abe
+    //  Manufacturer: Microsoft
+    //  Product:      Microsoft Presenter+
+    //  Release:      125
+    //  Interface:    -1
+    //  Usage(page) : 0xff38 (0xff00)
+    //  Bus type: 2
+    //
+    //0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+    //0x0A, 0x37, 0xFF,  // Usage (0xFF37)
+    //0xA1, 0x01,        // Collection (Application)
+    //0x85, 0x04,        //   Report ID (4)
+    //0x09, 0x03,        //   Usage (0x03)
+    //0x15, 0x00,        //   Logical Minimum (0)
+    //0x25, 0xFF,        //   Logical Maximum (-1)
+    //0x75, 0x08,        //   Report Size (8)
+    //0x95, 0x07,        //   Report Count (7)
+    //0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+    //0xC0,              // End Collection
+	private const ushort pplus_usage_for_report_4 = 0xFF37;
 
     public List<Joycon> joycon_list = new List<Joycon>(); // Array of all connected Joy-Cons
 	public List<PPlus> pplus_list = new List<PPlus>(); // Array of all connected PPluses
@@ -55,12 +83,11 @@ public class HidManager: MonoBehaviour
 		{
 			enumerate = (hid_device_info)Marshal.PtrToStructure(ptr, typeof(hid_device_info));
 
-			Debug.Log(enumerate.product_id);
-			if (enumerate.product_id == pplus_product_id)
+			if (enumerate.product_id == pplus_product_id && enumerate.usage == pplus_usage_for_report_4)
 			{
 				IntPtr handle = HIDapi.hid_open_path(enumerate.path);
-				Debug.Log(string.Format("PPlus detected!!! Handle is 0x{0:X8}", handle.ToInt64()));
-				//HIDapi.hid_set_nonblocking(handle, 1);
+				Debug.Log(string.Format("PPlus detected!!! Handle is 0x{0:X8} - usage is 0x{1:X2}", handle.ToInt64(), enumerate.usage));
+				HIDapi.hid_set_nonblocking(handle, 1);
 				pplus_list.Add(new PPlus(handle));
 				++i;
 			}
