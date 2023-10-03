@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Holofunk.Controller
 {
     /// <summary>
-    /// Component which manages the interaction between a JoyconController and a LocalMenu, possibly
+    /// Component which manages the interaction between a PPlusController and a LocalMenu, possibly
     /// selecting a different menu item.
     /// </summary>
     /// <remarks>
@@ -21,7 +21,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// The hand manipulating this menu.
         /// </summary>
-        JoyconController _joyconController;
+        PPlusController _joyconController;
 
         /// <summary>
         /// The menu this controller controls is expected to be a sibling component in the same menu
@@ -32,12 +32,12 @@ namespace Holofunk.Controller
         /// <summary>
         /// Initialize a newly instantiated MenuController.
         /// </summary>
-        /// <param name="joyconController">The controller which controls this menu.</param>
-        public void Initialize(JoyconController joyconController)
+        /// <param name="pplusController">The controller which controls this menu.</param>
+        public void Initialize(PPlusController pplusController)
         {
             Contract.Assert(Menu != null);
 
-            _joyconController = joyconController;
+            _joyconController = pplusController;
         }
 
         void Update()

@@ -38,11 +38,11 @@ namespace Holofunk.Loop
             }
 
             // Too inefficient? Our scene is practically empty... unless we get lots of loopie slices flying around...
-            // TODO: keep an eye on the profile for this FindObjectsOfType<JoyconController> call. Maybe they have a
+            // TODO: keep an eye on the profile for this FindObjectsOfType<PPlusController> call. Maybe they have a
             // per-type index.
-            foreach (JoyconController joyconController in GameObject.FindObjectsOfType<JoyconController>())
+            foreach (PPlusController pplusController in GameObject.FindObjectsOfType<PPlusController>())
             {
-                allTouchedLoopieSet.UnionWith(joyconController.TouchedLoopieIds);
+                allTouchedLoopieSet.UnionWith(pplusController.TouchedLoopieIds);
             }
 
             foreach (LocalLoopie localLoopie in

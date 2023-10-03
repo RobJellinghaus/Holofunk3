@@ -7,6 +7,7 @@ using System;
 
 using System.Threading;
 using UnityEngine;
+using System.Collections.Concurrent;
 
 public class PPlus
 {
@@ -20,7 +21,6 @@ public class PPlus
         RUMBLE,
     };
 	public DebugType debug_type = DebugType.THREADING;
-    public bool isLeft;
     public enum State : uint
     {
         NOT_ATTACHED,
@@ -32,17 +32,14 @@ public class PPlus
     public State state;
     public enum Button : int
     {
-        MICROPHONE = 0,
-        LEFT = 1,
-        RIGHT = 2,
-        LIGHT = 3,
-        TEAMS = 4,
+        NONE = 0,
+        MIKE = 1,
+        LEFT = 2,
+        RIGHT = 3,
+        LIGHT = 4,
+        TEAMS = 5,
     };
     public const int BUTTON_COUNT = 5;
-    private bool[] buttons_down = new bool[BUTTON_COUNT];
-    private bool[] buttons_up = new bool[BUTTON_COUNT];
-    private bool[] buttons = new bool[BUTTON_COUNT];
-    private bool[] down_ = new bool[BUTTON_COUNT];
 
     private 
 	IntPtr handle;
@@ -93,18 +90,6 @@ public class PPlus
         {
             Debug.Log(s);
         }
-    }
-    public bool GetButtonDown(Button b)
-    {
-        return buttons_down[(int)b];
-    }
-    public bool GetButton(Button b)
-    {
-        return buttons[(int)b];
-    }
-    public bool GetButtonUp(Button b)
-    {
-        return buttons_up[(int)b];
     }
 	public int Attach(byte leds_ = 0x0)
     {
@@ -249,52 +234,58 @@ public class PPlus
             */
         }
     }
-    private int ProcessButtonsAndStick(byte[] report_buf)
-    {
-        if (report_buf[0] == 0x00) return -1;
 
-        if (report_buf[0] != 0x04) return -1;
+    /// <summary>
+    /// Event for a Presenter Plus button press; if down, the button just went down; if !down, the button just went up.
+    /// </summary>
+    public struct ButtonEvent
+    {
+        public readonly Button button;
+        public readonly bool down;
+        public ButtonEvent(Button b, bool d)
+        {
+            button = b;
+            down = d;
+        }
+    }
+
+    private ConcurrentQueue<ButtonEvent> queue = new ConcurrentQueue<ButtonEvent>();
+
+    /// <summary>
+    /// Poll this to get all events.
+    /// </summary>
+    public bool TryDequeueEvent(out ButtonEvent evt)
+    {
+        return queue.TryDequeue(out evt);
+    }
+
+    private void ProcessButtonsAndStick(byte[] report_buf)
+    {
+        if (report_buf[0] == 0x00) return;
+
+        if (report_buf[0] != 0x04) return;
+
+        // Mike: 043F010000000000 down, 043F000000000000 up
+        // Left: 043B010000000000 down, 043B000000000000
+        // Right: 043C010000000000 down, 043C000000000000 up
+        // Light: 043D010000000000 down, 043D000000000000 up
+        // Teams: 043E010000000000 down, 043E000000000000 up
+        Button b = Button.NONE;
+        switch (report_buf[1])
+        {
+            case 0x3F: b = Button.MIKE; break;
+            case 0x3B: b = Button.LEFT; break;
+            case 0x3C: b = Button.RIGHT; break;
+            case 0x3D: b = Button.LIGHT; break;
+            case 0x3E: b = Button.TEAMS; break;
+        }
+        bool down = report_buf[2] == 0x1;
 
         // 0x04 report (keyboard) is 8 bytes
-        DebugPrint(string.Format("{0:X2}{1:X2}{2:X2}{3:X2}{4:X2}{5:X2}{6:X2}{7:X2}",
-            report_buf[0], report_buf[1], report_buf[2], report_buf[3], report_buf[4], report_buf[5], report_buf[6], report_buf[7]), DebugType.THREADING);
+        DebugPrint(string.Format("{0:X2}{1:X2}{2:X2}{3:X2}{4:X2}{5:X2}{6:X2}{7:X2} - posting ButtonEvent button: {8}, down: {9}",
+            report_buf[0], report_buf[1], report_buf[2], report_buf[3], report_buf[4], report_buf[5], report_buf[6], report_buf[7], b, down), DebugType.THREADING);
 
-        lock (buttons)
-        {
-            lock (down_)
-            {
-                for (int i = 0; i < buttons.Length; ++i)
-                {
-                    down_[i] = buttons[i];
-                }
-            }
-            /*
-            buttons[(int)Button.DPAD_DOWN] = (report_buf[3 + (isLeft ? 2 : 0)] & (isLeft ? 0x01 : 0x04)) != 0;
-            buttons[(int)Button.DPAD_RIGHT] = (report_buf[3 + (isLeft ? 2 : 0)] & (isLeft ? 0x04 : 0x08)) != 0;
-            buttons[(int)Button.DPAD_UP] = (report_buf[3 + (isLeft ? 2 : 0)] & (isLeft ? 0x02 : 0x02)) != 0;
-            buttons[(int)Button.DPAD_LEFT] = (report_buf[3 + (isLeft ? 2 : 0)] & (isLeft ? 0x08 : 0x01)) != 0;
-            buttons[(int)Button.HOME] = ((report_buf[4] & 0x10) != 0);
-            buttons[(int)Button.MINUS] = ((report_buf[4] & 0x01) != 0);
-            buttons[(int)Button.PLUS] = ((report_buf[4] & 0x02) != 0);
-            buttons[(int)Button.STICK] = ((report_buf[4] & (isLeft ? 0x08 : 0x04)) != 0);
-            buttons[(int)Button.SHOULDER_1] = (report_buf[3 + (isLeft ? 2 : 0)] & 0x40) != 0;
-            buttons[(int)Button.SHOULDER_2] = (report_buf[3 + (isLeft ? 2 : 0)] & 0x80) != 0;
-            buttons[(int)Button.SR] = (report_buf[3 + (isLeft ? 2 : 0)] & 0x10) != 0;
-            buttons[(int)Button.SL] = (report_buf[3 + (isLeft ? 2 : 0)] & 0x20) != 0;
-            */
-            lock (buttons_up)
-            {
-                lock (buttons_down)
-                {
-                    for (int i = 0; i < buttons.Length; ++i)
-                    {
-                        buttons_up[i] = (down_[i] & !buttons[i]);
-                        buttons_down[i] = (!down_[i] & buttons[i]);
-                    }
-                }
-            }
-        }
-        return 0;
+        queue.Enqueue(new ButtonEvent(b, down));
     }
 	
     public void Begin()
@@ -306,37 +297,5 @@ public class PPlus
             PollThreadObj = new Thread(new ThreadStart(Poll));
             PollThreadObj.Start();
         }
-    }
-    private byte[] Subcommand(byte sc, byte[] buf, uint len, bool print = true)
-    {
-        byte[] response = new byte[0];
-        /*
-        byte[] buf_ = new byte[report_len];
-        Array.Copy(default_buf, 0, buf_, 2, 8);
-        Array.Copy(buf, 0, buf_, 11, len);
-        buf_[10] = sc;
-        buf_[1] = global_count;
-        buf_[0] = 0x1;
-        if (global_count == 0xf) global_count = 0;
-        else ++global_count;
-        if (print) { PrintArray(buf_, DebugType.COMMS, len, 11, "Subcommand 0x" + string.Format("{0:X2}", sc) + " sent. Data: 0x{0:S}"); };
-        HIDapi.hid_write(handle, buf_, new UIntPtr(len + 11));
-        int res = HIDapi.hid_read_timeout(handle, response, new UIntPtr(report_len), 50);
-        if (res < 1) DebugPrint("No response.", DebugType.COMMS);
-        else if (print) { PrintArray(response, DebugType.COMMS, report_len - 1, 1, "Response ID 0x" + string.Format("{0:X2}", response[0]) + ". Data: 0x{0:S}"); }
-        */
-        return response;
-    }
-
-    private void PrintArray<T>(T[] arr, DebugType d = DebugType.NONE, uint len = 0, uint start = 0, string format = "{0:S}")
-    {
-        if (d != debug_type && debug_type != DebugType.ALL) return;
-        if (len == 0) len = (uint)arr.Length;
-        string tostr = "";
-        for (int i = 0; i < len; ++i)
-        {
-            tostr += string.Format((arr[0] is byte) ? "{0:X2} " : ((arr[0] is float) ? "{0:F} " : "{0:D} "), arr[i + start]);
-        }
-        DebugPrint(string.Format(format, tostr), d);
     }
 }

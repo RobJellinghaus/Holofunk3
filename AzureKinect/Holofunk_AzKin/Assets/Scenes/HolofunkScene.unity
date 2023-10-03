@@ -1575,10 +1575,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 764715391}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d97e43962d87b2248aa4ef6831761494, type: 3}
+  m_Script: {fileID: 11500000, guid: e001ca0d8f0081e4cb5c9df1b9c5fc8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  joyconIndex: 0
+  pplusIndex: 0
   playerIndex: 0
   handSide: 1
 --- !u!114 &764715396
@@ -3315,10 +3315,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1612466416}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d97e43962d87b2248aa4ef6831761494, type: 3}
+  m_Script: {fileID: 11500000, guid: e001ca0d8f0081e4cb5c9df1b9c5fc8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  joyconIndex: 1
+  pplusIndex: 1
   playerIndex: 1
   handSide: 1
 --- !u!114 &1612466421

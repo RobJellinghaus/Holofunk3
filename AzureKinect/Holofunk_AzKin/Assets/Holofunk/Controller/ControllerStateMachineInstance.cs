@@ -17,10 +17,10 @@ using UnityEngine;
 
 namespace Holofunk.Controller
 {
-    using ControllerState = State<JoyconEvent, JoyconController, JoyconController>;
-    using ControllerAction = Action<JoyconEvent, JoyconController>;
+    using ControllerState = State<PPlusEvent, PPlusController, PPlusController>;
+    using ControllerAction = Action<PPlusEvent, PPlusController>;
  
-    class ControllerStateMachine : StateMachine<JoyconEvent>
+    class ControllerStateMachine : StateMachine<PPlusEvent>
     {
         static ControllerStateMachine s_instance;
 
@@ -38,26 +38,26 @@ namespace Holofunk.Controller
         }
 
         // convenience method to reduce typing at call sites
-        static void AddTransition<TModel>(ControllerStateMachine ret, State<JoyconEvent, TModel> from, JoyconEvent evt, State<JoyconEvent> to)
+        static void AddTransition<TModel>(ControllerStateMachine ret, State<PPlusEvent, TModel> from, PPlusEvent evt, State<PPlusEvent> to)
             where TModel : IModel
         {
-            ret.AddTransition<TModel>(from, new Transition<JoyconEvent, TModel>(evt, to));
+            ret.AddTransition<TModel>(from, new Transition<PPlusEvent, TModel>(evt, to));
         }
 
         // convenience method to reduce typing at call sites
-        static void AddTransition<TModel>(ControllerStateMachine ret, State<JoyconEvent, TModel> from, JoyconEvent evt, State<JoyconEvent> to, Func<bool> guardFunc)
+        static void AddTransition<TModel>(ControllerStateMachine ret, State<PPlusEvent, TModel> from, PPlusEvent evt, State<PPlusEvent> to, Func<bool> guardFunc)
             where TModel : IModel
         {
-            ret.AddTransition<TModel>(from, new Transition<JoyconEvent, TModel>(evt, to, guardFunc));
+            ret.AddTransition<TModel>(from, new Transition<PPlusEvent, TModel>(evt, to, guardFunc));
         }
 
-        static void AddTransition<TModel>(ControllerStateMachine ret, State<JoyconEvent, TModel> from, JoyconEvent evt, Func<JoyconEvent, TModel, Option<State<JoyconEvent>>> computeTransitionFunc)
+        static void AddTransition<TModel>(ControllerStateMachine ret, State<PPlusEvent, TModel> from, PPlusEvent evt, Func<PPlusEvent, TModel, Option<State<PPlusEvent>>> computeTransitionFunc)
             where TModel : IModel
         {
-            ret.AddTransition<TModel>(from, new Transition<JoyconEvent, TModel>(evt, computeTransitionFunc));
+            ret.AddTransition<TModel>(from, new Transition<PPlusEvent, TModel>(evt, computeTransitionFunc));
         }
 
-        ControllerStateMachine(ControllerState initialState, IComparer<JoyconEvent> comparer)
+        ControllerStateMachine(ControllerState initialState, IComparer<PPlusEvent> comparer)
             : base(initialState, comparer)
         {
         }
@@ -73,10 +73,10 @@ namespace Holofunk.Controller
             var initial = new ControllerState(
                 "initial",
                 root,
-                (evt, joyconController) => { },
-                (evt, joyconController) => { });
+                (evt, pplusController) => { },
+                (evt, pplusController) => { });
 
-            var stateMachine = new ControllerStateMachine(initial, JoyconEventComparer.Instance);
+            var stateMachine = new ControllerStateMachine(initial, PPlusEventComparer.Instance);
 
             #region Recording
 
@@ -84,31 +84,31 @@ namespace Holofunk.Controller
             ControllerState recording = new ControllerState(
                 "recording",
                 initial,
-                (evt, joyconController) =>
+                (evt, pplusController) =>
                 {
-                    //joyconController.PushSprite(SpriteId.HollowCircle, Color.red);
+                    //pplusController.PushSprite(SpriteId.HollowCircle, Color.red);
 
                     // Creating the loopie here assigns it as the currently held loopie.
                     // Note that this implicitly starts recording.
-                    joyconController.CreateLoopie(
-                        joyconController.playerIndex == 0 
+                    pplusController.CreateLoopie(
+                        pplusController.playerIndex == 0 
                             ? NowSoundLib.AudioInputId.AudioInput1
                             : NowSoundLib.AudioInputId.AudioInput2);
                 },
-                (evt, joyconController) =>
+                (evt, pplusController) =>
                 {
-                    //joyconController.PopGameObject();
-                    joyconController.ReleaseLoopie();
+                    //pplusController.PopGameObject();
+                    pplusController.ReleaseLoopie();
                 });
 
             AddTransition(
                 stateMachine,
                 initial,
-                JoyconEvent.TriggerPressed,
+                PPlusEvent.MikeDown,
                 // Start recording if and only if 1) the UI didn't capture this, and 2) recording is enabled.
-                (evt, joyconController) => (!evt.IsCaptured /* && HolofunkController.Instance.IsRecordingEnabled */) ? recording : initial);
+                (evt, pplusController) => (!evt.IsCaptured /* && HolofunkController.Instance.IsRecordingEnabled */) ? recording : initial);
 
-            AddTransition(stateMachine, recording, JoyconEvent.TriggerReleased, initial);
+            AddTransition(stateMachine, recording, PPlusEvent.MikeUp, initial);
 
             #endregion
 
@@ -117,7 +117,7 @@ namespace Holofunk.Controller
             ControllerState mute = new ControllerState(
                 "mute",
                 initial,
-                (evt, joyconController) =>
+                (evt, pplusController) =>
                 {
                     // initialize whether we are deleting the loopies we touch
                     Option<bool> deletingTouchedLoopies = Option<bool>.None;
@@ -125,7 +125,7 @@ namespace Holofunk.Controller
                     // Collection of loopies that makes sure we don't flip loopies back and forth between states.
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
-                    joyconController.SetTouchedLoopieAction(loopie =>
+                    pplusController.SetTouchedLoopieAction(loopie =>
                     {
                         HoloDebug.Log($"ControllerStateMachineInstance.Mute.TouchedLoopieAction: loopie {loopie.Id}, IsMuted {loopie.GetLoopie().IsMuted}");
                         // the first loopie touched, if it's a double-mute, puts us into delete mode
@@ -156,19 +156,19 @@ namespace Holofunk.Controller
                         }
                     });
                 },
-                (evt, joyconController) => joyconController.SetTouchedLoopieAction(null));
+                (evt, pplusController) => pplusController.SetTouchedLoopieAction(null));
 
-            AddTransition(stateMachine, initial, JoyconEvent.DPadDownPressed, mute);
-            AddTransition(stateMachine, mute, JoyconEvent.DPadDownReleased, initial);
+            AddTransition(stateMachine, initial, PPlusEvent.LeftDown, mute);
+            AddTransition(stateMachine, mute, PPlusEvent.LeftUp, initial);
 
             ControllerState unmute = new ControllerState(
                 "unmute",
                 initial,
-                (evt, joyconController) =>
+                (evt, pplusController) =>
                 {
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
-                    joyconController.SetTouchedLoopieAction(loopie =>
+                    pplusController.SetTouchedLoopieAction(loopie =>
                     {
                         if (!toggledLoopies.Contains(loopie.Id))
                         {
@@ -177,10 +177,10 @@ namespace Holofunk.Controller
                         }
                     });
                 },
-                (evt, joyconController) => joyconController.SetTouchedLoopieAction(null));
+                (evt, pplusController) => pplusController.SetTouchedLoopieAction(null));
 
-            AddTransition(stateMachine, initial, JoyconEvent.DPadUpPressed, unmute);
-            AddTransition(stateMachine, unmute, JoyconEvent.DPadUpReleased, initial);
+            AddTransition(stateMachine, initial, PPlusEvent.RightDown, unmute);
+            AddTransition(stateMachine, unmute, PPlusEvent.RightUp, initial);
 
             #endregion
 
@@ -193,21 +193,21 @@ namespace Holofunk.Controller
             ControllerState loudenSoften = new ControllerState(
                 "loudenSoften",
                 initial,
-                (evt, joyconController) =>
+                (evt, pplusController) =>
                 {
                     // keep the set of touched loopies stable, so whatever we originally touched is still what we louden/soften
-                    joyconController.KeepTouchedLoopiesStable = true;
+                    pplusController.KeepTouchedLoopiesStable = true;
 
-                    widget = joyconController.CreateVolumeWidget().GetComponent<DistributedVolumeWidget>();
-                    float initialHandYPosition = joyconController.GetViewpointHandPosition().y;
+                    widget = pplusController.CreateVolumeWidget().GetComponent<DistributedVolumeWidget>();
+                    float initialHandYPosition = pplusController.GetViewpointHandPosition().y;
                     float lastVolumeRatio = 1;
                     float volumeRatio = 1;
 
-                    joyconController.SetUpdateAction(() =>
+                    pplusController.SetUpdateAction(() =>
                     {
                         lastVolumeRatio = volumeRatio;
 
-                        float currentHandYPosition = joyconController.GetViewpointHandPosition().y;
+                        float currentHandYPosition = pplusController.GetViewpointHandPosition().y;
 
                         float currentRatioOfMaxDistance = (currentHandYPosition - initialHandYPosition) / MagicNumbers.MaxVolumeHeightMeters;
                         // clamp this to (-1, 1) interval
@@ -237,7 +237,7 @@ namespace Holofunk.Controller
                             new VolumeWidgetState { ViewpointPosition = state.ViewpointPosition, VolumeRatio = volumeRatio });
                     });
 
-                    joyconController.SetTouchedLoopieAction(loopie =>
+                    pplusController.SetTouchedLoopieAction(loopie =>
                     {
                         if (lastVolumeRatio != volumeRatio)
                         {
@@ -245,19 +245,19 @@ namespace Holofunk.Controller
                         }
                     });
                 },
-                (evt, joyconController) =>
+                (evt, pplusController) =>
                 {
                     // technically this should revert to whatever it was before, but we know in this case this was false before
-                    joyconController.KeepTouchedLoopiesStable = false;
+                    pplusController.KeepTouchedLoopiesStable = false;
 
-                    joyconController.SetUpdateAction(null);
-                    joyconController.SetTouchedLoopieAction(null);
+                    pplusController.SetUpdateAction(null);
+                    pplusController.SetTouchedLoopieAction(null);
 
                     widget.Delete();
                 });
             /*
-            AddTransition(stateMachine, initial, JoyconEvent.ShoulderPressed, loudenSoften);
-            AddTransition(stateMachine, loudenSoften, JoyconEvent.ShoulderReleased, initial);
+            AddTransition(stateMachine, initial, PPlusEvent.ShoulderPressed, loudenSoften);
+            AddTransition(stateMachine, loudenSoften, PPlusEvent.ShoulderReleased, initial);
             */
 
             #endregion
@@ -268,8 +268,8 @@ namespace Holofunk.Controller
             // so we can safely use a local variable here to close over this menu
             var soundEffectMenu = CreateMenuState(initial, MenuKinds.SoundEffects);
 
-            AddTransition(stateMachine, initial, JoyconEvent.DPadLeftPressed, soundEffectMenu);
-            AddTransition(stateMachine, soundEffectMenu, JoyconEvent.DPadLeftReleased, initial);
+            AddTransition(stateMachine, initial, PPlusEvent.LightDown, soundEffectMenu);
+            AddTransition(stateMachine, soundEffectMenu, PPlusEvent.LightUp, initial);
 
             #endregion
 
@@ -277,8 +277,8 @@ namespace Holofunk.Controller
 
             ControllerState systemMenu = CreateMenuState(initial, MenuKinds.System);
 
-            AddTransition(stateMachine, initial, JoyconEvent.DPadRightPressed, systemMenu);
-            AddTransition(stateMachine, systemMenu, JoyconEvent.DPadRightReleased, initial);
+            AddTransition(stateMachine, initial, PPlusEvent.TeamsDown, systemMenu);
+            AddTransition(stateMachine, systemMenu, PPlusEvent.TeamsUp, initial);
 
             #endregion
 
@@ -294,14 +294,14 @@ namespace Holofunk.Controller
             var menu = new ControllerState(
                 menuKind.ToString(),
                 initial,
-                (evt, joyconController) =>
+                (evt, pplusController) =>
                 {
                     // keep the set of touched loopies stable, so whatever we originally touched is still what we apply sound effects to
-                    joyconController.KeepTouchedLoopiesStable = true;
+                    pplusController.KeepTouchedLoopiesStable = true;
 
-                    menuGameObject = CreateMenu(joyconController, menuKind);
+                    menuGameObject = CreateMenu(pplusController, menuKind);
                 },
-                (evt, joyconController) => {
+                (evt, pplusController) => {
                     // got one crash on the "DistributeMenu menu = menuGameObject.GetComponent<...>(...)" line below.
                     // Speculation is that there could be multiple events in flight, or something, such that this can
                     // incorrectly be reached more than once on the way out of the state machine.
@@ -309,9 +309,9 @@ namespace Holofunk.Controller
                     if (menuGameObject != null)
                     {
                         // let loopies get (un)touched again
-                        joyconController.KeepTouchedLoopiesStable = false;
+                        pplusController.KeepTouchedLoopiesStable = false;
 
-                        HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(joyconController.TouchedLoopieIds);
+                        HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(pplusController.TouchedLoopieIds);
 
                         DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
                         HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
@@ -328,12 +328,12 @@ namespace Holofunk.Controller
             return menu;
         }
 
-        private static GameObject CreateMenu(JoyconController joyconController, MenuKinds menuKind)
+        private static GameObject CreateMenu(PPlusController pplusController, MenuKinds menuKind)
         {
-            HoloDebug.Log($"Creating menu kind {menuKind} for joyconController #{joyconController.playerIndex}{joyconController.handSide}");
+            HoloDebug.Log($"Creating menu kind {menuKind} for pplusController #{pplusController.playerIndex}{pplusController.handSide}");
 
             // get the forward direction towards the camera from the hand location
-            Vector3 localHandPosition = joyconController.GetViewpointHandPosition();
+            Vector3 localHandPosition = pplusController.GetViewpointHandPosition();
 
             Vector3 viewpointHandPosition = localHandPosition;
             // was previously: DistributedViewpoint.Instance.LocalToViewpointMatrix().MultiplyPoint(localHandPosition);
@@ -345,7 +345,7 @@ namespace Holofunk.Controller
                 viewpointForwardDirection,
                 viewpointHandPosition);
 
-            menuGameObject.GetComponent<MenuController>().Initialize(joyconController);
+            menuGameObject.GetComponent<MenuController>().Initialize(pplusController);
 
             return menuGameObject;
         }

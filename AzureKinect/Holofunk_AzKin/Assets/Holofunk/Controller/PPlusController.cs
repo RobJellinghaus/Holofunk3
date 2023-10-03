@@ -16,16 +16,16 @@ using UnityEngine;
 
 namespace Holofunk.Controller
 {
-    using ControllerStateMachineInstance = StateMachineInstance<JoyconEvent>;
+    using ControllerStateMachineInstance = StateMachineInstance<PPlusEvent>;
 
     /// <summary>
-    /// Tracks the state and interactions of a single player's controller.
+    /// Tracks the state and interactions of a single player's Presenter Plus controller.
     /// </summary>
     /// <remarks>
-    /// Arguably this is a horrible amount of code duplication vs. the HandController in the HoloLens 2 code
-    /// base, but pending some actual revival of the mixed reality version, not worrying about that right now.
+    /// This is even more horrible code duplication compared to PPlusController, but that will probably
+    /// cease to exist soon.
     /// </remarks>
-    public class JoyconController : MonoBehaviour, IModel
+    public class PPlusController : MonoBehaviour, IModel
     {
         /// <summary>
         /// Index of the JoyCon selected by this Controller; -1 means "unknown".
@@ -34,8 +34,8 @@ namespace Holofunk.Controller
         /// This is the index into the HidManager.Instance.j array. (Yes, HidManager
         /// uses public instance variables... oh well)
         /// </remarks>
-        [Tooltip("Joycon index in HidManager")]
-        public int joyconIndex = 0;
+        [Tooltip("PPlus index in HidManager")]
+        public int pplusIndex = 0;
 
         /// <summary>
         /// The player ID of this player, in the current viewpoint's view.
@@ -152,16 +152,20 @@ namespace Holofunk.Controller
 
         public bool IsUpdatable()
         { 
-            if (joyconIndex == -1 || HidManager.Instance == null || HidManager.Instance.joycon_list.Count <= joyconIndex){
-                // No joyCon yet associated with this player; nothing to do.
+            if (pplusIndex == -1 || HidManager.Instance == null || HidManager.Instance.pplus_list.Count <= pplusIndex){
+                // No PPlus yet associated with this player; nothing to do.
+                HoloDebug.Log($"pplus_list.Count is {HidManager.Instance.pplus_list.Count}, pplusIndex is {pplusIndex}, nothing to do");
                 return false;
             }
 
             if (DistributedViewpoint.Instance == null || DistributedViewpoint.Instance.PlayerCount <= playerIndex)
             {
                 // No Kinect player recognized yet.
+                Debug.Log(string.Format("No Kinect, nothing to do."));
                 return false;
             }
+
+            Debug.Log($"PPlus {pplusIndex} is updatable, here we go.");
             return true; 
         }
 
@@ -173,11 +177,12 @@ namespace Holofunk.Controller
                 return;
             }
 
-            Joycon thisJoycon = HidManager.Instance.joycon_list[joyconIndex];
+            PPlus thisPPlus = HidManager.Instance.pplus_list[pplusIndex];
 
             // Joycon bailed, we're done
-            if (thisJoycon.state == Joycon.state_.DROPPED)
+            if (thisPPlus.state == PPlus.State.DROPPED)
             {
+                HoloDebug.Log($"pplusIndex {pplusIndex}; thisPPlus.state == DROPPED; closing and exiting.");
                 if (stateMachineInstance != null)
                 {
                     stateMachineInstance.OnCompleted();
@@ -190,12 +195,16 @@ namespace Holofunk.Controller
             // (it exists only as long as we are recognized by the viewpoint.)
             if (stateMachineInstance == null)
             {
-                stateMachineInstance = new ControllerStateMachineInstance(JoyconEvent.TriggerReleased, ControllerStateMachine.Instance, this);
+                stateMachineInstance = new ControllerStateMachineInstance(PPlusEvent.MikeUp, ControllerStateMachine.Instance, this);
             }
 
-            // Create any pressed/released events as appropriate; we don't track each shoulder/trigger button
-            // separately.
-            CheckButtons(thisJoycon);
+            // Dequeue any button events that are waiting.
+            PPlus.ButtonEvent ppevt;
+            while (thisPPlus.TryDequeueEvent(out ppevt))
+            {
+                Debug.Log($"PPlus button event: button {ppevt.button}, down {ppevt.down}");
+                stateMachineInstance.OnNext(new PPlusEvent(ppevt.button, ppevt.down));
+            }
 
             // Update the loopie's position while the user is holding it.
             if (currentlyHeldLoopie != null)
@@ -208,7 +217,7 @@ namespace Holofunk.Controller
                     Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
                 }
                 */
-                HoloDebug.Log($"Updated viewport hand position of loopie {currentlyHeldLoopie} to {viewpointHandPosition}");
+                Debug.Log($"Updated viewport hand position of loopie {currentlyHeldLoopie} to {viewpointHandPosition}");
                 currentlyHeldLoopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
             }
 
@@ -233,27 +242,6 @@ namespace Holofunk.Controller
             }
 
             ApplyToTouchedLoopies(touchedLoopieAction);
-        }
-
-        /// <summary>
-        /// Fire down/up events for any pressed/released buttons in the past interval.
-        /// </summary>
-        /// <param name="joycon"></param>
-        private void CheckButtons(Joycon joycon)
-        {
-            for (Joycon.Button b = Joycon.Button.DPAD_DOWN; b <= Joycon.Button.SHOULDER_2; b++)
-            {
-                if (joycon.GetButtonDown(b))
-                {
-                    HoloDebug.Log($"Joycon button down: {b}: posting down event");
-                    stateMachineInstance.OnNext(new JoyconEvent(b, isDown: true));
-                }
-                if (joycon.GetButtonUp(b))
-                {
-                    HoloDebug.Log($"Joycon button up: {b}: posting up event");
-                    stateMachineInstance.OnNext(new JoyconEvent(b, isDown: false));
-                }
-            }
         }
 
         /// <summary>
