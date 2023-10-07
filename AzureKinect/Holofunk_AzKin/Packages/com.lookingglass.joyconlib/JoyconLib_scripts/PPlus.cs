@@ -49,10 +49,6 @@ public class PPlus
 
     // PPlus HID report IDs from my PPlus HID sleuthing
     private static readonly int[] REPORT_IDS = new[] { 1, 2, 3, 4, 5, 9, 39, 42, 49, 57, -101 };
-    private static readonly int REPORT_ID_COUNT = REPORT_IDS.Length;
-    private const int KEYBOARD_REPORT_ID = 1;
-
-    private Dictionary<int, int> report_id_counts = new Dictionary<int, int>();
 
     // Report ID 4 (usage 0xFF37) is always 8 bytes, and seems to have all the button info we need...?!
     private const uint MAX_REPORT_LEN = 8;
@@ -102,9 +98,13 @@ public class PPlus
         keep_polling = false;
         if (state > State.DROPPED)
         {
+            Debug.Log($"Detaching from PPlus with handle 0x{handle.ToInt64():X8}");
             HIDapi.hid_close(handle);
         }
         state = State.NOT_ATTACHED;
+
+        // and sleep just momentarily to let poll loop drain
+        Thread.Sleep((Int32)5);
     }
     private byte ts_enqueue;
     private byte ts_dequeue;
@@ -113,7 +113,7 @@ public class PPlus
     private int ReceiveRaw()
     {
         if (handle == IntPtr.Zero) return -2;
-        HIDapi.hid_set_nonblocking(handle, 0);
+        HIDapi.hid_set_nonblocking(handle, 1);
         int ret = HIDapi.hid_read(handle, enqueue_buf, new UIntPtr(MAX_REPORT_LEN));
 
         if (ret > 0)
@@ -135,7 +135,7 @@ public class PPlus
     private const int attempts_before_drop = 10000;
     private void Poll()
     {
-        Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: polling", handle.ToInt64()));
+        //Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: polling", handle.ToInt64()));
 
         int attempts = 0;
         while (keep_polling && state > State.NO_PPLUSES)
@@ -144,17 +144,19 @@ public class PPlus
             a = ReceiveRaw();
             if (a > 0)
             {
-                Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: received", handle.ToInt64()));
+                //Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: received", handle.ToInt64()));
 
                 //state = state_.IMU_DATA_OK;
                 attempts = 0;
             }
+            /*
             else if (attempts > attempts_before_drop)
             {
                 state = State.DROPPED;
                 Debug.Log(string.Format("PPlus.Poll(): handle 0x{0:X8}: Connection lost. Is the PPlus connected?", handle.ToInt64()));
                 break;
             }
+            */
             else
             {
                 //DebugPrint("Pause 5ms", DebugType.THREADING);

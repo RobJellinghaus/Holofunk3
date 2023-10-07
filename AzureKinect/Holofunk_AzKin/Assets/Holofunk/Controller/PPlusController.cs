@@ -165,7 +165,6 @@ namespace Holofunk.Controller
                 return false;
             }
 
-            Debug.Log($"PPlus {pplusIndex} is updatable, here we go.");
             return true; 
         }
 
@@ -217,7 +216,7 @@ namespace Holofunk.Controller
                     Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
                 }
                 */
-                Debug.Log($"Updated viewport hand position of loopie {currentlyHeldLoopie} to {viewpointHandPosition}");
+                //Debug.Log($"Updated viewport hand position of loopie {currentlyHeldLoopie} to {viewpointHandPosition}");
                 currentlyHeldLoopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
             }
 

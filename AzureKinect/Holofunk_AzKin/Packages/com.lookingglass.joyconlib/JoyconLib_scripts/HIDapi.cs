@@ -44,7 +44,7 @@ public class HIDapi {
     public static extern void hid_close(IntPtr device);
 
     [DllImport("hidapi")]
-    public static extern IntPtr hid_open_path(string path);
+    public static extern IntPtr hid_open_path(IntPtr path);
 
     [DllImport("hidapi")]
     public static extern int hid_read(IntPtr device, byte[] data, UIntPtr length);
@@ -63,13 +63,13 @@ public class HIDapi {
 }
 
 struct hid_device_info {
-    public string path;
+    public IntPtr path;
     public ushort vendor_id;
     public ushort product_id;
-    public string serial_number;
+    public IntPtr serial_number;
     public ushort release_number;
-    public string manufacturer_string;
-    public string product_string;
+    public IntPtr manufacturer_string;
+    public IntPtr product_string;
     public ushort usage_page;
     public ushort usage;
     public int interface_number;
