@@ -110,6 +110,17 @@ public class PPlus
     private byte ts_dequeue;
     private System.DateTime ts_prev;
     private byte[] enqueue_buf = new byte[MAX_REPORT_LEN]; // should be indexed by report ID
+    private bool reports_equal(byte[] a, byte[] b)
+    {
+        return a[0] == b[0]
+            && a[1] == b[1]
+            && a[2] == b[2]
+            && a[3] == b[3]
+            && a[4] == b[4]
+            && a[5] == b[5]
+            && a[6] == b[6]
+            && a[7] == b[7];
+    }
     private int ReceiveRaw()
     {
         if (handle == IntPtr.Zero) return -2;
@@ -120,14 +131,21 @@ public class PPlus
         {
             lock (reports)
             {
-                reports.Enqueue(new Report(enqueue_buf, ret, System.DateTime.Now));
+                if (reports.Count > 0 && reports_equal(reports.Peek().Bytes, enqueue_buf))
+                {
+                    // don't enqueue, it's redundant
+                }
+                else 
+                {
+                    reports.Enqueue(new Report(enqueue_buf, ret, System.DateTime.Now));
+                    DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Report ID: {1:X2}. Timestamp: {1:X2}", ret, enqueue_buf[0], enqueue_buf[1]), DebugType.THREADING);
+                }
             }
             if (ts_enqueue == enqueue_buf[1])
             {
                 //DebugPrint(string.Format("Duplicate timestamp enqueued. TS: {0:X2}", ts_en), DebugType.THREADING);
             }
             ts_enqueue = enqueue_buf[1];
-            DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Report ID: {1:X2}. Timestamp: {1:X2}", ret, enqueue_buf[0], enqueue_buf[1]), DebugType.THREADING);
         }
         return ret;
     }

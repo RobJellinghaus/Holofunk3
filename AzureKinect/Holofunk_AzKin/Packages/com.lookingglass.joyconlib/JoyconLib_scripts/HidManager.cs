@@ -73,10 +73,10 @@ public class HidManager: MonoBehaviour
 		if (ptr == IntPtr.Zero)
 		{
 			HIDapi.hid_free_enumeration(ptr);
-			//Debug.Log("No PPluses found. Oh well. So sad.");
+			Debug.Log("No PPluses found. Oh well. So sad.");
 		}
 
-		//Debug.Log($"Found device(s) with PPlus vendor ID. ptr is 0x{ptr.ToInt64():X8}");
+		Debug.Log($"Found device(s) with PPlus vendor ID. ptr is 0x{ptr.ToInt64():X8}");
 		hid_device_info enumerate;
 		int i = 0;
 		while (ptr != IntPtr.Zero)
@@ -86,14 +86,14 @@ public class HidManager: MonoBehaviour
 			if (enumerate.product_id == pplus_product_id && enumerate.usage == pplus_usage_for_report_4)
 			{
 				IntPtr handle = HIDapi.hid_open_path(enumerate.path);
-				//Debug.Log(string.Format("PPlus detected!!! Handle is 0x{0:X8} - usage is 0x{1:X2}", handle.ToInt64(), enumerate.usage));
+				Debug.Log(string.Format("PPlus detected!!! Handle is 0x{0:X8} - usage is 0x{1:X2}", handle.ToInt64(), enumerate.usage));
 				HIDapi.hid_set_nonblocking(handle, 1);
 				pplus_list.Add(new PPlus(handle));
 				++i;
 			}
 			else
 			{
-				//Debug.Log("Non Joy-Con input device skipped.");
+				Debug.Log("Non-PPlus input device skipped.");
 			}
 			ptr = enumerate.next;
 		}
