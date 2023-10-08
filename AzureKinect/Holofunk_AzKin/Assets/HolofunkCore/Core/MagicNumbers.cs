@@ -61,12 +61,17 @@ namespace Holofunk.Core
         /// </summary>
         public static readonly int OctaveDivisions = 12;
         /// <summary>
-        /// The central frequency of the histogram; this is middle G.
+        /// The central frequency of the histogram (Hz).
         /// </summary>
         /// <remarks>
-        /// Middle C = 261.626 Hz. Middle G = 391.995 Hz.
+        /// Low C (C3) = 130.81 Hz.
+        /// Low G (G3) = 196.00 Hz.
+        /// Middle C (C4) = 261.626 Hz.
+        /// Middle G (G4) = 391.995 Hz.
+        /// High C (C5) = 532.25 Hz.
+        /// High G (G5) = 783.99 Hz.
         /// </remarks>
-        public static readonly float CentralFrequency = 391.995f;
+        public static readonly float CentralFrequency = 261.626f;
         /// <summary>
         /// The bin (out of OutputBinCount) in which the central frequency should be mapped; zero-indexed.
         /// </summary>
@@ -135,7 +140,18 @@ namespace Holofunk.Core
         /// <summary>
         /// The scale of each frequency disc's width, relative to the original scale of its shape.
         /// </summary>
-        public static readonly float FrequencyDiscWidthScaleFactor = 1f;
+        /// <remarks>
+        /// This allows varying aspect ratios in the X/Z plane.
+        /// </remarks>
+        public static readonly float FrequencyDiscWidthScaleFactor = 1.2f;
+
+        /// <summary>
+        /// The scale of each frequency disc's depth, relative to the original scale of its shape.
+        /// </summary>
+        /// <remarks>
+        /// This allows varying aspect ratios in the X/Z plane.
+        /// </remarks>
+        public static readonly float FrequencyDiscDepthScaleFactor = 0.8f;
 
         /// <summary>
         /// The vertical distance apart to place each frequency disc.
@@ -167,12 +183,12 @@ namespace Holofunk.Core
         /// <summary>
         /// Most transparent alpha value for minimal frequency shape.
         /// </summary>
-        public static readonly float FrequencyShapeMinAlpha = 0.1f;
+        public static readonly float FrequencyShapeMinAlpha = 0.5f;
 
         /// <summary>
         /// Least transparent alpha value for maximal frequency shape.
         /// </summary>
-        public static readonly float FrequencyShapeMaxAlpha = 0.9f;
+        public static readonly float FrequencyShapeMaxAlpha = 1.0f;
 
         /// <summary>
         /// The ratio by which a scaled bin value should decay towards its expected lower value.

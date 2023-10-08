@@ -119,7 +119,7 @@ namespace NowSoundLib
         public readonly Duration<AudioSample> Duration;
         // The duration of the track in (discrete) beats. (TODO?: allow non-beat-alignment)
         public readonly Duration<Beat> DurationInBeats;
-        // The duration of the track in exact seconds; DurationInSamples is this, rounded up to the nearest sample.
+        // The duration of the track in exact seconds; Duration is this, rounded up to the nearest sample.
         public readonly ContinuousDuration<Second> ExactDuration;
         // The local clock time (relative to the start of the current track); expressed as a duration.
         public readonly Duration<AudioSample> LocalClockTime;

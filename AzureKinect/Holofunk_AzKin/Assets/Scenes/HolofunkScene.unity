@@ -1473,7 +1473,7 @@ MonoBehaviour:
   computeColorMap: 1
   computeInfraredMap: 0
   displayUserMap: 0
-  displayColorMap: 1
+  displayColorMap: 0
   displaySkeletonLines: 0
   DisplayMapsWidthPercent: 20
   useMultiSourceReader: 1

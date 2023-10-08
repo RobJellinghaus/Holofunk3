@@ -84,6 +84,20 @@ namespace Holofunk.Loop
         /// </summary>
         private List<PluginInstanceIndex> pluginInstances = new List<PluginInstanceIndex>();
 
+        /// <summary>
+        /// The last fractional beat value.
+        /// </summary>
+        /// <remarks>If this drops, and the current integer beat value is 0, then this loopie just looped.</remarks>
+        private float lastFractionalBeat;
+
+        /// <summary>
+        /// The total number of beats that this loopie has played.
+        /// </summary>
+        /// <remarks>
+        /// This allows loops of only one or two beats to rotate smoothly through their full circle.
+        /// </remarks>
+        private Duration<Beat> completedLoopBeats;
+
         #endregion
 
         #region MonoBehaviour
@@ -129,7 +143,7 @@ namespace Holofunk.Loop
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
                 // really a very flat sort of cube... not much of a cube at all really
-                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.FlatCube, childShapeContainer);
+                GameObject disc = ShapeContainer.InstantiateShape(ShapeType.FlatCylinder, childShapeContainer);
                 disc.SetActive(true);
                 disc.transform.localPosition = new Vector3(0, i * MagicNumbers.FrequencyDiscVerticalDistance, 0);
                 Vector3 localScale = disc.transform.localScale;
@@ -137,7 +151,7 @@ namespace Holofunk.Loop
                 disc.transform.localScale = new Vector3(
                     localScale.x * MagicNumbers.FrequencyDiscWidthScaleFactor,
                     localScale.y * MagicNumbers.FrequencyDiscHeightScaleFactor,
-                    localScale.z * MagicNumbers.FrequencyDiscWidthScaleFactor);
+                    localScale.z * MagicNumbers.FrequencyDiscDepthScaleFactor);
 
                 // a bit wasteful to do redundantly per shape, but simplifies the logic since we don't have to go look at the prototype
                 originalBandShapeLocalScale = disc.transform.localScale;
@@ -334,12 +348,20 @@ namespace Holofunk.Loop
             // - if the beat is even, we are rotating the top of stack by 90 degrees by end of beat;
             // - if the beat is odd, we are rotating the bottom of stack likewise.
             // All other rotation values are interpolated between the two.
-            int intBeat = (int)trackInfo.LocalClockBeat;
-            bool beatIsEven = (intBeat & 0x1) == 0;
-            float fractionalBeat = (float)trackInfo.LocalClockBeat - intBeat;
-            // TODO: make this properly sensitive to actual beats in measure
-            float topDiscTargetYRotationDeg = ((intBeat / 2) + (beatIsEven ? fractionalBeat : 1)) * 90;
-            float bottomDiscTargetYRotationDeg = ((intBeat / 2) + (beatIsEven ? 0 : fractionalBeat)) * 90;
+            float fractionalBeat = (float)trackInfo.LocalClockBeat - (int)trackInfo.LocalClockBeat;
+
+            // if fractionalBeat is less than lastFractionalBeat and intBeat is 0,
+            // then we just wrapped around and should increment our completedLoopBeats.
+            if (lastFractionalBeat > fractionalBeat)
+            {
+                completedLoopBeats += 1;
+            }
+            lastFractionalBeat = fractionalBeat;
+
+            bool beatIsEven = (completedLoopBeats & 0x1) == 0;
+
+            float topDiscTargetYRotationDeg = ((completedLoopBeats / 2) + (beatIsEven ? fractionalBeat : 1)) * 90;
+            float bottomDiscTargetYRotationDeg = ((completedLoopBeats / 2) + (beatIsEven ? 0 : fractionalBeat)) * 90;
 
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
@@ -353,7 +375,7 @@ namespace Holofunk.Loop
 
                     frequencyBandShapes[i].transform.localScale = newLocalScale;
 
-                    discColor.a = MagicNumbers.FrequencyShapeMinAlpha;
+                    discColor *= MagicNumbers.FrequencyShapeMinAlpha;
                 }
                 else
                 {
@@ -404,7 +426,7 @@ namespace Holofunk.Loop
 
                     frequencyBandShapes[i].transform.localScale = newLocalScale;
 
-                    discColor.a = Mathf.Lerp(MagicNumbers.FrequencyShapeMinAlpha, MagicNumbers.FrequencyShapeMaxAlpha, amplitudeRatio);
+                    discColor *= Mathf.Lerp(MagicNumbers.FrequencyShapeMinAlpha, MagicNumbers.FrequencyShapeMaxAlpha, amplitudeRatio);
                 }
 
                 // now update the color.
