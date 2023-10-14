@@ -21,7 +21,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// The hand manipulating this menu.
         /// </summary>
-        PPlusController _joyconController;
+        PPlusController _pplusController;
 
         /// <summary>
         /// The menu this controller controls is expected to be a sibling component in the same menu
@@ -37,18 +37,18 @@ namespace Holofunk.Controller
         {
             Contract.Assert(Menu != null);
 
-            _joyconController = pplusController;
+            _pplusController = pplusController;
         }
 
         void Update()
         {
             // Only update if the controller is a thing.
-            if (!_joyconController.IsUpdatable())
+            if (!_pplusController.IsUpdatable())
             {
                 return;
             }
 
-            Vector3 handPosition = _joyconController.GetViewpointHandPosition();
+            Vector3 handPosition = _pplusController.GetViewpointHandPosition();
 
             // Find the closest item.
             Option<(int, MenuItemId)> closestItem = ((LocalMenu)Menu.LocalObject).GetClosestMenuItemIfAny(handPosition);

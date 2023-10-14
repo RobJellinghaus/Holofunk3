@@ -5,6 +5,7 @@ using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Hand;
 using Holofunk.Loop;
+using Holofunk.Menu;
 using Holofunk.Perform;
 using Holofunk.Sound;
 using Holofunk.StateMachines;
@@ -58,6 +59,14 @@ namespace Holofunk.Controller
         /// This is only ever non-null when the stateMachineInstance is in recording state.
         /// </remarks>
         private GameObject currentlyHeldLoopie;
+
+        /// <summary>
+        /// The menu this controller is manipulating, if any.
+        /// </summary>
+        /// <remarks>
+        /// Keeping this as closure state across the state machine instance was clever but invalid.
+        /// </remarks>
+        private GameObject currentlyOpenMenu;
 
         /// <summary>
         /// What should this controller do when it touches a loopie?
@@ -307,6 +316,39 @@ namespace Holofunk.Controller
 
             GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition, audioInputId);
             currentlyHeldLoopie = newLoopie;
+        }
+
+        public GameObject CreateMenu(MenuKinds menuKind)
+        {
+            HoloDebug.Log($"Creating menu kind {menuKind} for pplusController #{playerIndex}{handSide}");
+
+            // get the forward direction towards the camera from the hand location
+            Vector3 localHandPosition = GetViewpointHandPosition();
+
+            Vector3 viewpointHandPosition = localHandPosition;
+            // was previously: DistributedViewpoint.Instance.LocalToViewpointMatrix().MultiplyPoint(localHandPosition);
+
+            Vector3 viewpointForwardDirection = Vector3.forward;
+
+            HoloDebug.Assert(currentlyOpenMenu == null, "Must not already be an open menu for this controller");
+
+            currentlyOpenMenu = DistributedMenu.Create(
+                menuKind,
+                viewpointForwardDirection,
+                viewpointHandPosition);
+
+            currentlyOpenMenu.GetComponent<MenuController>().Initialize(this);
+
+            return currentlyOpenMenu;
+        }
+
+        public GameObject CurrentlyOpenMenu => currentlyOpenMenu;
+
+        public void CloseOpenMenu()
+        {
+            HoloDebug.Assert(currentlyOpenMenu != null, "Must be an open menu to close");
+
+            currentlyOpenMenu = null;
         }
 
         /// <summary>

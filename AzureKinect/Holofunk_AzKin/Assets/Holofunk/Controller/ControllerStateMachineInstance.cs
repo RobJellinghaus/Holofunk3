@@ -287,10 +287,6 @@ namespace Holofunk.Controller
 
         private static ControllerState CreateMenuState(ControllerState initial, MenuKinds menuKind)
         {
-            // State machine construction ensures there will only be one of these per state machine instance.
-            // But see bug below... there may be some incorrectness here....
-            GameObject menuGameObject = null;
-
             var menu = new ControllerState(
                 menuKind.ToString(),
                 initial,
@@ -299,55 +295,26 @@ namespace Holofunk.Controller
                     // keep the set of touched loopies stable, so whatever we originally touched is still what we apply sound effects to
                     pplusController.KeepTouchedLoopiesStable = true;
 
-                    menuGameObject = CreateMenu(pplusController, menuKind);
+                    pplusController.CreateMenu(menuKind);
                 },
                 (evt, pplusController) => {
-                    // got one crash on the "DistributeMenu menu = menuGameObject.GetComponent<...>(...)" line below.
-                    // Speculation is that there could be multiple events in flight, or something, such that this can
-                    // incorrectly be reached more than once on the way out of the state machine.
-                    // TODO: verify what could go wrong here, this fix may or may not have unintended consequences.
-                    if (menuGameObject != null)
-                    {
-                        // let loopies get (un)touched again
-                        pplusController.KeepTouchedLoopiesStable = false;
+                    // let loopies get (un)touched again
+                    pplusController.KeepTouchedLoopiesStable = false;
 
-                        HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(pplusController.TouchedLoopieIds);
+                    HashSet<DistributedId> touchedLoopies = new HashSet<DistributedId>(pplusController.TouchedLoopieIds);
 
-                        DistributedMenu menu = menuGameObject.GetComponent<DistributedMenu>();
-                        HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
-                        menu.InvokeSelectedAction(touchedLoopies);
+                    DistributedMenu menu = pplusController.CurrentlyOpenMenu.GetComponent<DistributedMenu>();
+                    HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
+                    menu.InvokeSelectedAction(touchedLoopies);
 
-                        // delete it in the distributed sense.
-                        // note that locally, this will synchronously destroy the game object
-                        HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: deleting menu {menu.Id}");
-                        menu.Delete();
-                        menuGameObject = null;
-                    }
+                    // delete it in the distributed sense.
+                    // note that locally, this will synchronously destroy the game object
+                    HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: deleting menu {menu.Id}");
+                    menu.Delete();
+                    pplusController.CloseOpenMenu();
                 });
 
             return menu;
-        }
-
-        private static GameObject CreateMenu(PPlusController pplusController, MenuKinds menuKind)
-        {
-            HoloDebug.Log($"Creating menu kind {menuKind} for pplusController #{pplusController.playerIndex}{pplusController.handSide}");
-
-            // get the forward direction towards the camera from the hand location
-            Vector3 localHandPosition = pplusController.GetViewpointHandPosition();
-
-            Vector3 viewpointHandPosition = localHandPosition;
-            // was previously: DistributedViewpoint.Instance.LocalToViewpointMatrix().MultiplyPoint(localHandPosition);
-
-            Vector3 viewpointForwardDirection = Vector3.forward;
-
-            GameObject menuGameObject = DistributedMenu.Create(
-                menuKind,
-                viewpointForwardDirection,
-                viewpointHandPosition);
-
-            menuGameObject.GetComponent<MenuController>().Initialize(pplusController);
-
-            return menuGameObject;
         }
     }
 }
