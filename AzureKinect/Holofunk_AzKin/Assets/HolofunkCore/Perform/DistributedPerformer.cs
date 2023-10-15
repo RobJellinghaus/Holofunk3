@@ -3,6 +3,7 @@
 using Distributed.State;
 using Holofunk.Core;
 using Holofunk.Distributed;
+using Holofunk.Sound;
 using LiteNetLib;
 using static Holofunk.Perform.PerformerMessages;
 
@@ -30,7 +31,7 @@ namespace Holofunk.Perform
 
         #endregion
 
-        #region IDistributedViewpoint
+        #region IDistributedPerformer
 
         public override ILocalObject LocalObject => GetLocalPerformer();
 
@@ -39,19 +40,21 @@ namespace Holofunk.Perform
         /// <summary>
         /// Get the performer.
         /// </summary>
-        public PerformerState GetPerformer() => GetLocalPerformer().GetPerformer();
+        public PerformerState GetState() => GetLocalPerformer().GetState();
 
-        /// <summary>
-        /// Update the given player.
-        /// </summary>
-        /// <param name="playerToUpdate">The player to update.</param>
-        /// <remarks>
-        /// There is no way to delete a player, but a player object can be marked untracked and have its fields
-        /// nulled out.
-        /// </remarks>
         [ReliableMethod]
-        public void UpdatePerformer(PerformerState performer)
-            => RouteReliableMessage(isRequest => new UpdatePerformer(Id, isRequest, performer));
+        public void SetTouchedLoopies(DistributedId[] ids)
+            => RouteReliableMessage(isRequest => new SetTouchedLoopies(Id, isRequest, ids));
+
+        [ReliableMethod]
+        public void AlterSoundEffect(EffectId effectId, int initialLevel, int alteration, bool commit)
+            => RouteReliableMessage(isRequest => new AlterSoundEffect(Id, isRequest, effectId, initialLevel, alteration, commit));
+
+        [ReliableMethod]
+        public void PopSoundEffect() => RouteReliableMessage(isRequest => new PopSoundEffect(Id, isRequest));
+
+        [ReliableMethod]
+        public void ClearSoundEffects() => RouteReliableMessage(isRequest => new ClearSoundEffects(Id, isRequest));
 
         #endregion
 
@@ -66,7 +69,7 @@ namespace Holofunk.Perform
         protected override void SendCreateMessage(NetPeer netPeer)
         {
             HoloDebug.Log($"Sending PerformerMessages.Create for id {Id} to peer {netPeer.EndPoint}");
-            Host.SendReliableMessage(new Create(Id, GetPerformer()), netPeer);
+            Host.SendReliableMessage(new Create(Id, GetState()), netPeer);
         }
 
         protected override void SendDeleteMessage(NetPeer netPeer, bool isRequest)

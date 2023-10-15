@@ -111,7 +111,7 @@ namespace Holofunk.Viewpoint
 
                         float panValue = LocalLoopie.CalculatePanValue(sensorPosition, sensorForwardDirection, soundPosition);
 
-                        NowSoundLib.NowSoundGraphAPI.SetInputPan(NowSoundLib.AudioInputId.AudioInput1, panValue);
+                        NowSoundLib.NowSoundGraphAPI.SetInputPan(NowSoundLib.AudioInputId.AudioInput1 + playerIndex, panValue);
                     }
                 }
 
@@ -171,6 +171,7 @@ namespace Holofunk.Viewpoint
             }
         }
 
+#if MAYBE_NEEDED_AGAIN_SOMEDAY
         private Vector3 GetJointWorldSpaceForwardDirection(long userId, KinectInterop.JointType joint)
         {
             KinectManager kinectManager = KinectManager.Instance;
@@ -200,5 +201,6 @@ namespace Holofunk.Viewpoint
                 return jointForwardDirection;
             }
         }
+#endif
     }
 }

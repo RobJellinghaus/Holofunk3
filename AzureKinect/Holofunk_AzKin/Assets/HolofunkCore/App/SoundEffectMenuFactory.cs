@@ -13,6 +13,12 @@ using Holofunk.Core;
 
 namespace Holofunk.App
 {
+    /// Action applied to the touched loopies to alter the level of a given effect.
+    using AlterEffectLevelAction = Action<HashSet<DistributedId>, DistributedId, int, bool>;
+
+    /// Function that takes an EffectId and an initial level, and returns an AlterEffectLevelAction.
+    using AlterEffectFunc = Func<EffectId, int, Action<HashSet<DistributedId>, DistributedId, int, bool>>;
+
     /// <summary>
     /// Creates MenuStructure corresponding to the sound effects menu.
     /// </summary>
@@ -63,37 +69,18 @@ namespace Holofunk.App
             // Note that this action is only ever called on the machine that owns the menu.
             // So if in practice some of the state being closed over (e.g. distributedPerformer) is null
             // on a proxy, that's fine, since the proxy will never call this action.
-            Func<PluginId, PluginProgramId, Action<HashSet<DistributedId>>> appendSoundEffectAction = (pluginId, programId) =>
+            AlterEffectFunc alterEffectFunc = (effectId, initialLevel) =>
             {
-                return touchedLoopieIds =>
+                return (touchedLoopieIds, performerId, alteredLevel, commit) =>
                 {
                     DistributedPerformer distributedPerformer =
-                        DistributedObjectFactory.FindPrototypeComponent<DistributedPerformer>(
-                            DistributedObjectFactory.DistributedType.Performer);
+                        (DistributedPerformer)DistributedHoster.Host.Owners[performerId];
 
                     // are we touching anything?
                     if (touchedLoopieIds.Count == 0)
                     {
                         // apply this effect to the performer
-                        PerformerState state = distributedPerformer.GetPerformer();
-                        int length = state.Effects == null ? 0 : state.Effects.Length;
-
-                        HoloDebug.Log($"SoundEffectMenuFactory.appendSoundEffectAction: before action, there are {length} effect ids");
-
-                        int[] newEffects = new int[length + 2];
-                        if (state.Effects != null)
-                        {
-                            state.Effects.CopyTo(newEffects, 0);
-                        }
-                        newEffects[length] = (int)pluginId.Value;
-                        newEffects[length + 1] = (int)programId.Value;
-
-                        state.Effects = newEffects;
-
-                        HoloDebug.Log($"SoundEffectMenuFactory.appendSoundEffectAction: applying effect to performer, pluginId {pluginId}, programId {programId}");
-                        
-                        distributedPerformer.UpdatePerformer(state);
-                        int[] fx = distributedPerformer.GetPerformer().Effects;
+                        distributedPerformer.
 
                         HoloDebug.Log($"SoundEffectMenuFactory.appendSoundEffectAction: after action, there are {fx.Length} effect ids");
                     }
@@ -114,7 +101,7 @@ namespace Holofunk.App
                 };
             };
 
-            List<(string, Action<HashSet<DistributedId>>, MenuStructure)> pluginItems = new List<(string, Action<HashSet<DistributedId>>, MenuStructure)>();
+            List<(string, AlterEffectLevelAction, MenuStructure)> pluginItems = new List<(string, Action<HashSet<DistributedId>>, MenuStructure)>();
             pluginItems.Add((
                 "Clear Effects",
                 touchedLoopieIds =>
@@ -126,12 +113,12 @@ namespace Holofunk.App
                     if (touchedLoopieIds.Count == 0)
                     {
                         // apply this effect to the performer
-                        PerformerState state = distributedPerformer.GetPerformer();
+                        PerformerState state = distributedPerformer.GetState();
                         int[] newEffects = new int[0];
                         state.Effects = newEffects;
                         distributedPerformer.UpdatePerformer(state);
 
-                        HoloDebug.Log($"SoundEffectMenuFactory.clearSoundEffectAction: applied empty effects to performer with {distributedPerformer.GetPerformer().Effects.Length} effect IDs now");
+                        HoloDebug.Log($"SoundEffectMenuFactory.clearSoundEffectAction: applied empty effects to performer with {distributedPerformer.GetState().Effects.Length} effect IDs now");
                     }
                     else
                     {

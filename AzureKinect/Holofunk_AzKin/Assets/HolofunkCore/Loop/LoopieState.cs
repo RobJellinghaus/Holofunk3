@@ -52,6 +52,15 @@ namespace Holofunk.Loop
         /// </remarks>
         public int[] Effects { get; set; }
 
+        /// <summary>
+        /// The per-effect levels.
+        /// </summary>
+        /// <remarks>
+        /// This is logically one-to-one with Effects, but since Effects has two ints per effect
+        /// (plugin id, program id) and this has only one, Effects.Length == 2 * EffectLevels.Length.
+        /// </remarks>
+        public int[] EffectLevels { get; set; }
+
         public void Deserialize(NetDataReader reader)
         {
             AudioInput = AudioInputId.Deserialize(reader);
@@ -59,6 +68,7 @@ namespace Holofunk.Loop
             IsMuted = reader.GetBool();
             Volume = reader.GetFloat();
             Effects = reader.GetIntArray();
+            EffectLevels = reader.GetIntArray();
         }
 
         public void Serialize(NetDataWriter writer)
@@ -68,6 +78,7 @@ namespace Holofunk.Loop
             writer.Put(IsMuted);
             writer.Put(Volume);
             writer.PutArray(Effects);
+            writer.PutArray(EffectLevels);
         }
 
         public override string ToString() => $"Loopie[{AudioInput}, @{ViewpointPosition}]";

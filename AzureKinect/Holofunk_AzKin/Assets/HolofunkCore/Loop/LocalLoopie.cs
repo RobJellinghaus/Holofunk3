@@ -6,6 +6,7 @@ using Holofunk.Shape;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using NowSoundLib;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -503,14 +504,20 @@ namespace Holofunk.Loop
             }
         }
 
-        public void MultiplyVolume(float ratio)
+        public void AlterVolume(float alteration, bool commit)
         {
-            loopie.Volume *= ratio;
+            float newVolume = loopie.Volume + alteration;
+            newVolume = Mathf.Clamp(newVolume, 0, 1);
             //HoloDebug.Log($"LocalLoopie.MultiplyVolume: multiplied by {ratio}, volume is now {loopie.Volume}");
 
             if (SoundManager.Instance != null)
             {
-                NowSoundTrackAPI.SetVolume(trackId, loopie.Volume);
+                NowSoundTrackAPI.SetVolume(trackId, newVolume);
+            }
+
+            if (commit)
+            {
+                loopie.Volume = newVolume;
             }
         }
 
@@ -529,43 +536,74 @@ namespace Holofunk.Loop
             }
         }
 
-        public void AppendSoundEffect(EffectId effect)
+        public void AlterSoundEffect(EffectId effect, int initialLevel, int alteration, bool commit)
         {
-            HoloDebug.Log($"LocalLoopie.AppendSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}");
-            int length = loopie.Effects == null ? 0 : loopie.Effects.Length / 2;
-            int[] newEffects = new int[(length + 1) * 2];
-            if (loopie.Effects != null)
-            {
-                loopie.Effects.CopyTo(newEffects, 0);
-            }
-            newEffects[length * 2] = (int)effect.PluginId.Value;
-            newEffects[length * 2 + 1] = (int)effect.PluginId.Value;
+            HoloDebug.Log($"LocalLoopie.AlterSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}, initialLevel {initialLevel}, alteration {alteration}, commit {commit}");
 
-            loopie.Effects = newEffects;
+            // Is effect present in loopie.Effects already?
+            int effectIndex = effect.FindIn(loopie.Effects);
+            if (effectIndex == -1)
+            {
+                // add the effect
+                loopie.Effects = effect.AppendTo(loopie.Effects);
+
+                // and set the new level properly
+                loopie.EffectLevels = EffectId.AppendTo(loopie.EffectLevels, initialLevel);
+
+                effectIndex = loopie.EffectLevels.Length - 1;
+
+                if (SoundManager.Instance != null)
+                {
+                    NowSoundTrackAPI.AddPluginInstance(trackId, effect.PluginId.Value, effect.PluginProgramId.Value, initialLevel);
+                }
+            }
+
+            int newLevel = loopie.EffectLevels[effectIndex] + alteration;
+            newLevel = Mathf.Clamp(newLevel, 0, 100);
+
+            NowSoundTrackAPI.SetPluginInstanceDryWet(trackId, (PluginInstanceIndex)(effectIndex + 1), newLevel);
+
+            if (commit)
+            {
+                loopie.EffectLevels[effectIndex] = newLevel;
+            }
+        }
+
+        public void PopSoundEffect()
+        {
+            HoloDebug.Log($"LocalLoopie.PopSoundEffect: id {DistributedObject.Id}, {loopie.Effects.Length} effects");
+
+            if (loopie.Effects.Length == 0)
+            {
+                // nothing to pop
+                return;
+            }
+
+            loopie.Effects = EffectId.PopFrom(loopie.Effects, 2);
+            loopie.EffectLevels = EffectId.PopFrom(loopie.EffectLevels, 1);
 
             if (SoundManager.Instance != null)
             {
-                // add that plugin instance index!
-                // Note that these are never sent over the network, as they're no good to any other node anyway.
-                pluginInstances.Add(
-                    NowSoundTrackAPI.AddPluginInstance(trackId, effect.PluginId.Value, effect.PluginProgramId.Value, 100));
+                // +1 here because PluginInstanceIndex is 1-based
+                NowSoundTrackAPI.DeletePluginInstance(trackId, (PluginInstanceIndex)(loopie.EffectLevels.Length + 1));
             }
         }
 
         public void ClearSoundEffects()
         {
-            HoloDebug.Log($"LocalLoopie.ClearSoundEffects: id {DistributedObject.Id}, {pluginInstances.Count} effects");
-            loopie.Effects = new int[0];
+            HoloDebug.Log($"LocalLoopie.ClearSoundEffects: id {DistributedObject.Id}, {loopie.Effects.Length} effects");
 
             if (SoundManager.Instance != null)
             {
-                // clean up all the plugins
-                foreach (PluginInstanceIndex pluginInstance in pluginInstances)
+                for (int i = 0; i < loopie.Effects.Length; i++)
                 {
-                    NowSoundTrackAPI.DeletePluginInstance(trackId, pluginInstance);
+                    // since the plugin instance indices are just array indices, we can just delete
+                    // the first plugin repeatedly until they are all gone
+                    NowSoundTrackAPI.DeletePluginInstance(trackId, (PluginInstanceIndex)1);
                 }
-                pluginInstances.Clear();
             }
+
+            loopie.Effects = new int[0];
         }
 
         public void SetCurrentInfo(SignalInfo signalInfo, Sound.TrackInfo trackInfo, ulong timestamp)

@@ -16,6 +16,7 @@ namespace Holofunk.Perform
     /// </remarks>
     public struct PerformerState : INetSerializable
     {
+#if SPATIAL_PERFORMER // We don't need any of these for the time being, but who knows, perhaps someday they'll return
         /// <summary>
         /// The position of the head, in performer coordinates.
         /// </summary>
@@ -45,6 +46,7 @@ namespace Holofunk.Perform
         /// The hand pose of the right hand.
         /// </summary>
         public HandPose RightHandPose { get; set; }
+#endif
 
         /// <summary>
         /// The DistributedIds of the loopies this performer is currently touching.
@@ -67,55 +69,43 @@ namespace Holofunk.Perform
         /// </remarks>
         public int[] Effects { get; set; }
 
+        /// <summary>
+        /// The per-effect levels.
+        /// </summary>
+        /// <remarks>
+        /// This is logically one-to-one with Effects, but since Effects has two ints per effect
+        /// (plugin id, program id) and this has only one, Effects.Length == 2 * EffectLevels.Length.
+        /// </remarks>
+        public int[] EffectLevels { get; set; }
+
         public void Deserialize(NetDataReader reader)
         {
+#if SPATIAL_PERFORMER
             HeadPosition = reader.GetVector3();
             HeadForwardDirection = reader.GetVector3();
             LeftHandPosition = reader.GetVector3();
             RightHandPosition = reader.GetVector3();
             LeftHandPose = HandPose.Deserialize(reader);
             RightHandPose = HandPose.Deserialize(reader);
+#endif
             TouchedLoopieIdList = reader.GetUIntArray();
             Effects = reader.GetIntArray();
+            EffectLevels = reader.GetIntArray();
         }
 
         public void Serialize(NetDataWriter writer)
         {
+#if SPATIAL_PERFORMER
             writer.Put(HeadPosition);
             writer.Put(HeadForwardDirection);
             writer.Put(LeftHandPosition);
             writer.Put(RightHandPosition);
             HandPose.Serialize(writer, LeftHandPose);
             HandPose.Serialize(writer, RightHandPose);
+#endif
             writer.PutArray(TouchedLoopieIdList);
             writer.PutArray(Effects);
-        }
-
-        /// <summary>
-        /// Does this have the same Effects as the other state?
-        /// </summary>
-        public bool HasSameEffects(ref PerformerState other)
-        {
-            if (Effects == null && other.Effects == null)
-            {
-                return true;
-            }
-            if (Effects == null != (other.Effects == null))
-            {
-                return false;
-            }
-            if (Effects.Length != other.Effects.Length)
-            {
-                return false;
-            }
-            for (int i = 0; i < Effects.Length; i++)
-            {
-                if (Effects[i] != other.Effects[i])
-                {
-                    return false;
-                }
-            }
-            return true;
+            writer.PutArray(EffectLevels);
         }
     }
 }

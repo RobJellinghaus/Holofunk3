@@ -47,8 +47,8 @@ namespace Holofunk.Loop
         public void SetMute(bool isMuted) => 
             RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
 
-        public void MultiplyVolume(float volume) =>
-            RouteReliableMessage(isRequest => new MultiplyVolume(Id, isRequest: !IsOwner, ratio: volume));
+        public void AlterVolume(float alteration, bool commit) =>
+            RouteReliableMessage(isRequest => new AlterVolume(Id, isRequest: !IsOwner, alteration, commit));
 
         public void SetViewpointPosition(Vector3 viewpointPosition) =>
             RouteReliableMessage(isRequest => new SetViewpointPosition(Id, isRequest: !IsOwner, viewpointPosition: viewpointPosition));
@@ -56,8 +56,11 @@ namespace Holofunk.Loop
         public void FinishRecording() =>
             RouteReliableMessage(isRequest => new FinishRecording(Id, isRequest: !IsOwner));
 
-        public void AppendSoundEffect(EffectId effect) =>
-            RouteReliableMessage(isRequest => new AppendSoundEffect(Id, isRequest: !IsOwner, effect: effect));
+        public void AlterSoundEffect(EffectId effect, int initialLevel, int alteration, bool commit) =>
+            RouteReliableMessage(isRequest => new AlterSoundEffect(Id, !IsOwner, effect, initialLevel, alteration, commit));
+
+        public void PopSoundEffect() =>
+            RouteReliableMessage(isRequest => new PopSoundEffect(Id, isRequest: !IsOwner));
 
         public void ClearSoundEffects() =>
             RouteReliableMessage(isRequest => new ClearSoundEffects(Id, isRequest: !IsOwner));

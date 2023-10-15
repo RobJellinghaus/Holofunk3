@@ -37,6 +37,53 @@ namespace Holofunk.Sound
             return $"#{pluginId}.{pluginProgramId}";
         }
 
+        /// <summary>
+        /// Find the given EffectId in the given array; return -1 if not found.
+        /// </summary>
+        public int FindIn(int[] effects)
+        {
+            for (int i = 0; i < effects.Length / 2; i++)
+            {
+                if ((int)pluginId.Value == effects[i * 2] && (int)pluginProgramId.Value == effects[i * 2 + 1])
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Return a new Array with this effect appended.
+        /// </summary>
+        /// <param name="effects"></param>
+        /// <returns></returns>
+        public int[] AppendTo(int[] effects)
+        {
+            int[] newEffects = new int[effects.Length + 2];
+            Array.Copy(effects, newEffects, effects.Length);
+            newEffects[effects.Length] = (int)PluginId.Value;
+            newEffects[effects.Length + 1] = (int)PluginProgramId.Value;
+            return newEffects;
+        }
+
+        /// <summary>
+        /// Create a new array with one additional element beyond this existing array.
+        /// </summary>
+        public static int[] AppendTo(int[] effectLevels, int newEffectLevel)
+        {
+            int[] newEffectLevels = new int[effectLevels.Length + 1];
+            Array.Copy(effectLevels, newEffectLevels, effectLevels.Length);
+            newEffectLevels[effectLevels.Length] = newEffectLevel;
+            return newEffectLevels;
+        }
+
+        public static int[] PopFrom(int[] array, int count)
+        {
+            int[] newArray = new int[array.Length - count];
+            Array.Copy(array, newArray, newArray.Length);
+            return newArray;
+        }
+
         public static void RegisterWith(NetPacketProcessor packetProcessor)
         {
             packetProcessor.RegisterNestedType(Serialize, Deserialize);

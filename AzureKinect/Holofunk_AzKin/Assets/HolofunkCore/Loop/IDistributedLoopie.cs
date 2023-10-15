@@ -46,31 +46,35 @@ namespace Holofunk.Loop
         void SetMute(bool mute);
 
         /// <summary>
-        /// Multiply the current volume of this loopie by this factor.
+        /// Alter the volume by the given amount.
         /// </summary>
         /// <remarks>
-        /// This is better than a straight SetVolume method, as it avoids issues with multiple
-        /// users racing to raise/lower the volume (if one is raising and one is lowering,
-        /// their effects will cancel out nicely with this method, as opposed to creating horrible
-        /// rapid volume thrashing with a direct SetVolume).
-        /// 
-        /// The constraints on the ratio are intended to prevent muting something to zero and
-        /// being unable to ever raise its volume again. Note that NowSoundLib clamps over-volume
-        /// multiplications to a max amplitude of 1, which will clip and be terrible but will at
-        /// least not break the sound driver.
+        /// As long as commit is false, the alteration is added to the current volume level and then clamped.
+        /// Once commit is true, the current volume level is updated to the altered, clamped volume.
         /// </remarks>
-        /// <param name="ratio">The amount to multiply the volume by; must be between 0.1 and 10</param>
         [ReliableMethod]
-        void MultiplyVolume(float ratio);
+        void AlterVolume(float alteration, bool commit);
 
         /// <summary>
-        /// Append this sound effect to the list of effects on this track.
+        /// Alter this sound effect by the given wet/dry amount.
+        /// </summary>
+        /// <remarks>
+        /// If this effect did not exist on the loopie yet, add it with the initialLevel level.
+        /// 
+        /// As long as commit is false, the alteration is added to the current volume level and then clamped.
+        /// Once commit is true, the current volume level is updated to the altered, clamped volume.
+        /// </remarks>
+        [ReliableMethod]
+        void AlterSoundEffect(EffectId effect, int initialLevel, int levelAlteration, bool commit);
+
+        /// <summary>
+        /// Pop the most recently applied sound effect off of this track.
         /// </summary>
         [ReliableMethod]
-        void AppendSoundEffect(EffectId effect);
+        void PopSoundEffect();
 
         /// <summary>
-        /// Clear the sound effects on this track.
+        /// Clear all the sound effects on this track.
         /// </summary>
         [ReliableMethod]
         void ClearSoundEffects();

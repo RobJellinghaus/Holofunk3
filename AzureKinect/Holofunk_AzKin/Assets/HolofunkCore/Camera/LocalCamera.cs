@@ -57,15 +57,17 @@ namespace Holofunk.Camera
                 }
                 else
                 {
+#if SPATIAL_PERFORMER
                     GameObject performerContainer = DistributedObjectFactory.FindPrototypeContainer(
                         DistributedObjectFactory.DistributedType.Performer);
                     LocalPerformer localPerformer = performerContainer.GetComponent<LocalPerformer>();
-                    PerformerState performerState = localPerformer.GetPerformer();
+                    PerformerState performerState = localPerformer.GetState();
 
                     Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
                     Vector3 viewpointHeadPosition = localToViewpointMatrix.MultiplyPoint(performerState.HeadPosition);
 
                     LastViewpointCameraPosition = viewpointHeadPosition;
+#endif
                 }
             }
         }

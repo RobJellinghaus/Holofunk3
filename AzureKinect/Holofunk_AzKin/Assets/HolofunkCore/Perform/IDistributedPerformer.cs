@@ -2,6 +2,7 @@
 
 using Distributed.State;
 using Holofunk.Distributed;
+using Holofunk.Sound;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,11 +24,27 @@ namespace Holofunk.Perform
         /// <summary>
         /// The state of the Performer.
         /// </summary>
-        PerformerState GetPerformer();
+        PerformerState GetState();
 
         /// <summary>
-        /// Update the performer.
+        /// Set the loopies touched by this performer.
         /// </summary>
-        void UpdatePerformer(PerformerState performer);
+        /// <param name="touchedLoopies"></param>
+        void SetTouchedLoopies(DistributedId[] touchedLoopies);
+
+        /// <summary>
+        /// Alter a sound effect on the performer.
+        /// </summary>
+        void AlterSoundEffect(EffectId effectId, int initialLevel, int alteration, bool commit);
+
+        /// <summary>
+        /// Pop the most recently created sound effect from this performer.
+        /// </summary>
+        void PopSoundEffect();
+
+        /// <summary>
+        /// Clear all sound effects from this performer.
+        /// </summary>
+        void ClearSoundEffects();
     }
 }
