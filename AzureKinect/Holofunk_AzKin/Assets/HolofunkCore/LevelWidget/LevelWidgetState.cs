@@ -10,12 +10,12 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Holofunk.VolumeWidget
+namespace Holofunk.LevelWidget
 {
     /// <summary>
-    /// Serialized state of a volume widget being used to adjust the volume of loopies.
+    /// Serialized state of a level widget being used to adjust the strength of effects.
     /// </summary>
-    public struct VolumeWidgetState : INetSerializable
+    public struct LevelWidgetState : INetSerializable
     {
         /// <summary>
         /// The position, in viewpoint coordinates.
@@ -45,7 +45,7 @@ namespace Holofunk.VolumeWidget
 
         public override string ToString()
         {
-            return $"VolumeWidget[pos {ViewpointPosition}, volRatio {VolumeRatio}]";
+            return $"LevelWidget[pos {ViewpointPosition}, volRatio {VolumeRatio}]";
         }
     }
 }

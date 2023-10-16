@@ -17,7 +17,7 @@ namespace Holofunk.App
     using AlterEffectLevelAction = Action<HashSet<DistributedId>, DistributedId, int, bool>;
 
     /// Function that takes an EffectId and an initial level, and returns an AlterEffectLevelAction.
-    using AlterEffectFunc = Func<EffectId, int, Action<HashSet<DistributedId>, DistributedId, int, bool>>;
+    using AlterEffectFunc = Func<EffectId, Action<HashSet<DistributedId>, DistributedId, int, bool>>;
 
     /// <summary>
     /// Creates MenuStructure corresponding to the sound effects menu.
@@ -69,7 +69,7 @@ namespace Holofunk.App
             // Note that this action is only ever called on the machine that owns the menu.
             // So if in practice some of the state being closed over (e.g. distributedPerformer) is null
             // on a proxy, that's fine, since the proxy will never call this action.
-            AlterEffectFunc alterEffectFunc = (effectId, initialLevel) =>
+            AlterEffectFunc alterEffectFunc = effectId =>
             {
                 return (touchedLoopieIds, performerId, alteredLevel, commit) =>
                 {
@@ -80,7 +80,7 @@ namespace Holofunk.App
                     if (touchedLoopieIds.Count == 0)
                     {
                         // apply this effect to the performer
-                        distributedPerformer.
+                        distributedPerformer.AlterSoundEffect(effectId, 100, )
 
                         HoloDebug.Log($"SoundEffectMenuFactory.appendSoundEffectAction: after action, there are {fx.Length} effect ids");
                     }
@@ -101,41 +101,44 @@ namespace Holofunk.App
                 };
             };
 
-            List<(string, AlterEffectLevelAction, MenuStructure)> pluginItems = new List<(string, Action<HashSet<DistributedId>>, MenuStructure)>();
-            pluginItems.Add((
-                "Clear Effects",
-                touchedLoopieIds =>
-                {
-                    DistributedPerformer distributedPerformer =
-                        DistributedObjectFactory.FindPrototypeComponent<DistributedPerformer>(
-                            DistributedObjectFactory.DistributedType.Performer);
+            List<(MenuVerb, MenuStructure)> menuItems = new List<(MenuVerb, MenuStructure)>();
 
-                    if (touchedLoopieIds.Count == 0)
+            menuItems.Add(
+                new MenuVerb(
+                    MenuVerbKind.Prompt,
+                    "Clear Effects",
+                    touchedLoopieIds =>
                     {
-                        // apply this effect to the performer
-                        PerformerState state = distributedPerformer.GetState();
-                        int[] newEffects = new int[0];
-                        state.Effects = newEffects;
-                        distributedPerformer.UpdatePerformer(state);
+                        DistributedPerformer distributedPerformer =
+                            DistributedObjectFactory.FindPrototypeComponent<DistributedPerformer>(
+                                DistributedObjectFactory.DistributedType.Performer);
 
-                        HoloDebug.Log($"SoundEffectMenuFactory.clearSoundEffectAction: applied empty effects to performer with {distributedPerformer.GetState().Effects.Length} effect IDs now");
-                    }
-                    else
-                    {
-                        foreach (DistributedLoopie loopie in
-                            DistributedObjectFactory.FindComponentInstances<DistributedLoopie>(
-                                DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
+                        if (touchedLoopieIds.Count == 0)
                         {
-                            if (touchedLoopieIds.Contains(loopie.Id))
-                            {
-                                loopie.ClearSoundEffects();
-                            }
-                        }
+                            // apply this effect to the performer
+                            PerformerState state = distributedPerformer.GetState();
+                            int[] newEffects = new int[0];
+                            state.Effects = newEffects;
+                            distributedPerformer.UpdatePerformer(state);
 
-                        HoloDebug.Log($"SoundEffectMenuFactory.clearSoundEffectAction: cleared sound effects from {touchedLoopieIds.Count} loopies");
-                    }
-                },
-                null));
+                            HoloDebug.Log($"SoundEffectMenuFactory.clearSoundEffectAction: applied empty effects to performer with {distributedPerformer.GetState().Effects.Length} effect IDs now");
+                        }
+                        else
+                        {
+                            foreach (DistributedLoopie loopie in
+                                DistributedObjectFactory.FindComponentInstances<DistributedLoopie>(
+                                    DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
+                            {
+                                if (touchedLoopieIds.Contains(loopie.Id))
+                                {
+                                    loopie.ClearSoundEffects();
+                                }
+                            }
+
+                            HoloDebug.Log($"SoundEffectMenuFactory.clearSoundEffectAction: cleared sound effects from {touchedLoopieIds.Count} loopies");
+                        }
+                    }),
+                null);
 
             foreach (PluginId plid in pluginNames.Keys.OrderBy(k => k.Value))
             {
@@ -154,10 +157,10 @@ namespace Holofunk.App
                 MenuStructure subMenu = new MenuStructure(items.ToArray());
 
                 string pluginName = pluginNames[pluginId];
-                pluginItems.Add((pluginName, null, subMenu));
+                menuItems.Add((pluginName, null, subMenu));
             }
 
-            return new MenuStructure(pluginItems.ToArray());
+            return new MenuStructure(menuItems.ToArray());
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Holofunk.Sound
             this.value = value;
         }
 
-        public bool IsInitialized => value != ProgramId.Undefined;
+        public bool IsDefined => value != ProgramId.Undefined;
 
         public ProgramId Value => value;
 

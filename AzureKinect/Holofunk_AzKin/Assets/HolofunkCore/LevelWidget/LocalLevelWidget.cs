@@ -11,23 +11,23 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Holofunk.VolumeWidget
+namespace Holofunk.LevelWidget
 {
     /// <summary>
-    /// The local implementation of a VolumeWidget.
+    /// The local implementation of a LevelWidget.
     /// </summary>
     /// <remarks>
     /// This just displays a Bicone, scaled properly for the current VolumeRatio of this widget.
     /// </remarks>
-    public class LocalVolumeWidget : MonoBehaviour, IDistributedVolumeWidget, ILocalObject
+    public class LocalLevelWidget : MonoBehaviour, IDistributedLevelWidget, ILocalObject
     {
-        private VolumeWidgetState state;
+        private LevelWidgetState state;
 
         private Vector3 lastViewpointPosition;
 
-        public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedVolumeWidget>();
+        public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedLevelWidget>();
 
-        internal void Initialize(VolumeWidgetState state) => this.state = state;
+        internal void Initialize(LevelWidgetState state) => this.state = state;
 
         #region MonoBehaviour
 
@@ -51,7 +51,7 @@ namespace Holofunk.VolumeWidget
 
                     transform.localPosition = localPosition;
 
-                    HoloDebug.Log($"LocalVolumeWidget.UpdateViewpointPosition: lastViewpointPosition {lastViewpointPosition}, stateViewpointPosition {state.ViewpointPosition}, local position {transform.localPosition}");
+                    HoloDebug.Log($"LocalLevelWidget.UpdateViewpointPosition: lastViewpointPosition {lastViewpointPosition}, stateViewpointPosition {state.ViewpointPosition}, local position {transform.localPosition}");
 
                     lastViewpointPosition = viewpointPosition;
                 }
@@ -102,16 +102,16 @@ namespace Holofunk.VolumeWidget
 
         #endregion
 
-        #region IDistributedVolumeWidget
+        #region IDistributedLevelWidget
 
         /// <summary>
         /// Get the state.
         /// </summary>
-        public VolumeWidgetState State => state;
+        public LevelWidgetState State => state;
 
         public void OnDelete()
         {
-            HoloDebug.Log($"LocalVolumeWidget.OnDelete: Deleting {DistributedObject.Id}");
+            HoloDebug.Log($"LocalLevelWidget.OnDelete: Deleting {DistributedObject.Id}");
 
             // and we blow ourselves awaaaay
             Destroy(gameObject);
@@ -121,9 +121,9 @@ namespace Holofunk.VolumeWidget
         /// <summary>
         /// Update the state.
         /// </summary>
-        public void UpdateState(VolumeWidgetState state)
+        public void UpdateState(LevelWidgetState state)
         {
-            //HoloDebug.Log($"LocalVolumeWidget.UpdateState: Updating to state {state}");
+            //HoloDebug.Log($"LocalLevelWidget.UpdateState: Updating to state {state}");
             this.state = state;
         }
 

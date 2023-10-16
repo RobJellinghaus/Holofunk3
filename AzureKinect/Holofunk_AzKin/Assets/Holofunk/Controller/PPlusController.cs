@@ -10,7 +10,7 @@ using Holofunk.Perform;
 using Holofunk.Sound;
 using Holofunk.StateMachines;
 using Holofunk.Viewpoint;
-using Holofunk.VolumeWidget;
+using Holofunk.LevelWidget;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -28,6 +28,8 @@ namespace Holofunk.Controller
     /// </remarks>
     public class PPlusController : MonoBehaviour, IModel
     {
+        #region Fields
+
         /// <summary>
         /// Index of the JoyCon selected by this Controller; -1 means "unknown".
         /// </summary>
@@ -53,10 +55,18 @@ namespace Holofunk.Controller
         private ControllerStateMachineInstance stateMachineInstance;
 
         /// <summary>
+        /// The selected icon for this hand.
+        /// </summary>
+        private Option<GameObject> HandIcon;
+
+        /// <summary>
         /// The loopie currently being held by this controller.
         /// </summary>
         /// <remarks>
         /// This is only ever non-null when the stateMachineInstance is in recording state.
+        /// 
+        /// TODO: generalize this to a set of held loopies? if we support copying in bulk? In fact isn't this just
+        /// the touched loopie set?
         /// </remarks>
         private GameObject currentlyHeldLoopie;
 
@@ -73,6 +83,7 @@ namespace Holofunk.Controller
         /// </summary>
         /// <remarks>
         /// This will be applied repeatedly on every update in which a loopie is touched, so idempotency is strongly recommended!
+        /// This is used for e.g. handling muting / unmuting to each newly touched loopie.
         /// </remarks>
         private Action<DistributedLoopie> touchedLoopieAction;
 
@@ -80,7 +91,7 @@ namespace Holofunk.Controller
         /// What should this controller do on every update, before touching loopies?
         /// </summary>
         /// <remarks>
-        /// This is used for, e.g., updating the current volume widget and performing other interactions that aren't
+        /// This is used for, e.g., updating the current level widget and performing other interactions that aren't
         /// loopie-centric.
         /// TODO: could touchedLoopieAction just be a sort of updateAction?
         /// </remarks>
@@ -114,6 +125,10 @@ namespace Holofunk.Controller
         /// we'll live with this.
         /// </remarks>
         internal bool KeepTouchedLoopiesStable { get; set; }
+
+        #endregion
+
+        #region Updates and actions
 
         /// <summary>
         /// Any loopies touched by this controller?
@@ -149,10 +164,12 @@ namespace Holofunk.Controller
         internal PerformerPreController PerformerController => gameObject.transform.parent.gameObject.GetComponent<PerformerPreController>();
         */
 
+        #endregion
+
         /// <summary>
         /// Get the DistributedPerformer component from our parent.
         /// </summary>
-        internal DistributedPerformer DistributedPerformer => gameObject.transform.parent.gameObject.GetComponent<DistributedPerformer>();
+        internal DistributedPerformer DistributedPerformer => GetComponent<DistributedPerformer>();
 
         /// <summary>
         /// for debugging only
@@ -299,6 +316,8 @@ namespace Holofunk.Controller
             return true;
         }
 
+        #region Creation
+
         /// <summary>
         /// Create a new loopie at the current hand's position, and set it as the currentlyHeldLoopie.
         /// </summary>
@@ -352,21 +371,23 @@ namespace Holofunk.Controller
         }
 
         /// <summary>
-        /// Create a volume widget.
+        /// Create a level widget.
         /// </summary>
-        public GameObject CreateVolumeWidget()
+        public GameObject CreateLevelWidget()
         {
             if (DistributedViewpoint.Instance == null)
             {
-                HoloDebug.Log("No DistributedViewpoint.TheViewpoint; can't create volume widget");
+                HoloDebug.Log("No DistributedViewpoint.TheViewpoint; can't create level widget");
                 return null;
             }
 
             Vector3 viewpointHandPosition = GetViewpointHandPosition();
 
-            GameObject newWidget = DistributedVolumeWidget.Create(viewpointHandPosition);
+            GameObject newWidget = DistributedLevelWidget.Create(viewpointHandPosition);
             return newWidget;
         }
+
+        #endregion
 
         public Vector3 GetViewpointHeadPosition()
         {
@@ -397,22 +418,6 @@ namespace Holofunk.Controller
                 currentlyHeldLoopie.GetComponent<DistributedLoopie>().FinishRecording();
 
                 currentlyHeldLoopie = null;
-            }
-        }
-
-        /// <summary>
-        /// Apply the given sound effect to the set of touched loopies, by appending it to their effect lists.
-        /// </summary>
-        public void ApplySoundEffectToTouchedLoopies(EffectId effect)
-        {
-            foreach (LocalLoopie localLoopie in
-                DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
-                    DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
-            {
-                if (touchedLoopieIds.Contains(localLoopie.DistributedObject.Id))
-                {
-                    localLoopie.AppendSoundEffect(effect);
-                }
             }
         }
     }

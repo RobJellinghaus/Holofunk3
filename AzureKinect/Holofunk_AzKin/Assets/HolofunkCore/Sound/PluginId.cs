@@ -21,7 +21,7 @@ namespace Holofunk.Sound
             this.value = value;
         }
 
-        public bool IsInitialized => value != NowSoundLib.PluginId.Undefined;
+        public bool IsDefined => value != NowSoundLib.PluginId.Undefined;
 
         public NowSoundLib.PluginId Value => value;
 

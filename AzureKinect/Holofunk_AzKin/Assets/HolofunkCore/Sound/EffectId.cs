@@ -18,16 +18,20 @@ namespace Holofunk.Sound
         private PluginId pluginId;
         private PluginProgramId pluginProgramId;
 
+        public static EffectId Undefined => new EffectId(
+            new PluginId(NowSoundLib.PluginId.Undefined), 
+            new PluginProgramId(NowSoundLib.ProgramId.Undefined));
+
         public EffectId(PluginId pluginId, PluginProgramId pluginProgramId)
         {
-            Core.Contract.Assert(pluginId.IsInitialized);
-            Core.Contract.Assert(pluginProgramId.IsInitialized);
+            Core.Contract.Assert(pluginId.IsDefined);
+            Core.Contract.Assert(pluginProgramId.IsDefined);
 
             this.pluginId = pluginId;
             this.pluginProgramId = pluginProgramId;
         }
 
-        public bool IsInitialized => pluginId.IsInitialized && pluginProgramId.IsInitialized;
+        public bool IsInitialized => pluginId.IsDefined && pluginProgramId.IsDefined;
 
         public PluginId PluginId => pluginId;
         public PluginProgramId PluginProgramId => pluginProgramId;

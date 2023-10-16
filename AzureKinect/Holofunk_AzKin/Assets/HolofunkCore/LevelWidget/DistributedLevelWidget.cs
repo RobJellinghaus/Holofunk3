@@ -5,14 +5,14 @@ using Holofunk.Core;
 using Holofunk.Distributed;
 using LiteNetLib;
 using UnityEngine;
-using static Holofunk.VolumeWidget.VolumeWidgetMessages;
+using static Holofunk.LevelWidget.LevelWidgetMessages;
 
-namespace Holofunk.VolumeWidget
+namespace Holofunk.LevelWidget
 {
     /// <summary>
-    /// The distributed interface of a volume widget in the current system.
+    /// The distributed interface of a level widget in the current system.
     /// </summary>
-    public class DistributedVolumeWidget : DistributedComponent, IDistributedVolumeWidget
+    public class DistributedLevelWidget : DistributedComponent, IDistributedLevelWidget
     {
         #region MonoBehaviours
 
@@ -28,21 +28,21 @@ namespace Holofunk.VolumeWidget
 
         #endregion
 
-        #region IDistributedVolumeWidget
+        #region IDistributedLevelWidget
 
-        public override ILocalObject LocalObject => GetLocalVolumeWidget();
+        public override ILocalObject LocalObject => GetLocalLevelWidget();
 
-        private LocalVolumeWidget GetLocalVolumeWidget() => gameObject.GetComponent<LocalVolumeWidget>();
+        private LocalLevelWidget GetLocalLevelWidget() => gameObject.GetComponent<LocalLevelWidget>();
 
         /// <summary>
         /// Get the count of currently known Players.
         /// </summary>
-        public VolumeWidgetState State => GetLocalVolumeWidget().State;
+        public LevelWidgetState State => GetLocalLevelWidget().State;
 
         /// <summary>
         /// Get the player with a given index.
         /// </summary>
-        public void UpdateState(VolumeWidgetState state)
+        public void UpdateState(LevelWidgetState state)
             => RouteReliableMessage(isRequest => new UpdateState(Id, isRequest, state));
 
         #endregion
@@ -51,20 +51,20 @@ namespace Holofunk.VolumeWidget
 
         public override void OnDelete()
         {
-            HoloDebug.Log($"DistributedVolumeWidget.OnDelete: Deleting {Id}");
+            HoloDebug.Log($"DistributedLevelWidget.OnDelete: Deleting {Id}");
             // propagate locally
-            GetLocalVolumeWidget().OnDelete();
+            GetLocalLevelWidget().OnDelete();
         }
 
         protected override void SendCreateMessage(NetPeer netPeer)
         {
-            HoloDebug.Log($"Sending DistributedVolumeWidget.Create for id {Id} to peer {netPeer.EndPoint}");
-            Host.SendReliableMessage(new Create(Id, GetLocalVolumeWidget().State), netPeer);
+            HoloDebug.Log($"Sending DistributedLevelWidget.Create for id {Id} to peer {netPeer.EndPoint}");
+            Host.SendReliableMessage(new Create(Id, GetLocalLevelWidget().State), netPeer);
         }
 
         protected override void SendDeleteMessage(NetPeer netPeer, bool isRequest)
         {
-            HoloDebug.Log($"DistributedVolumeWidget.SendDeleteMessage: Sending VolumeWidget.Delete for id {Id} to peer {netPeer.EndPoint} with state {GetLocalVolumeWidget().State}");
+            HoloDebug.Log($"DistributedLevelWidget.SendDeleteMessage: Sending LevelWidget.Delete for id {Id} to peer {netPeer.EndPoint} with state {GetLocalLevelWidget().State}");
             Host.SendReliableMessage(new Delete(Id, isRequest), netPeer);
         }
 
@@ -73,22 +73,22 @@ namespace Holofunk.VolumeWidget
         #region Instantiation
 
         /// <summary>
-        /// Create a new VolumeWidget at this position in viewpoint space.
+        /// Create a new LevelWidget at this position in viewpoint space.
         /// </summary>
         public static GameObject Create(Vector3 viewpointPosition)
         {
             GameObject prototypeWidget = DistributedObjectFactory.FindPrototypeContainer(
-                DistributedObjectFactory.DistributedType.VolumeWidget);
+                DistributedObjectFactory.DistributedType.LevelWidget);
             GameObject localContainer = DistributedObjectFactory.FindLocalhostInstanceContainer(
-                DistributedObjectFactory.DistributedType.VolumeWidget);
+                DistributedObjectFactory.DistributedType.LevelWidget);
 
             GameObject newWidget = Instantiate(prototypeWidget, localContainer.transform);
             newWidget.SetActive(true);
-            DistributedVolumeWidget distributedWidget = newWidget.GetComponent<DistributedVolumeWidget>();
-            LocalVolumeWidget localWidget = distributedWidget.GetLocalVolumeWidget();
+            DistributedLevelWidget distributedWidget = newWidget.GetComponent<DistributedLevelWidget>();
+            LocalLevelWidget localWidget = distributedWidget.GetLocalLevelWidget();
 
             // First set up the Loopie state in distributed terms.
-            localWidget.Initialize(new VolumeWidgetState
+            localWidget.Initialize(new LevelWidgetState
             {
                 ViewpointPosition = viewpointPosition,
                 VolumeRatio = 1 // 1 == multiply by 1 == no change in volume (yet)

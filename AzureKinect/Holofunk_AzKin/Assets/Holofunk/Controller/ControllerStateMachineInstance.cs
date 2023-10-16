@@ -9,11 +9,12 @@ using Holofunk.Perform;
 using Holofunk.Shape;
 using Holofunk.StateMachines;
 using Holofunk.Viewpoint;
-using Holofunk.VolumeWidget;
+using Holofunk.LevelWidget;
 using NowSoundLib;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Holofunk.Sound;
 
 namespace Holofunk.Controller
 {
@@ -184,21 +185,24 @@ namespace Holofunk.Controller
 
             #endregion
 
-            #region Louden/soften
+            #region Level change
 
-            // Shared state machine storage for the volume widget that visualizes changing the volume.
-            DistributedVolumeWidget widget = null;
+            // Shared state machine storage for the level widget that visualizes changing the level.
+            DistributedLevelWidget widget = null;
 
-            // we're pointing, and about to possibly mute/unmute
-            ControllerState loudenSoften = new ControllerState(
-                "loudenSoften",
+            // we're going to change a level. if no effect is selected, it's volume!!! WOOO SLICK
+            ControllerState levelChange = new ControllerState(
+                "levelChange",
                 initial,
                 (evt, pplusController) =>
                 {
-                    // keep the set of touched loopies stable, so whatever we originally touched is still what we louden/soften
+                    // keep the set of touched loopies stable, so whatever we originally touched is still what we change levels on
                     pplusController.KeepTouchedLoopiesStable = true;
 
-                    widget = pplusController.CreateVolumeWidget().GetComponent<DistributedVolumeWidget>();
+                    // if the controller has no effect selected, then it's volume
+                    if (pplusController.SelectedEffect == EffectId)
+
+                    widget = pplusController.CreateLevelWidget().GetComponent<DistributedLevelWidget>();
                     float initialHandYPosition = pplusController.GetViewpointHandPosition().y;
                     float lastVolumeRatio = 1;
                     float volumeRatio = 1;
@@ -232,9 +236,9 @@ namespace Holofunk.Controller
                         Core.Contract.Assert(!float.IsNaN(volumeRatio));
                         Core.Contract.Assert(!float.IsInfinity(volumeRatio));
 
-                        VolumeWidgetState state = widget.State;
+                        LevelWidgetState state = widget.State;
                         widget.UpdateState(
-                            new VolumeWidgetState { ViewpointPosition = state.ViewpointPosition, VolumeRatio = volumeRatio });
+                            new LevelWidgetState { ViewpointPosition = state.ViewpointPosition, VolumeRatio = volumeRatio });
                     });
 
                     pplusController.SetTouchedLoopieAction(loopie =>
@@ -255,10 +259,9 @@ namespace Holofunk.Controller
 
                     widget.Delete();
                 });
-            /*
-            AddTransition(stateMachine, initial, PPlusEvent.ShoulderPressed, loudenSoften);
-            AddTransition(stateMachine, loudenSoften, PPlusEvent.ShoulderReleased, initial);
-            */
+
+            AddTransition(stateMachine, initial, PPlusEvent.LightDown, levelChange);
+            AddTransition(stateMachine, levelChange, PPlusEvent.LightUp, initial);
 
             #endregion
 

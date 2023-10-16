@@ -2,18 +2,18 @@
 
 using Distributed.State;
 
-namespace Holofunk.VolumeWidget
+namespace Holofunk.LevelWidget
 {
     /// <summary>
-    /// The distributed interface of a VolumeWidget.
+    /// The distributed interface of a LevelWidget.
     /// </summary>
-    public interface IDistributedVolumeWidget : IDistributedInterface
+    public interface IDistributedLevelWidget : IDistributedInterface
     {
         /// <summary>
         /// Get the count of currently known Players.
         /// </summary>
         [LocalMethod]
-        VolumeWidgetState State { get; }
+        LevelWidgetState State { get; }
 
         /// <summary>
         /// Update the state.
@@ -24,6 +24,6 @@ namespace Holofunk.VolumeWidget
         /// nulled out.
         /// </remarks>
         [ReliableMethod]
-        void UpdateState(VolumeWidgetState state);
+        void UpdateState(LevelWidgetState state);
     }
 }
