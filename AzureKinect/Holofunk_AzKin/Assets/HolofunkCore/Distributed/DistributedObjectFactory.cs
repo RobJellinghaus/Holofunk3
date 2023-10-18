@@ -22,6 +22,9 @@ namespace Holofunk.Distributed
         /// <summary>
         /// The types of distributed objects currently known.
         /// </summary>
+        /// <remarks>
+        /// Yes, this is terrible, to have this duplicated; just defining the types should be enough.
+        /// </remarks>
         public enum DistributedType
         {
             Loopie,
@@ -31,6 +34,17 @@ namespace Holofunk.Distributed
             SoundEffect,
             Viewpoint,
             LevelWidget,
+        }
+
+        /// <summary>
+        /// The types of distributed interfaces currently known.
+        /// </summary>
+        /// <remarks>
+        /// Yes, this is terrible, to have this duplicated; just defining the interfaces should be enough.
+        /// </remarks>
+        public enum DistributedInterface
+        {
+            IEffectable,
         }
 
         /// <summary>
@@ -138,7 +152,6 @@ namespace Holofunk.Distributed
         /// But look at how simple this app is, surely if any app can afford it, Holofunk can!
         /// </remarks>
         public static IEnumerable<GameObject> FindComponentContainers(DistributedType type, bool includeActivePrototype)
-
         {
             if (includeActivePrototype)
             {

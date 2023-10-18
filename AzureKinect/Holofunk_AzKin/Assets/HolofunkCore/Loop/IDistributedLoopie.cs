@@ -18,7 +18,7 @@ namespace Holofunk.Loop
     /// All loopies are created in recording state, and need FinishRecording() to be called before they
     /// start looping (which they do as soon as appropriate after being told to finish recording).
     /// </remarks>
-    public interface IDistributedLoopie : IDistributedInterface
+    public interface IDistributedLoopie : IDistributedInterface, IEffectable
     {
         /// <summary>
         /// The state of the Loopie.
@@ -44,40 +44,6 @@ namespace Holofunk.Loop
         /// </summary>
         [ReliableMethod]
         void SetMute(bool mute);
-
-        /// <summary>
-        /// Alter the volume by the given amount.
-        /// </summary>
-        /// <remarks>
-        /// As long as commit is false, the alteration is added to the current volume level and then clamped.
-        /// Once commit is true, the current volume level is updated to the altered, clamped volume.
-        /// </remarks>
-        [ReliableMethod]
-        void AlterVolume(float alteration, bool commit);
-
-        /// <summary>
-        /// Alter this sound effect by the given wet/dry amount.
-        /// </summary>
-        /// <remarks>
-        /// If this effect did not exist on the loopie yet, add it with the initialLevel level.
-        /// 
-        /// As long as commit is false, the alteration is added to the current volume level and then clamped.
-        /// Once commit is true, the current volume level is updated to the altered, clamped volume.
-        /// </remarks>
-        [ReliableMethod]
-        void AlterSoundEffect(EffectId effect, int initialLevel, int levelAlteration, bool commit);
-
-        /// <summary>
-        /// Pop the most recently applied sound effect off of this track.
-        /// </summary>
-        [ReliableMethod]
-        void PopSoundEffect();
-
-        /// <summary>
-        /// Clear all the sound effects on this track.
-        /// </summary>
-        [ReliableMethod]
-        void ClearSoundEffects();
 
         /// <summary>
         /// Broadcast the current amplitude of this Loopie.

@@ -44,6 +44,15 @@ namespace Holofunk.Core
         /// </remarks>
         public static readonly ContinuousDuration<Second> PreRecordingDuration = 0.1f;
 
+        /// <summary>
+        /// The wet/dry scale factor for changing the level of an effect.
+        /// </summary>
+        /// <remarks>
+        /// The level widget's value range is from -1 to 1, and the effect level wet/dry scale is from 0 to 100.
+        /// So this scale factor sets how much change gets applied to effect level by the greatest increase/decrease possible.
+        /// </remarks>
+        public static readonly float EffectLevelScale = 75f;
+
         #endregion
 
         #region FFT

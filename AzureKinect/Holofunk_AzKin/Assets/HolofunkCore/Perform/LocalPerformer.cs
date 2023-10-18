@@ -47,7 +47,7 @@ namespace Holofunk.Perform
         {
         }
 
-        public void AlterSoundEffect(EffectId effect, int initialLevel, int alteration, bool commit)
+        public void AlterSoundEffect(EffectId effect, float alteration, bool commit)
         {
             PerformerState state = GetState();
             // TODO: use the PlayerPerformerMapper again. But for now, we're in the same damn object.
@@ -57,6 +57,8 @@ namespace Holofunk.Perform
             if (effectIndex == -1)
             {
                 state.Effects = effect.AppendTo(state.Effects);
+                // TODO: make per-effect custom initial levels here (they don't need to be passed in the verb/message)
+                int initialLevel = 100;
                 state.EffectLevels = EffectId.AppendTo(state.EffectLevels, initialLevel);
                 effectIndex = state.Effects.Length - 1;
 
@@ -70,7 +72,7 @@ namespace Holofunk.Perform
                 }
             }
 
-            int newLevel = state.EffectLevels[effectIndex] + alteration;
+            int newLevel = state.EffectLevels[effectIndex] + (int)(alteration * MagicNumbers.EffectLevelScale);
             newLevel = Mathf.Clamp(newLevel, 0, 100);
 
             if (SoundManager.Instance != null)

@@ -19,7 +19,7 @@ namespace Holofunk.Perform
     /// Each HoloLens 2 version of Holofunk in the current system will host its own DistributedPerformer,
     /// which it uses to disseminate state about what that performer is doing.
     /// </remarks>
-    public interface IDistributedPerformer : IDistributedInterface
+    public interface IDistributedPerformer : IDistributedInterface, IEffectable
     {
         /// <summary>
         /// The state of the Performer.
@@ -31,20 +31,5 @@ namespace Holofunk.Perform
         /// </summary>
         /// <param name="touchedLoopies"></param>
         void SetTouchedLoopies(DistributedId[] touchedLoopies);
-
-        /// <summary>
-        /// Alter a sound effect on the performer.
-        /// </summary>
-        void AlterSoundEffect(EffectId effectId, int initialLevel, int alteration, bool commit);
-
-        /// <summary>
-        /// Pop the most recently created sound effect from this performer.
-        /// </summary>
-        void PopSoundEffect();
-
-        /// <summary>
-        /// Clear all sound effects from this performer.
-        /// </summary>
-        void ClearSoundEffects();
     }
 }

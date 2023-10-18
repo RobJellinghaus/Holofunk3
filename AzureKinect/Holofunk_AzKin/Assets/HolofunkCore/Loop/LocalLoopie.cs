@@ -504,6 +504,25 @@ namespace Holofunk.Loop
             }
         }
 
+        public void SetViewpointPosition(Vector3 viewpointPosition)
+        {
+            loopie.ViewpointPosition = viewpointPosition;
+        }
+
+        public void FinishRecording()
+        {
+            if (SoundManager.Instance != null)
+            {
+                Core.Contract.Assert(trackId != TrackId.Undefined);
+
+                NowSoundTrackAPI.FinishRecording(trackId);
+            }
+        }
+
+        #endregion
+
+        #region IEffectable
+
         public void AlterVolume(float alteration, bool commit)
         {
             float newVolume = loopie.Volume + alteration;
@@ -521,22 +540,7 @@ namespace Holofunk.Loop
             }
         }
 
-        public void SetViewpointPosition(Vector3 viewpointPosition)
-        {
-            loopie.ViewpointPosition = viewpointPosition;
-        }
-
-        public void FinishRecording()
-        {
-            if (SoundManager.Instance != null)
-            {
-                Core.Contract.Assert(trackId != TrackId.Undefined);
-
-                NowSoundTrackAPI.FinishRecording(trackId);
-            }
-        }
-
-        public void AlterSoundEffect(EffectId effect, int initialLevel, int alteration, bool commit)
+        public void AlterSoundEffect(EffectId effect, float alteration, bool commit)
         {
             HoloDebug.Log($"LocalLoopie.AlterSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}, initialLevel {initialLevel}, alteration {alteration}, commit {commit}");
 
@@ -548,6 +552,8 @@ namespace Holofunk.Loop
                 loopie.Effects = effect.AppendTo(loopie.Effects);
 
                 // and set the new level properly
+                // TODO: per-effect initial levels
+                int initialLevel = 100;
                 loopie.EffectLevels = EffectId.AppendTo(loopie.EffectLevels, initialLevel);
 
                 effectIndex = loopie.EffectLevels.Length - 1;
@@ -558,7 +564,7 @@ namespace Holofunk.Loop
                 }
             }
 
-            int newLevel = loopie.EffectLevels[effectIndex] + alteration;
+            int newLevel = loopie.EffectLevels[effectIndex] + (int)(alteration * MagicNumbers.EffectLevelScale);
             newLevel = Mathf.Clamp(newLevel, 0, 100);
 
             NowSoundTrackAPI.SetPluginInstanceDryWet(trackId, (PluginInstanceIndex)(effectIndex + 1), newLevel);
@@ -604,6 +610,7 @@ namespace Holofunk.Loop
             }
 
             loopie.Effects = new int[0];
+            loopie.EffectLevels = new int[0];
         }
 
         public void SetCurrentInfo(SignalInfo signalInfo, Sound.TrackInfo trackInfo, ulong timestamp)

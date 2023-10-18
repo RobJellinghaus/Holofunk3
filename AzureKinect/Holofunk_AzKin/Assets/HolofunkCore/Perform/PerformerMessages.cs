@@ -29,12 +29,11 @@ namespace Holofunk.Perform
         public class AlterSoundEffect : ReliableMessage
         {
             public EffectId Effect { get; set; }
-            public int InitialLevel { get; set; }
-            public int Alteration { get; set; }
+            public float Alteration { get; set; }
             public bool Commit { get; set; }
             public AlterSoundEffect() : base() { }
-            public AlterSoundEffect(DistributedId id, bool isRequest, EffectId effect, int initialLevel, int alteration, bool commit) : base(id, isRequest) { Effect = effect; InitialLevel = initialLevel; Alteration = alteration; Commit = commit; }
-            public override void Invoke(IDistributedInterface target) => ((IDistributedPerformer)target).AlterSoundEffect(Effect, InitialLevel, Alteration, Commit);
+            public AlterSoundEffect(DistributedId id, bool isRequest, EffectId effect, float alteration, bool commit) : base(id, isRequest) { Effect = effect; Alteration = alteration; Commit = commit; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedPerformer)target).AlterSoundEffect(Effect, Alteration, Commit);
         }
 
         public class PopSoundEffect : ReliableMessage

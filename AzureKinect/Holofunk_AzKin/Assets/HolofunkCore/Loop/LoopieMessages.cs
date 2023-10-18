@@ -34,15 +34,6 @@ namespace Holofunk.Loop
             public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetMute(IsMuted);
         }
 
-        public class AlterVolume : ReliableMessage
-        {
-            public float Alteration { get; set; }
-            public bool Commit { get; set; }
-            public AlterVolume() : base() { }
-            public AlterVolume(DistributedId id, bool isRequest, float alteration, bool commit) : base(id, isRequest) { Alteration = alteration; Commit = commit; }
-            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).AlterVolume(Alteration, Commit);
-        }
-
         public class SetViewpointPosition : ReliableMessage
         {
             public Vector3 ViewpointPosition { get; set; }
@@ -58,15 +49,23 @@ namespace Holofunk.Loop
             public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).FinishRecording();
         }
 
+        public class AlterVolume : ReliableMessage
+        {
+            public float Alteration { get; set; }
+            public bool Commit { get; set; }
+            public AlterVolume() : base() { }
+            public AlterVolume(DistributedId id, bool isRequest, float alteration, bool commit) : base(id, isRequest) { Alteration = alteration; Commit = commit; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).AlterVolume(Alteration, Commit);
+        }
+
         public class AlterSoundEffect : ReliableMessage
         {
             public EffectId Effect { get; set; }
-            public int InitialLevel { get; set; }
-            public int Alteration { get; set; }
+            public float Alteration { get; set; }
             public bool Commit { get; set; }
             public AlterSoundEffect() : base() { }
-            public AlterSoundEffect(DistributedId id, bool isRequest, EffectId effect, int initialLevel, int alteration, bool commit) : base(id, isRequest) { Effect = effect; InitialLevel = initialLevel; Alteration = alteration; Commit = commit; }
-            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).AlterSoundEffect(Effect, InitialLevel, Alteration, Commit);
+            public AlterSoundEffect(DistributedId id, bool isRequest, EffectId effect, float alteration, bool commit) : base(id, isRequest) { Effect = effect; Alteration = alteration; Commit = commit; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).AlterSoundEffect(Effect, Alteration, Commit);
         }
 
         public class PopSoundEffect : ReliableMessage
@@ -127,14 +126,14 @@ namespace Holofunk.Loop
                 (local, message) => local.Initialize(message.Loopie));
             Registrar.RegisterDeleteMessage<Delete, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<SetMute, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
-            Registrar.RegisterReliableMessage<AlterVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<SetViewpointPosition, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<FinishRecording, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterBroadcastMessage<SetCurrentInfo, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterBroadcastMessage<SetCurrentWaveform, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterReliableMessage<AlterVolume, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<AlterSoundEffect, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<PopSoundEffect, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<ClearSoundEffects, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
-            Registrar.RegisterBroadcastMessage<SetCurrentInfo, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
-            Registrar.RegisterBroadcastMessage<SetCurrentWaveform, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
         }
     }
 }

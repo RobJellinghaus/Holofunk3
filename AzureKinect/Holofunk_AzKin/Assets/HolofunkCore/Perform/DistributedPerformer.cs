@@ -46,9 +46,19 @@ namespace Holofunk.Perform
         public void SetTouchedLoopies(DistributedId[] ids)
             => RouteReliableMessage(isRequest => new SetTouchedLoopies(Id, isRequest, ids));
 
+        #endregion
+
+        #region IEffectable
+
+        public void AlterVolume(float alteration, bool commit)
+        {
+            // NO-OP for DistributedPerformer!
+            // The performer can literally sing more quietly :-D
+        }
+
         [ReliableMethod]
-        public void AlterSoundEffect(EffectId effectId, int initialLevel, int alteration, bool commit)
-            => RouteReliableMessage(isRequest => new AlterSoundEffect(Id, isRequest, effectId, initialLevel, alteration, commit));
+        public void AlterSoundEffect(EffectId effectId, float alteration, bool commit)
+            => RouteReliableMessage(isRequest => new AlterSoundEffect(Id, isRequest, effectId, alteration, commit));
 
         [ReliableMethod]
         public void PopSoundEffect() => RouteReliableMessage(isRequest => new PopSoundEffect(Id, isRequest));

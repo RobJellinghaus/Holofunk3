@@ -24,18 +24,44 @@ namespace Holofunk.Menu
     /// </summary>
     /// <remarks>
     /// Menu items update their PPlusController's selected MenuVerb when a menu item is picked.
+    /// 
+    /// This should really be a Rust enum :-( So we hack it like one.
     /// </remarks>
     public struct MenuVerb
     {
+        /// <summary>
+        /// Is this a prompt action or a level-setting action?
+        /// </summary>
         public readonly MenuVerbKind Kind;
+        /// <summary>
+        /// What's the name of this (when stuck to the controller hand)?
+        /// </summary>
         public readonly string Name;
-        public readonly Action<HashSet<DistributedId>> Action;
+        /// <summary>
+        /// Action executed promptly on all touched loopies when this prompt verb is selected.
+        /// </summary>
+        public readonly Action<HashSet<DistributedId>> PromptAction;
+        /// <summary>
+        /// Action executed per-Update on all touched loopies based on current level setting, with final commit.
+        /// </summary>
+        public readonly Action<HashSet<DistributedId>, int, bool> LevelAction;
 
-        public MenuVerb(MenuVerbKind kind, string name, Action<HashSet<DistributedId>> action)
+        private MenuVerb(MenuVerbKind kind, string name, Action<HashSet<DistributedId>> promptAction, Action<HashSet<DistributedId>, int, bool> levelAction)
         {
             Kind = kind;
             Name = name;
-            Action = action;
+            PromptAction = promptAction;
+            LevelAction = levelAction;
+        }
+
+        public static MenuVerb MakePrompt(string name, Action<HashSet<DistributedId>> promptAction)
+        {
+            return new MenuVerb(MenuVerbKind.Prompt, name, promptAction, null);
+        }
+
+        public static MenuVerb MakeLevel(string name, Action<HashSet<DistributedId>, int, bool> levelAction)
+        {
+            return new MenuVerb(MenuVerbKind.Prompt, name, null, levelAction);
         }
     }
 
