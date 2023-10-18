@@ -47,6 +47,11 @@ namespace Holofunk.Perform
         {
         }
 
+        public void AlterVolume(float alteration, bool commit)
+        {
+            // no-op for performers. learn to sing quieter
+        }
+
         public void AlterSoundEffect(EffectId effect, float alteration, bool commit)
         {
             PerformerState state = GetState();

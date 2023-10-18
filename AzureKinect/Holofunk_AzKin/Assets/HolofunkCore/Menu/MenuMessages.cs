@@ -39,7 +39,6 @@ namespace Holofunk.Menu
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType(MenuItemId.Serialize, MenuItemId.Deserialize);
-            proxyCapability.RegisterType(MenuKind.Serialize, MenuKind.Deserialize);
             proxyCapability.RegisterType<MenuState>();
         }
 

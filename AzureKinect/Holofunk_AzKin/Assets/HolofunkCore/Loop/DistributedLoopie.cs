@@ -47,17 +47,17 @@ namespace Holofunk.Loop
         public void SetMute(bool isMuted) => 
             RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
 
-        public void AlterVolume(float alteration, bool commit) =>
-            RouteReliableMessage(isRequest => new AlterVolume(Id, isRequest: !IsOwner, alteration, commit));
-
         public void SetViewpointPosition(Vector3 viewpointPosition) =>
             RouteReliableMessage(isRequest => new SetViewpointPosition(Id, isRequest: !IsOwner, viewpointPosition: viewpointPosition));
 
         public void FinishRecording() =>
             RouteReliableMessage(isRequest => new FinishRecording(Id, isRequest: !IsOwner));
 
-        public void AlterSoundEffect(EffectId effect, int initialLevel, int alteration, bool commit) =>
-            RouteReliableMessage(isRequest => new AlterSoundEffect(Id, !IsOwner, effect, initialLevel, alteration, commit));
+        public void AlterVolume(float alteration, bool commit) =>
+            RouteReliableMessage(isRequest => new AlterVolume(Id, isRequest: !IsOwner, alteration, commit));
+
+        public void AlterSoundEffect(EffectId effect, float alteration, bool commit) =>
+            RouteReliableMessage(isRequest => new AlterSoundEffect(Id, !IsOwner, effect, alteration, commit));
 
         public void PopSoundEffect() =>
             RouteReliableMessage(isRequest => new PopSoundEffect(Id, isRequest: !IsOwner));
@@ -125,7 +125,8 @@ namespace Holofunk.Loop
                 ViewpointPosition = viewpointPosition,
                 IsMuted = false,
                 Volume = 0.7f,
-                Effects = new int[0]
+                Effects = new int[0],
+                EffectLevels = new int[0]
             });
 
             // Then enable the distributed behavior.

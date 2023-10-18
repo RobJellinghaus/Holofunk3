@@ -13,11 +13,6 @@ namespace Holofunk.Menu
     public struct MenuState : INetSerializable
     {
         /// <summary>
-        /// Which kind of popup menu is this?
-        /// </summary>
-        public MenuKind MenuKind { get; set; }
-
-        /// <summary>
         /// The ID of the sub-level selected menu item (if any).
         /// </summary>
         /// <remarks>
@@ -46,7 +41,6 @@ namespace Holofunk.Menu
 
         public void Deserialize(NetDataReader reader)
         {
-            MenuKind = MenuKind.Deserialize(reader);
             SubSelectedItem = MenuItemId.Deserialize(reader);
             TopSelectedItem = MenuItemId.Deserialize(reader);
             ViewpointForwardDirection = reader.GetVector3();
@@ -55,13 +49,12 @@ namespace Holofunk.Menu
 
         public void Serialize(NetDataWriter writer)
         {
-            MenuKind.Serialize(writer, MenuKind);
             MenuItemId.Serialize(writer, SubSelectedItem);
             MenuItemId.Serialize(writer, TopSelectedItem);
             writer.Put(ViewpointForwardDirection);
             writer.Put(ViewpointPosition);
         }
 
-        public override string ToString() => $"MenuState[{MenuKind}, @{ViewpointPosition}, =>{ViewpointForwardDirection} top({TopSelectedItem.Value}) sub({TopSelectedItem.Value})]";
+        public override string ToString() => $"MenuState[@{ViewpointPosition}, =>{ViewpointForwardDirection} top({TopSelectedItem.Value}) sub({TopSelectedItem.Value})]";
     }
 }

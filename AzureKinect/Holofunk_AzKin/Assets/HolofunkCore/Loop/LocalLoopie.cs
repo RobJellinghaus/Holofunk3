@@ -542,7 +542,7 @@ namespace Holofunk.Loop
 
         public void AlterSoundEffect(EffectId effect, float alteration, bool commit)
         {
-            HoloDebug.Log($"LocalLoopie.AlterSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}, initialLevel {initialLevel}, alteration {alteration}, commit {commit}");
+            HoloDebug.Log($"LocalLoopie.AlterSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}, alteration {alteration}, commit {commit}");
 
             // Is effect present in loopie.Effects already?
             int effectIndex = effect.FindIn(loopie.Effects);

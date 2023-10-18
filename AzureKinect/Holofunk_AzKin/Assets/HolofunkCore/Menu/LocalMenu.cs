@@ -47,18 +47,7 @@ namespace Holofunk.Menu
         {
             this.menuState = menuState;
 
-            if (menuState.MenuKind.Value == MenuKinds.System)
-            {
-                // TODO: parameterize this properly
-                // TODO: figure out how to structure the package dependencies here; Menu shouldn't depend on App
-                menuStructure = App.SystemMenuFactory.Create();
-            }
-            else if (menuState.MenuKind.Value == MenuKinds.SoundEffects)
-            {
-                // TODO: parameterize this properly
-                // TODO: figure out how to structure the package dependencies here; Menu shouldn't depend on App
-                menuStructure = App.SoundEffectsMenuFactory.Create();
-            }
+            menuStructure = App.MenuFactory.Create();
 
             // create the root menu level
             menuLevels.Add(new MenuLevel(this, Vector3.zero, 0, menuStructure));

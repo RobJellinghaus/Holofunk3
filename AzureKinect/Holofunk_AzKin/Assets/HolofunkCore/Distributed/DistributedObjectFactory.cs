@@ -1,6 +1,9 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Holofunk.Core;
+using Holofunk.Loop;
+using Holofunk.Perform;
+using Holofunk.Sound;
 using LiteNetLib;
 using System;
 using System.Collections.Generic;
@@ -18,6 +21,7 @@ namespace Holofunk.Distributed
     {
         public static readonly string DistributedObjectPrototypes = nameof(DistributedObjectPrototypes);
         public static readonly string DistributedObjectInstances = nameof(DistributedObjectInstances);
+        public static readonly string Players = nameof(Players);
 
         /// <summary>
         /// The types of distributed objects currently known.
@@ -80,7 +84,7 @@ namespace Holofunk.Distributed
         /// This just assumes the first endpoint we find is the one we want.
         /// </remarks>
         public static GameObject FindFirstInstanceContainer(DistributedType type)
-            => FindComponentContainers(type, false).FirstOrDefault();
+            => FindComponentContainers(new DistributedType[] { type }, false).FirstOrDefault();
 
         /// <summary>
         /// Find the parent GameObject for new object instances of the given type from the given peer.
@@ -142,7 +146,25 @@ namespace Holofunk.Distributed
 
         public static IEnumerable<T> FindComponentInstances<T>(DistributedType type, bool includeActivePrototype)
             where T : Component
-            => FindComponentContainers(type, includeActivePrototype).Select(gameobj => gameobj.GetComponent<T>());
+            => FindComponentContainers(new DistributedType[] { type }, includeActivePrototype).Select(gameobj => gameobj.GetComponent<T>());
+
+        // TODO: make this not so terribly hardcoded to just the one cross-type interface that exists
+        public static IEnumerable<IEffectable> FindComponentInterfaces()
+            // there is only one interface right now and we know Loopies and Performers are it
+            => FindComponentContainers(new DistributedType[] { DistributedType.Loopie, DistributedType.Performer }, false)
+                .Select(gameobj =>
+                {
+                    DistributedLoopie loopie = gameobj.GetComponent<DistributedLoopie>();
+                    if (loopie == null)
+                    {
+                        DistributedPerformer performer = gameobj.GetComponent<DistributedPerformer>();
+                        return (IEffectable)performer;
+                    }
+                    else
+                    {
+                        return (IEffectable)loopie;
+                    }
+                });
 
         /// <summary>
         /// Enumerate all components of the given object type across all known instances.
@@ -151,14 +173,17 @@ namespace Holofunk.Distributed
         /// TODO: look at whether this ever becomes a performance hot spot because everyone hates LINQ in Unity.
         /// But look at how simple this app is, surely if any app can afford it, Holofunk can!
         /// </remarks>
-        public static IEnumerable<GameObject> FindComponentContainers(DistributedType type, bool includeActivePrototype)
+        public static IEnumerable<GameObject> FindComponentContainers(DistributedType[] types, bool includeActivePrototype)
         {
             if (includeActivePrototype)
             {
-                GameObject prototype = FindPrototypeContainer(type);
-                if (prototype.activeSelf)
+                foreach (DistributedType type in types)
                 {
-                    yield return prototype;
+                    GameObject prototype = FindPrototypeContainer(type);
+                    if (prototype.activeSelf)
+                    {
+                        yield return prototype;
+                    }
                 }
             }
 
@@ -169,14 +194,34 @@ namespace Holofunk.Distributed
             {
                 Transform child = instanceContainer.GetChild(i);
 
-                Transform typeChild = child.Find(type.ToString());
-
-                if (typeChild != null)
+                foreach (DistributedType type in types)
                 {
-                    for (int j = 0; j < typeChild.childCount; j++)
+                    Transform typeChild = child.Find(type.ToString());
+
+                    if (typeChild != null)
                     {
-                        Transform instanceChild = typeChild.GetChild(j);
-                        yield return instanceChild.gameObject;
+                        for (int j = 0; j < typeChild.childCount; j++)
+                        {
+                            Transform instanceChild = typeChild.GetChild(j);
+                            yield return instanceChild.gameObject;
+                        }
+                    }
+                }
+            }
+
+            // and look at the Players container to pick up the local Performers
+            // TODO: make this not so terribly hacky... maybe there should be a general Id->DistributedObject
+            // (owner OR proxy) lookup function on the DistributedHost?
+            Transform playersContainer = GameObject.Find(Players).transform;
+            Contract.Requires(playersContainer != null);
+            foreach (DistributedType type in types)
+            {
+                if (type == DistributedType.Performer)
+                {
+                    for (int i = 0; i < playersContainer.childCount; i++)
+                    {
+                        Transform playerChild = playersContainer.GetChild(i);
+                        yield return playerChild.gameObject;
                     }
                 }
             }

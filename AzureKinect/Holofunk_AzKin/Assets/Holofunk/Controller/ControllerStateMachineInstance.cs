@@ -188,7 +188,9 @@ namespace Holofunk.Controller
             #region Level change
 
             // Shared state machine storage for the level widget that visualizes changing the level.
-            DistributedLevelWidget widget = null;
+            // NO NO NO DO NOT DO THIS IT GETS SHARED ACROSS ALL INSTANCES OF THE STATE MACHINE NOOOOOOOO
+            // (it works only when there is exactly one state machine instance in existence)
+            // DistributedLevelWidget widget = null;
 
             // we're going to change a level. if no effect is selected, it's volume!!! WOOO SLICK
             ControllerState levelChange = new ControllerState(
@@ -288,17 +290,17 @@ namespace Holofunk.Controller
             return stateMachine;
         }
 
-        private static ControllerState CreateMenuState(ControllerState initial, MenuKinds menuKind)
+        private static ControllerState CreateMenuState(ControllerState initial)
         {
             var menu = new ControllerState(
-                menuKind.ToString(),
+                "Menu",
                 initial,
                 (evt, pplusController) =>
                 {
                     // keep the set of touched loopies stable, so whatever we originally touched is still what we apply sound effects to
                     pplusController.KeepTouchedLoopiesStable = true;
 
-                    pplusController.CreateMenu(menuKind);
+                    pplusController.CreateMenu();
                 },
                 (evt, pplusController) => {
                     // let loopies get (un)touched again

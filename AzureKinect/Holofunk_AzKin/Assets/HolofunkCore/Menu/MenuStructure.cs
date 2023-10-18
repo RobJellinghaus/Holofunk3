@@ -14,9 +14,17 @@ namespace Holofunk.Menu
         /// </summary>
         Prompt = 1,
         /// <summary>
+        /// Touch menu action takes place when user touches loopies and hits light button.
+        /// </summary>
+        Touch = 2,
+        /// <summary>
         /// Level menu action creates level widget and allows adjustment.
         /// </summary>
         Level = 2,
+        /// <summary>
+        /// Label only, not directly selectable.
+        /// </summary>
+        Label = 3,
     }
 
     /// <summary>
@@ -38,30 +46,45 @@ namespace Holofunk.Menu
         /// </summary>
         public readonly string Name;
         /// <summary>
-        /// Action executed promptly on all touched loopies when this prompt verb is selected.
+        /// Action executed promptly when this prompt verb is selected.
         /// </summary>
-        public readonly Action<HashSet<DistributedId>> PromptAction;
+        public readonly Action PromptAction;
+        /// <summary>
+        /// Action executed on touched loopies as soon as they are touched with the Light button.
+        /// </summary>
+        public readonly Action<HashSet<DistributedId>> TouchAction;
         /// <summary>
         /// Action executed per-Update on all touched loopies based on current level setting, with final commit.
         /// </summary>
-        public readonly Action<HashSet<DistributedId>, int, bool> LevelAction;
+        public readonly Action<HashSet<DistributedId>, float, bool> LevelAction;
 
-        private MenuVerb(MenuVerbKind kind, string name, Action<HashSet<DistributedId>> promptAction, Action<HashSet<DistributedId>, int, bool> levelAction)
+        private MenuVerb(MenuVerbKind kind, string name, Action promptAction, Action<HashSet<DistributedId>> touchAction, Action<HashSet<DistributedId>, float, bool> levelAction)
         {
             Kind = kind;
             Name = name;
             PromptAction = promptAction;
+            TouchAction = touchAction;
             LevelAction = levelAction;
         }
 
-        public static MenuVerb MakePrompt(string name, Action<HashSet<DistributedId>> promptAction)
+        public static MenuVerb MakePrompt(string name, Action action)
         {
-            return new MenuVerb(MenuVerbKind.Prompt, name, promptAction, null);
+            return new MenuVerb(MenuVerbKind.Prompt, name, action, null, null);
         }
 
-        public static MenuVerb MakeLevel(string name, Action<HashSet<DistributedId>, int, bool> levelAction)
+        public static MenuVerb MakeTouch(string name, Action<HashSet<DistributedId>> touchAction)
         {
-            return new MenuVerb(MenuVerbKind.Prompt, name, null, levelAction);
+            return new MenuVerb(MenuVerbKind.Touch, name, null, touchAction, null);
+        }
+
+        public static MenuVerb MakeLevel(string name, Action<HashSet<DistributedId>, float, bool> levelAction)
+        {
+            return new MenuVerb(MenuVerbKind.Level, name, null, null, levelAction);
+        }
+
+        public static MenuVerb MakeLabel(string name)
+        {
+            return new MenuVerb(MenuVerbKind.Label, name, null, null, null);
         }
     }
 

@@ -337,9 +337,9 @@ namespace Holofunk.Controller
             currentlyHeldLoopie = newLoopie;
         }
 
-        public GameObject CreateMenu(MenuKinds menuKind)
+        public GameObject CreateMenu()
         {
-            HoloDebug.Log($"Creating menu kind {menuKind} for pplusController #{playerIndex}{handSide}");
+            HoloDebug.Log($"Creating menu for pplusController #{playerIndex}{handSide}");
 
             // get the forward direction towards the camera from the hand location
             Vector3 localHandPosition = GetViewpointHandPosition();
@@ -352,7 +352,6 @@ namespace Holofunk.Controller
             HoloDebug.Assert(currentlyOpenMenu == null, "Must not already be an open menu for this controller");
 
             currentlyOpenMenu = DistributedMenu.Create(
-                menuKind,
                 viewpointForwardDirection,
                 viewpointHandPosition);
 

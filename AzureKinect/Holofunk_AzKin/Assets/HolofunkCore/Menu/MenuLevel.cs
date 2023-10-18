@@ -72,7 +72,7 @@ namespace Holofunk.Menu
 
                 // set the text
                 TextMesh text = menuItemGameObject.transform.GetChild(0).GetComponent<TextMesh>();
-                text.text = menuStructure.Name(i + 1);
+                text.text = menuStructure.Verb(i + 1).Name;
 
                 menuItemGameObjects.Add(menuItemGameObject);
                 // everything starts off disabled

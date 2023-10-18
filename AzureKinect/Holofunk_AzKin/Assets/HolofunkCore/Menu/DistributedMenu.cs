@@ -88,7 +88,6 @@ namespace Holofunk.Menu
         /// TODO: figure out how to refactor out the shared plumbing here, similarly to the Registrar.
         /// </remarks>
         public static GameObject Create(
-            MenuKind kind,
             Vector3 viewpointForwardDirection,
             Vector3 viewpointPosition)
         {
@@ -105,7 +104,6 @@ namespace Holofunk.Menu
             // First set up the Menu state in distributed terms.
             localMenu.Initialize(new MenuState
             {
-                MenuKind = kind,
                 SubSelectedItem = default(MenuItemId),
                 TopSelectedItem = default(MenuItemId),
                 ViewpointForwardDirection = viewpointForwardDirection,

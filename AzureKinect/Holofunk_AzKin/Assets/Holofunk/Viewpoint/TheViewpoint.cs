@@ -25,7 +25,7 @@ namespace Holofunk.Viewpoint
         /// </remarks>
         public static int GetPerformerCount()
             => DistributedObjectFactory.FindComponentContainers(
-                DistributedObjectFactory.DistributedType.Performer, includeActivePrototype: false)
+                new[] { DistributedObjectFactory.DistributedType.Performer }, includeActivePrototype: false)
             .Count();
 
         public static DistributedPerformer GetPerformer(int performerIndex)
