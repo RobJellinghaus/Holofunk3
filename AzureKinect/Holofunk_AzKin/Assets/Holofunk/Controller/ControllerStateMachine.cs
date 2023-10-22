@@ -272,6 +272,7 @@ namespace Holofunk.Controller
                     float initialHandYPosition = pplusModel.Controller.GetViewpointHandPosition().y;
 
                     MenuVerb menuVerb = pplusModel.Controller.CurrentlyHeldVerb;
+                    HoloDebug.Log($"Entering levelChange state, menuVerb is {menuVerb.Name} of kind {menuVerb.Kind}");
 
                     if (menuVerb.Kind == MenuVerbKind.Prompt)
                     {
@@ -284,11 +285,11 @@ namespace Holofunk.Controller
                         pplusModel,
                         menuVerbModel =>
                         {
-                        if (menuVerb.Kind == MenuVerbKind.Prompt)
-                        {
-                            // we already happened; update does nothing
-                            return;
-                        }
+                            if (menuVerb.Kind == MenuVerbKind.Prompt)
+                            {
+                                // we already happened; update does nothing
+                                return;
+                            }
 
                             // If this is a Touch menu verb, then update the touched loopie set.
                             if (menuVerb.Kind == MenuVerbKind.Touch)
@@ -362,8 +363,11 @@ namespace Holofunk.Controller
                     pplusModel.Controller.CreateMenu().GetComponent<DistributedMenu>()),
                 (evt, menuModel) => {
                     DistributedMenu menu = menuModel.Menu;
-                    ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = menu.GetMenuVerb();
-                    HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: deleting menu {menu.Id}");
+                    MenuVerb heldVerb = menu.GetMenuVerb();
+                    ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = heldVerb;
+
+                    HoloDebug.Log($"Set currentlyHeldVerb to {heldVerb.Name}");
+                    HoloDebug.Log($"ControllerStateMachineInstance.Menu.exit: deleting menu {menu.Id}");
                     menu.Delete();
                 });
 

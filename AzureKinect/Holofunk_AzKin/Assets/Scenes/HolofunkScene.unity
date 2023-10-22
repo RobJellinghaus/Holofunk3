@@ -4000,7 +4000,7 @@ GameObject:
   - component: {fileID: 2135894451}
   - component: {fileID: 2135894450}
   m_Layer: 0
-  m_Name: VolumeWidget
+  m_Name: LevelWidget
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4035,7 +4035,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2135894448}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9b86b7133b65df24e9b1e8227d2445ad, type: 3}
+  m_Script: {fileID: 11500000, guid: 391795520543c2941893dfd928b25cd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &2135894451
@@ -4047,6 +4047,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 2135894448}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 18cecfa75a682c14e99274a1f775c55c, type: 3}
+  m_Script: {fileID: 11500000, guid: 3fbf39ce1d51a694ab0a79fc9ddf0981, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
