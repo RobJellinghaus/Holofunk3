@@ -112,7 +112,7 @@ namespace Holofunk.StateMachines
 
             // if there is a super-state, and it has a transition from this event, then find it
             if (source.Parent != null) {
-                return TransitionFrom(source.Parent, evt, source.GetParentModel(model));
+                return TransitionFrom(source.Parent, evt, model.Parent);
             }
             else {
                 return null;

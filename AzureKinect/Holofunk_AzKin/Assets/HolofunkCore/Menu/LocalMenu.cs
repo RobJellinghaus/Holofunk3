@@ -68,32 +68,25 @@ namespace Holofunk.Menu
             menuState = currentState;
         }
 
-        public void InvokeSelectedAction(HashSet<DistributedId> affectedObjects)
+        public MenuVerb GetMenuVerb()
         {
             MenuState state = MenuState;
             if (!state.TopSelectedItem.IsInitialized)
             {
                 // was nothing to do
-                return;
+                return MenuVerb.Undefined;
             }
 
             // ok top item is known initialized. get its structure entry
-            Action<DistributedId> action = menuStructure.Action(state.TopSelectedItem);
+            MenuVerb verb = menuStructure.Verb(state.TopSelectedItem);
 
             if (state.SubSelectedItem.IsInitialized)
             {
                 MenuStructure childStructure = menuStructure.Child(state.TopSelectedItem);
-                action = childStructure.Action(state.SubSelectedItem);
+                verb = childStructure.Verb(state.SubSelectedItem);
             }
 
-            if (action != null)
-            {
-                action(affectedObjects);
-            }
-            else
-            {
-                HoloDebug.Warn($"LocalMenu.InvokeSelectedActiono: Did not find action for menu state {state}");
-            }
+            return verb;
         }
 
         public void OnDelete()

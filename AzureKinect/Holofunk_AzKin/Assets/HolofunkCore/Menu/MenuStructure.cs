@@ -46,22 +46,40 @@ namespace Holofunk.Menu
         /// </summary>
         public readonly string Name;
         /// <summary>
+        /// If this is a level menu verb, can this affect the performer?
+        /// </summary>
+        /// <remarks>
+        /// This is false for volume level setting, and true for all other effects.
+        /// </remarks>
+        public readonly bool MayBePerformer;
+        /// <summary>
         /// Action executed promptly when this prompt verb is selected.
         /// </summary>
         public readonly Action PromptAction;
         /// <summary>
         /// Action executed on touched loopies as soon as they are touched with the Light button.
         /// </summary>
-        public readonly Action<DistributedId> TouchAction;
+        public readonly Action<HashSet<DistributedId>> TouchAction;
         /// <summary>
-        /// Action executed per-Update on all touched loopies based on current level setting, with final commit.
+        /// Action executed per-Update on all touched loopies and/or performer based on current level setting, with final commit.
         /// </summary>
-        public readonly Action<DistributedId, float, bool> LevelAction;
+        public readonly Action<HashSet<DistributedId>, float, bool> LevelAction;
 
-        private MenuVerb(MenuVerbKind kind, string name, Action promptAction, Action<DistributedId> touchAction, Action<DistributedId, float, bool> levelAction)
+        public static MenuVerb Undefined => new MenuVerb(MenuVerbKind.Undefined, null, false, null, null, null);
+
+        public bool IsDefined => Kind != MenuVerbKind.Undefined;
+
+        private MenuVerb(
+            MenuVerbKind kind,
+            string name,
+            bool mayBePerformer,
+            Action promptAction,
+            Action<HashSet<DistributedId>> touchAction,
+            Action<HashSet<DistributedId>, float, bool> levelAction)
         {
             Kind = kind;
             Name = name;
+            MayBePerformer = mayBePerformer;
             PromptAction = promptAction;
             TouchAction = touchAction;
             LevelAction = levelAction;
@@ -69,22 +87,22 @@ namespace Holofunk.Menu
 
         public static MenuVerb MakePrompt(string name, Action action)
         {
-            return new MenuVerb(MenuVerbKind.Prompt, name, action, null, null);
+            return new MenuVerb(MenuVerbKind.Prompt, name, false, action, null, null);
         }
 
-        public static MenuVerb MakeTouch(string name, Action<DistributedId> touchAction)
+        public static MenuVerb MakeTouch(string name, Action<HashSet<DistributedId>> touchAction)
         {
-            return new MenuVerb(MenuVerbKind.Touch, name, null, touchAction, null);
+            return new MenuVerb(MenuVerbKind.Touch, name, false, null, touchAction, null);
         }
 
-        public static MenuVerb MakeLevel(string name, Action<DistributedId, float, bool> levelAction)
+        public static MenuVerb MakeLevel(string name, bool mayBePerformer, Action<HashSet<DistributedId>, float, bool> levelAction)
         {
-            return new MenuVerb(MenuVerbKind.Level, name, null, null, levelAction);
+            return new MenuVerb(MenuVerbKind.Level, name, mayBePerformer, null, null, levelAction);
         }
 
         public static MenuVerb MakeLabel(string name)
         {
-            return new MenuVerb(MenuVerbKind.Label, name, null, null, null);
+            return new MenuVerb(MenuVerbKind.Label, name, false, null, null, null);
         }
     }
 

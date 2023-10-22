@@ -40,8 +40,11 @@ namespace Holofunk.Menu
         /// <remarks>
         /// This will only be invoked on the host which owns the menu, which is good as that is the only
         /// host which defines any actions in the menu structure.
+        /// 
+        /// Note that this will have MenuVerbKind.Undefined if there is no selected menu item (or if the
+        /// user unselects the current verb).
         /// </remarks>
         [LocalMethod]
-        void InvokeSelectedAction(HashSet<DistributedId> affectedObjects);
+        MenuVerb GetMenuVerb();
     }
 }

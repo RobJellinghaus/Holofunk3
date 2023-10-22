@@ -37,14 +37,6 @@ namespace Holofunk.Loop
                 allTouchedLoopieSet.UnionWith(touchedLoopieIds.Select(id => new DistributedId(id)));
             }
 
-            // Too inefficient? Our scene is practically empty... unless we get lots of loopie slices flying around...
-            // TODO: keep an eye on the profile for this FindObjectsOfType<PPlusController> call. Maybe they have a
-            // per-type index.
-            foreach (PPlusController pplusController in GameObject.FindObjectsOfType<PPlusController>())
-            {
-                allTouchedLoopieSet.UnionWith(pplusController.TouchedLoopieIds);
-            }
-
             foreach (LocalLoopie localLoopie in
                 DistributedObjectFactory.FindComponentInstances<LocalLoopie>(
                     DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))

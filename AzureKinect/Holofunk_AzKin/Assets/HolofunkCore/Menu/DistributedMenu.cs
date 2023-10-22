@@ -50,7 +50,7 @@ namespace Holofunk.Menu
         public void SetSelection(MenuItemId topSelectedItemId, MenuItemId subSelectedItemId) =>
             RouteReliableMessage(isRequest => new SetSelected(Id, isRequest: !IsOwner, topSelectedItemId, subSelectedItemId));
 
-        public void InvokeSelectedAction(HashSet<DistributedId> affectedObjects) => GetLocalMenu().InvokeSelectedAction(affectedObjects);
+        public MenuVerb GetMenuVerb() => GetLocalMenu().GetMenuVerb();
 
         #endregion
 

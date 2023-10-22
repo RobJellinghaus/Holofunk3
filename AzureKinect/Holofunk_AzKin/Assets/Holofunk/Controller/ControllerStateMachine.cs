@@ -161,7 +161,9 @@ namespace Holofunk.Controller
                 initial,
                 PPlusEvent.MikeDown,
                 // Start recording if and only if 1) the UI didn't capture this, and 2) recording is enabled.
-                (evt, pplusController) => (!evt.IsCaptured /* && HolofunkController.Instance.IsRecordingEnabled */) ? recording : initial);
+                (evt, pplusModel) => (!evt.IsCaptured /* && HolofunkController.Instance.IsRecordingEnabled */)
+                    ? (State<PPlusEvent>)recording
+                    : (State<PPlusEvent>)initial);
 
             AddTransition(stateMachine, recording, PPlusEvent.MikeUp, initial);
 

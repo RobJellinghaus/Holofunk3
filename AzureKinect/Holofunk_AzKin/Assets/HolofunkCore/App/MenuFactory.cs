@@ -201,8 +201,7 @@ namespace Holofunk.App
                             }
                         };
 
-                        subItems.Add((MenuVerb.MakeLevel(label, levelAction), null));
-
+                        subItems.Add((MenuVerb.MakeLevel(label, true, levelAction), null));
                     }
 
                     MenuStructure subMenu = new MenuStructure(subItems.ToArray());
