@@ -153,7 +153,21 @@ namespace Holofunk.Controller
                             : NowSoundLib.AudioInputId.AudioInput2);
 
                     // update doesn't need to do anything while recording
-                    return new RecordingModel(pplusModel, loopie, _ => { });
+                    return new RecordingModel(
+                        pplusModel,
+                        loopie,
+                        recordingModel => {
+                            Vector3 viewpointHandPosition = pplusModel.Controller.GetViewpointHandPosition();
+                            /*
+                            Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
+                            if (localToViewpointMatrix != Matrix4x4.zero)
+                            {
+                                Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
+                            }
+                            */
+                            //Debug.Log($"Updated viewport hand position of loopie {currentlyHeldLoopie} to {viewpointHandPosition}");
+                            loopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
+                        });
                 },
                 (_, recordingModel) => recordingModel.HeldLoopie.GetComponent<DistributedLoopie>().FinishRecording());
 
