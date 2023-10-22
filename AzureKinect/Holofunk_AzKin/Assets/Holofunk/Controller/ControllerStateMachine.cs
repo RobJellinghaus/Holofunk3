@@ -118,16 +118,18 @@ namespace Holofunk.Controller
             ThreadContract.RequireUnity();
 
             ControllerState root = new ControllerState(
-                "root", 
+                "root",
                 null,
-                (evt, pplusController) => pplusController,
+                (_, model) => model,
                 (_1, _2) => { });
 
             // Base state: just playing along.
             var initial = new ControllerState(
                 "initial",
                 root,
-                (evt, pplusController) => pplusController,
+                (evt, pplusModel) => new PPlusModel(
+                    pplusModel.Controller,
+                    pplusModel => pplusModel.Controller.UpdateTouchedLoopieList()),
                 (_1, _2) => { });
 
             var stateMachine = new ControllerStateMachine(initial, PPlusEventComparer.Instance);
@@ -152,10 +154,7 @@ namespace Holofunk.Controller
                     // update doesn't need to do anything while recording
                     return new RecordingModel(pplusModel, loopie, _ => { });
                 },
-                (_, recordingModel) =>
-                {
-                    recordingModel.HeldLoopie.GetComponent<DistributedLoopie>().FinishRecording();
-                });
+                (_, recordingModel) => recordingModel.HeldLoopie.GetComponent<DistributedLoopie>().FinishRecording());
 
             AddTransition(
                 stateMachine,

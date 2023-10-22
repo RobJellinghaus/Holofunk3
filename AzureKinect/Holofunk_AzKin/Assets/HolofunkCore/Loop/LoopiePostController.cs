@@ -34,7 +34,10 @@ namespace Holofunk.Loop
                     DistributedObjectFactory.DistributedType.Performer, includeActivePrototype: true))
             {
                 uint[] touchedLoopieIds = localPerformer.GetState().TouchedLoopieIdList;
-                allTouchedLoopieSet.UnionWith(touchedLoopieIds.Select(id => new DistributedId(id)));
+                if (touchedLoopieIds != null)
+                {
+                    allTouchedLoopieSet.UnionWith(touchedLoopieIds.Select(id => new DistributedId(id)));
+                }
             }
 
             foreach (LocalLoopie localLoopie in

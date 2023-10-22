@@ -25,6 +25,11 @@ namespace Holofunk.Loop
         private LoopieState loopie;
 
         /// <summary>
+        /// Is someone touching this loopie?
+        /// </summary>
+        private bool isTouched;
+
+        /// <summary>
         /// If there is a SoundManager, and we created a track, this is its ID.
         /// </summary>
         /// <remarks>
@@ -656,7 +661,15 @@ namespace Holofunk.Loop
         /// and LoopiePostController, and they work solely off the proxy Performer state which is updated via
         /// the network.)
         /// </remarks>
-        public bool IsTouched { get; set; }
+        public bool IsTouched
+        {
+            get { return isTouched; }
+            set
+            {
+                HoloDebug.Log($"IsTouched loopie #{this.DistributedObject.Id}: {value}");
+                isTouched = value;
+            }
+        }
 
         #endregion
 

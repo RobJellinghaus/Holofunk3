@@ -45,6 +45,12 @@ namespace Holofunk.Perform
         /// </summary>
         public void SetTouchedLoopies(DistributedId[] loopieIds)
         {
+            uint[] ids = new uint[loopieIds.Length];
+            for (int i = 0; i < loopieIds.Length; i++)
+            {
+                ids[i] = loopieIds[i].Value;
+            }
+            this.state.TouchedLoopieIdList = ids;
         }
 
         public void AlterVolume(float alteration, bool commit)
