@@ -234,5 +234,19 @@ namespace Holofunk.Core
         public static readonly float MaxVolumeHeightMeters = 0.1f; // 100 cm
 
         #endregion
+
+        #region Body proportions
+
+        /// <summary>
+        /// The maximum distance between head and microphone hand when determining whether effects should
+        /// be applied to performer.
+        /// </summary>
+        /// <remarks>
+        /// If the performer is holding the mike to their mouth, any level menu verb effects will apply to the
+        /// performer.
+        /// </remarks>
+        public static readonly float MaximumHeadToMikeHandDistance = 0.1f;
+
+        #endregion
     }
 }

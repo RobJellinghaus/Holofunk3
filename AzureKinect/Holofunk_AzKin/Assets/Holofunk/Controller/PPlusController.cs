@@ -56,15 +56,6 @@ namespace Holofunk.Controller
         private ControllerStateMachineInstance stateMachineInstance;
 
         /// <summary>
-        /// The MenuVerb currently held by this controller, if any was picked from the menu.
-        /// </summary>
-        /// <remarks>
-        /// This is used for rendering the verb name over the user's controller hand, and for determining the
-        /// variety of action that gets applied by the verb when the user hits the LIGHT button.
-        /// </remarks>
-        private MenuVerb currentlyHeldVerb;
-
-        /// <summary>
         /// The sorted IDs of the loopies touched by this controller.
         /// </summary>
         /// <remarks>
@@ -88,9 +79,7 @@ namespace Holofunk.Controller
         /// </summary>
         internal string HandStateMachineInstanceString => stateMachineInstance?.ToString() ?? "";
 
-        internal bool AnyLoopiesTouched => touchedLoopieIds.Count > 0;
-
-        internal MenuVerb CurrentlyHeldVerb => currentlyHeldVerb;
+        internal MenuVerb CurrentlyHeldVerb { get; set; }
 
         public IModel Parent => null;
 
@@ -217,6 +206,9 @@ namespace Holofunk.Controller
                 HoloDebug.Log($"Updating {handSide} touched loopies: prior [{string.Join(", ", previouslyTouchedLoopieIds)}], current [{string.Join(", ", touchedLoopieIds)}]");
                 previouslyTouchedLoopieIds.Clear();
                 previouslyTouchedLoopieIds.AddRange(touchedLoopieIds);
+
+                // and push to the performer for distribution
+                DistributedPerformer.SetTouchedLoopies(touchedLoopieIds.ToArray());
             }
         }
 

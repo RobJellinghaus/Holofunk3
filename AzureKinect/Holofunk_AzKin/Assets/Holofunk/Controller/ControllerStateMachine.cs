@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Holofunk.Sound;
+using System.Linq;
 
 namespace Holofunk.Controller
 {
@@ -79,7 +80,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// Model for level adjustment: contains the adjustment value and the widget that's displaying the value.
         /// </summary>
-        internal class LevelAdjustModel : ChildModel<LevelAdjustModel, PPlusModel>
+        internal class MenuVerbModel : ChildModel<MenuVerbModel, PPlusModel>
         {
             /// <summary>
             /// The current adjustment.
@@ -87,7 +88,7 @@ namespace Holofunk.Controller
             internal float Adjustment { get; set; }
             internal DistributedLevelWidget LevelWidget { get; private set; }
 
-            internal LevelAdjustModel(PPlusModel parent, Action<LevelAdjustModel> updateAction, DistributedLevelWidget levelWidget)
+            internal MenuVerbModel(PPlusModel parent, Action<MenuVerbModel> updateAction, DistributedLevelWidget levelWidget)
                 : base(parent, updateAction)
             {
                 LevelWidget = levelWidget;
@@ -253,14 +254,14 @@ namespace Holofunk.Controller
 
             #endregion
 
-            #region Level change
+            #region Apply menu
 
             // Shared state machine storage for the level widget that visualizes changing the level.
             // NO NO NO DO NOT DO THIS IT GETS SHARED ACROSS ALL INSTANCES OF THE STATE MACHINE NOOOOOOOO
             // (it works only when there is exactly one state machine instance in existence)
             // DistributedLevelWidget widget = null;
 
-            State<PPlusEvent, LevelAdjustModel, PPlusModel> levelChange = new State<PPlusEvent, LevelAdjustModel, PPlusModel>(
+            State<PPlusEvent, MenuVerbModel, PPlusModel> applyMenuVerb = new State<PPlusEvent, MenuVerbModel, PPlusModel>(
                 "levelChange",
                 initial,
                 (evt, pplusModel) =>
@@ -268,48 +269,87 @@ namespace Holofunk.Controller
                     DistributedLevelWidget widget = pplusModel.Controller.CreateLevelWidget().GetComponent<DistributedLevelWidget>();
                     float initialHandYPosition = pplusModel.Controller.GetViewpointHandPosition().y;
 
-                    return new LevelAdjustModel(
+                    MenuVerb menuVerb = pplusModel.Controller.CurrentlyHeldVerb;
+
+                    if (menuVerb.Kind == MenuVerbKind.Prompt)
+                    {
+                        // take effect right now!
+                        // Prompt menu verbs just execute.
+                        menuVerb.PromptAction();
+                    }
+
+                    return new MenuVerbModel(
                         pplusModel,
-                        levelModel =>
+                        menuVerbModel =>
                         {
-                            // DO NOT call UpdateTouchedLoopieList; we want the touched loopies to remain fixed.
+                        if (menuVerb.Kind == MenuVerbKind.Prompt)
+                        {
+                            // we already happened; update does nothing
+                            return;
+                        }
 
-                            float lastAdjustment = levelModel.Adjustment;
+                            // If this is a Touch menu verb, then update the touched loopie set.
+                            if (menuVerb.Kind == MenuVerbKind.Touch)
+                            {
+                                pplusModel.Controller.UpdateTouchedLoopieList();
 
-                            float currentHandYPosition = pplusModel.Controller.GetViewpointHandPosition().y;
+                                DistributedPerformer performer = pplusModel.Controller.DistributedPerformer;
+                                HashSet<DistributedId> ids = new HashSet<DistributedId>(
+                                    ((LocalPerformer)performer.LocalObject)
+                                        .GetState()
+                                        .TouchedLoopieIdList
+                                        .Select(id => new DistributedId(id)));
+                                menuVerb.TouchAction(ids);
+                            }
+                            else
+                            {
+                                float lastAdjustment = menuVerbModel.Adjustment;
 
-                            float adjustment = (currentHandYPosition - initialHandYPosition) / MagicNumbers.MaxVolumeHeightMeters;
-                            // clamp this to (-1, 1) interval
-                            adjustment = Math.Min(1f, Math.Max(-1f, adjustment));
+                                float currentHandYPosition = pplusModel.Controller.GetViewpointHandPosition().y;
 
-                            HoloDebug.Log($"ControllerStateMachineInstance.LouderSofter: initialHandY {initialHandYPosition}, currentHandY {currentHandYPosition}, adjustment {adjustment}, lastAdjustment {lastAdjustment}");
+                                float adjustment = (currentHandYPosition - initialHandYPosition) / MagicNumbers.MaxVolumeHeightMeters;
+                                // clamp this to (-1, 1) interval
+                                adjustment = Math.Min(1f, Math.Max(-1f, adjustment));
 
-                            Core.Contract.Assert(!float.IsNaN(adjustment));
-                            Core.Contract.Assert(!float.IsInfinity(adjustment));
+                                HoloDebug.Log($"ControllerStateMachineInstance.LouderSofter: initialHandY {initialHandYPosition}, currentHandY {currentHandYPosition}, adjustment {adjustment}, lastAdjustment {lastAdjustment}");
 
-                            levelModel.Adjustment = adjustment;
+                                Core.Contract.Assert(!float.IsNaN(adjustment));
+                                Core.Contract.Assert(!float.IsInfinity(adjustment));
 
-                            LevelWidgetState state = widget.State;
-                            widget.UpdateState(
-                                new LevelWidgetState { ViewpointPosition = state.ViewpointPosition, Adjustment = adjustment });
+                                menuVerbModel.Adjustment = adjustment;
 
-                            // TODO: actually apply the effects
+                                LevelWidgetState state = widget.State;
+                                widget.UpdateState(
+                                    new LevelWidgetState { ViewpointPosition = state.ViewpointPosition, Adjustment = adjustment });
+
+                                ApplyLevelVerb(pplusModel, menuVerb, adjustment, false);
+                            }
                         },
                         widget);
                 },
                 (evt, levelAdjustModel) =>
                 {
-                    // TODO: actually commit the effects
+                    PPlusModel pplusModel = (PPlusModel)levelAdjustModel.Parent;
+                    ApplyLevelVerb(pplusModel, pplusModel.Controller.CurrentlyHeldVerb, levelAdjustModel.Adjustment, true);
 
-                    levelAdjustModel.LevelWidget.Delete();
+                    if (levelAdjustModel.LevelWidget != null)
+                    {
+                        levelAdjustModel.LevelWidget.Delete();
+                    }
                 });
 
-            AddTransition(stateMachine, initial, PPlusEvent.LightDown, levelChange);
-            AddTransition(stateMachine, levelChange, PPlusEvent.LightUp, initial);
+            // Light button will do something if there is a current menu verb.
+            AddTransition(
+                stateMachine,
+                initial,
+                PPlusEvent.LightDown,
+                applyMenuVerb,
+                pplusModel => pplusModel.Controller.CurrentlyHeldVerb.IsDefined);
+            AddTransition(stateMachine, applyMenuVerb, PPlusEvent.LightUp, initial);
 
             #endregion
 
-            #region Effect popup menus
+            #region Popup menu
 
             var menu = new State<PPlusEvent, MenuModel, PPlusModel>(
                 "Menu",
@@ -320,11 +360,7 @@ namespace Holofunk.Controller
                     pplusModel.Controller.CreateMenu().GetComponent<DistributedMenu>()),
                 (evt, menuModel) => {
                     DistributedMenu menu = menuModel.Menu;
-                    //HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: calling menu action on {touchedLoopies.Count} loopies");
-                    // menu.InvokeSelectedAction();
-
-                    // delete it in the distributed sense.
-                    // note that locally, this will synchronously destroy the game object
+                    ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = menu.GetMenuVerb();
                     HoloDebug.Log($"ControllerStateMachineInstance.systemMenu.exit: deleting menu {menu.Id}");
                     menu.Delete();
                 });
@@ -335,6 +371,47 @@ namespace Holofunk.Controller
             #endregion
 
             return stateMachine;
+        }
+
+        /// <summary>
+        /// Apply this MenuVerb with the given adjustment and perhaps commit.
+        /// </summary>
+        private static void ApplyLevelVerb(PPlusModel pplusModel, MenuVerb menuVerb, float adjustment, bool commit)
+        {
+            // Now apply the adjustment appropriately.
+            // Is the microphone hand close to the performer's mouth?
+            // First, which player ID are we?
+            int playerIndex = pplusModel.Controller.playerIndex;
+            PlayerState playerState;
+            bool mikeNextToMouth = false;
+            // Now, which Player is that?
+            if (DistributedViewpoint.Instance != null
+                && DistributedViewpoint.Instance.TryGetPlayerById((PlayerId)playerIndex, out playerState))
+            {
+                // get the distance between the player's non-controller hand and head
+                Vector3 playerHeadPos = playerState.HeadPosition;
+                Side handSide = pplusModel.Controller.handSide;
+                Vector3 mikeHandPos = handSide == Side.Left ? playerState.RightHandPosition : playerState.LeftHandPosition;
+
+                mikeNextToMouth = Vector3.Distance(playerHeadPos, mikeHandPos) < MagicNumbers.MaximumHeadToMikeHandDistance;
+            }
+
+            HashSet<DistributedId> ids;
+            DistributedPerformer performer = pplusModel.Controller.DistributedPerformer;
+            if (mikeNextToMouth && menuVerb.MayBePerformer)
+            {
+                ids = new HashSet<DistributedId>(new[] { performer.Id });
+            }
+            else
+            {
+                ids = new HashSet<DistributedId>(
+                    ((LocalPerformer)performer.LocalObject)
+                        .GetState()
+                        .TouchedLoopieIdList
+                        .Select(id => new DistributedId(id)));
+            }
+
+            menuVerb.LevelAction(ids, adjustment, commit);
         }
     }
 }
