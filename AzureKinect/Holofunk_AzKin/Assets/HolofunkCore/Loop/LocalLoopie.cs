@@ -666,7 +666,7 @@ namespace Holofunk.Loop
             get { return isTouched; }
             set
             {
-                HoloDebug.Log($"IsTouched loopie #{this.DistributedObject.Id}: {value}");
+                //HoloDebug.Log($"IsTouched loopie #{this.DistributedObject.Id}: {value}");
                 isTouched = value;
             }
         }

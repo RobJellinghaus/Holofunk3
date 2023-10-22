@@ -138,7 +138,7 @@ public class PPlus
                 else 
                 {
                     reports.Enqueue(new Report(enqueue_buf, ret, System.DateTime.Now));
-                    DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Report ID: {1:X2}. Timestamp: {1:X2}", ret, enqueue_buf[0], enqueue_buf[1]), DebugType.THREADING);
+                    //DebugPrint(string.Format("Enqueue. Bytes read: {0:D}. Report ID: {1:X2}. Timestamp: {1:X2}", ret, enqueue_buf[0], enqueue_buf[1]), DebugType.THREADING);
                 }
             }
             if (ts_enqueue == enqueue_buf[1])
@@ -203,8 +203,8 @@ public class PPlus
                     //DebugPrint(string.Format("Duplicate timestamp dequeued. TS: {0:X2}", ts_de), DebugType.THREADING);
                 }
                 ts_dequeue = dequeue_buf[1];
-                DebugPrint(string.Format("Dequeue message. Queue length: {0:d}. Report ID: {1:X2}. Timestamp: {2:X2} Lag to dequeue: {3}ms. Lag between packets: {4}ms",
-                    reports.Count, dequeue_buf[0], dequeue_buf[1], System.DateTime.Now.Subtract(rep.GetTime()).TotalMilliseconds, rep.GetTime().Subtract(ts_prev).TotalMilliseconds), DebugType.THREADING);
+                //DebugPrint(string.Format("Dequeue message. Queue length: {0:d}. Report ID: {1:X2}. Timestamp: {2:X2} Lag to dequeue: {3}ms. Lag between packets: {4}ms",
+                //    reports.Count, dequeue_buf[0], dequeue_buf[1], System.DateTime.Now.Subtract(rep.GetTime()).TotalMilliseconds, rep.GetTime().Subtract(ts_prev).TotalMilliseconds), DebugType.THREADING);
                 ts_prev = rep.GetTime();
             }
 
@@ -302,8 +302,8 @@ public class PPlus
         bool down = report_buf[2] == 0x1;
 
         // 0x04 report (keyboard) is 8 bytes
-        DebugPrint(string.Format("{0:X2}{1:X2}{2:X2}{3:X2}{4:X2}{5:X2}{6:X2}{7:X2} - posting ButtonEvent button: {8}, down: {9}",
-            report_buf[0], report_buf[1], report_buf[2], report_buf[3], report_buf[4], report_buf[5], report_buf[6], report_buf[7], b, down), DebugType.THREADING);
+        //DebugPrint(string.Format("{0:X2}{1:X2}{2:X2}{3:X2}{4:X2}{5:X2}{6:X2}{7:X2} - posting ButtonEvent button: {8}, down: {9}",
+        //    report_buf[0], report_buf[1], report_buf[2], report_buf[3], report_buf[4], report_buf[5], report_buf[6], report_buf[7], b, down), DebugType.THREADING);
 
         queue.Enqueue(new ButtonEvent(b, down));
     }

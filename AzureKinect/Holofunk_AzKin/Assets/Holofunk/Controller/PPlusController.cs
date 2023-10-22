@@ -81,8 +81,6 @@ namespace Holofunk.Controller
 
         internal MenuVerb CurrentlyHeldVerb { get; set; }
 
-        public IModel Parent => null;
-
         #endregion
 
         #region Updates and actions
@@ -162,7 +160,7 @@ namespace Holofunk.Controller
             // (it exists only as long as we are recognized by the viewpoint.)
             if (stateMachineInstance == null)
             {
-                stateMachineInstance = new ControllerStateMachineInstance(PPlusEvent.MikeUp, ControllerStateMachine.Instance, new PPlusModel(this, _ => { }));
+                stateMachineInstance = new ControllerStateMachineInstance(PPlusEvent.MikeUp, ControllerStateMachine.Instance, new PPlusModel(null, this, _ => { }));
             }
 
             // Dequeue any button events that are waiting.
@@ -308,11 +306,11 @@ namespace Holofunk.Controller
         }
     }
 
-    class PPlusModel : RootModel<PPlusModel>
+    class PPlusModel : BaseModel<PPlusModel>
     {
         public PPlusController Controller { get; private set; }
 
-        public PPlusModel(PPlusController controller, Action<PPlusModel> updateAction) : base(updateAction)
+        public PPlusModel(IModel parent, PPlusController controller, Action<PPlusModel> updateAction) : base(parent, updateAction)
         {
             Controller = controller;
         }

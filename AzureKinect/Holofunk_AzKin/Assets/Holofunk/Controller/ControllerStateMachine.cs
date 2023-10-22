@@ -63,7 +63,7 @@ namespace Holofunk.Controller
         {
         }
 
-        internal class RecordingModel : ChildModel<RecordingModel, PPlusModel>
+        internal class RecordingModel : BaseModel<RecordingModel>
         {
             /// <summary>
             /// The loopie being recorded into.
@@ -80,7 +80,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// Model for level adjustment: contains the adjustment value and the widget that's displaying the value.
         /// </summary>
-        internal class MenuVerbModel : ChildModel<MenuVerbModel, PPlusModel>
+        internal class MenuVerbModel : BaseModel<MenuVerbModel>
         {
             /// <summary>
             /// The current adjustment.
@@ -98,7 +98,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// Model for menu display.
         /// </summary>
-        internal class MenuModel : ChildModel<MenuModel, PPlusModel>
+        internal class MenuModel : BaseModel<MenuModel>
         {
             /// <summary>
             /// The current adjustment.
@@ -128,6 +128,7 @@ namespace Holofunk.Controller
                 "initial",
                 root,
                 (evt, pplusModel) => new PPlusModel(
+                    pplusModel,
                     pplusModel.Controller,
                     pplusModel => pplusModel.Controller.UpdateTouchedLoopieList()),
                 (_1, _2) => { });
@@ -183,6 +184,7 @@ namespace Holofunk.Controller
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
                     return new PPlusModel(
+                        pplusModel,
                         pplusModel.Controller,
                         pplusModel =>
                         {
@@ -232,6 +234,7 @@ namespace Holofunk.Controller
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
                     return new PPlusModel(
+                        pplusModel,
                         pplusModel.Controller,
                         pplusModel =>
                         {

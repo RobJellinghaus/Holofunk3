@@ -27,10 +27,12 @@ namespace Holofunk.StateMachines
     public abstract class BaseModel<TModel> : IModel
         where TModel : BaseModel<TModel>
     {
+        private IModel optParent;
         private Action<TModel> updateAction;
 
-        public BaseModel(Action<TModel> updateAction)
+        public BaseModel(IModel optParent, Action<TModel> updateAction)
         {
+            this.optParent = optParent;
             this.updateAction = updateAction;
         }
 
@@ -39,27 +41,6 @@ namespace Holofunk.StateMachines
             updateAction((TModel)this);
         }
 
-        public abstract IModel Parent { get; }
-    }
-
-    public class RootModel<TModel> : BaseModel<TModel>
-        where TModel : RootModel<TModel>
-    {
-        public override IModel Parent => null;
-
-        public RootModel(Action<TModel> updateAction) : base(updateAction)
-        {}            
-    }
-
-    internal class ChildModel<TModel, TParentModel> : BaseModel<TModel>
-        where TModel : BaseModel<TModel>
-        where TParentModel : BaseModel<TParentModel>
-    {
-        public override IModel Parent => parent;
-        private TParentModel parent;
-        protected ChildModel(TParentModel parent, Action<TModel> updateAction) : base(updateAction)
-        {
-            this.parent = parent;
-        }
+        public IModel Parent => optParent;        
     }
 }

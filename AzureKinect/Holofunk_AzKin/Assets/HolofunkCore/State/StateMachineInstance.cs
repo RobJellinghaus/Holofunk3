@@ -84,7 +84,12 @@ namespace Holofunk.StateMachines
         void ExitUpTo(TEvent evt, State<TEvent> state, State<TEvent> commonParent)
         {
             while (state != commonParent) {
+                IModel prevModel = _model;
                 _model = state.Exit(evt, _model);
+                if (_model == null)
+                {
+                    HoloDebug.Log($"Whoops, reached null model starting from {prevModel}");
+                }
                 state = state.Parent;
             }
         }
