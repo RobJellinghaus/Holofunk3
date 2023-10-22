@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Collections;
 
 namespace Holofunk.StateMachines
 {
@@ -40,8 +41,6 @@ namespace Holofunk.StateMachines
 
         readonly StateMachine<TEvent> _machine;
         State<TEvent> _machineState;
-
-        List<string> _lastTransitionStrings = new List<string>(TransitionsToKeep);
 
         // The model is the object on which actions operate; it may be transformed on entry or exit.
         IModel _model;
@@ -144,7 +143,7 @@ namespace Holofunk.StateMachines
         }
 
         // Clear list and replace it with the ancestor chain of state, with the root at index 0.
-        void ListToRoot(State<TEvent> state, List<State<TEvent>> list)
+        static void ListToRoot(State<TEvent> state, List<State<TEvent>> list)
         {
             list.Clear();
 
@@ -174,19 +173,28 @@ namespace Holofunk.StateMachines
             State<TEvent> destination = _machine.TransitionFrom(_machineState, value, _model);
             if (destination != null)
             {
+                /*
                 string transitionString = $"{_machineState} => {value} => {destination}";
                 _lastTransitionStrings.Add(transitionString);
                 if (_lastTransitionStrings.Count > TransitionsToKeep)
                 {
                     _lastTransitionStrings.RemoveAt(0);
                 }
+                */
 
                 MoveTo(value, destination);
 
+                /*
                 _transitionCount++;
+                */
             }
         }
 
-        public override string ToString() => $"StateMachineInstance[{_machineState}] #{_transitionCount}: {string.Join($";{Environment.NewLine}", _lastTransitionStrings)}";
+        public void ModelUpdate()
+        {
+            _model.ModelUpdate();
+        }
+
+        public override string ToString() => $"StateMachineInstance[{_machineState}] #{_transitionCount}"; // : {string.Join($";{Environment.NewLine}", _lastTransitionStrings)}";
     }
 }

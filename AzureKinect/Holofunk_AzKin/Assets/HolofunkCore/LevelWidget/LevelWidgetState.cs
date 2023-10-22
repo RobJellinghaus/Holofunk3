@@ -23,29 +23,29 @@ namespace Holofunk.LevelWidget
         public Vector3 ViewpointPosition { get; set; }
 
         /// <summary>
-        /// The current multiple, between 0.1 and 10.
+        /// The current adjusted value applied by this widget, from -1 to 1 inclusive.
         /// </summary>
         /// <remarks>
         /// This is the amount by which the widget has multiplied the volume since being created,
         /// and hence the amount that determines the widget's appearance.
         /// </remarks>
-        public float VolumeRatio { get; set; }
+        public float Adjustment { get; set; }
 
         public void Deserialize(NetDataReader reader)
         {
             ViewpointPosition = reader.GetVector3();
-            VolumeRatio = reader.GetFloat();
+            Adjustment = reader.GetFloat();
         }
 
         public void Serialize(NetDataWriter writer)
         {
             writer.Put(ViewpointPosition);
-            writer.Put(VolumeRatio);
+            writer.Put(Adjustment);
         }
 
         public override string ToString()
         {
-            return $"LevelWidget[pos {ViewpointPosition}, volRatio {VolumeRatio}]";
+            return $"LevelWidget[pos {ViewpointPosition}, adjustment {Adjustment}]";
         }
     }
 }

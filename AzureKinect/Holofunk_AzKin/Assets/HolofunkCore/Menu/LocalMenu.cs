@@ -78,7 +78,7 @@ namespace Holofunk.Menu
             }
 
             // ok top item is known initialized. get its structure entry
-            Action<HashSet<DistributedId>> action = menuStructure.Action(state.TopSelectedItem);
+            Action<DistributedId> action = menuStructure.Action(state.TopSelectedItem);
 
             if (state.SubSelectedItem.IsInitialized)
             {

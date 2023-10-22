@@ -64,11 +64,11 @@ namespace Holofunk.LevelWidget
         private void UpdateConeScale()
         {
             // Look up the state, to determine how tall which cone should be.
-            if (state.VolumeRatio >= 1)
+            if (state.Adjustment >= 1)
             {
                 // the volume is increasing to some extent.
                 // What fraction of MaxVolumeRatio is it?
-                float upwardsFraction = state.VolumeRatio - 1;
+                float upwardsFraction = state.Adjustment - 1;
 
                 // set the upward cone's scale equal to upwardsFraction
                 // we set the z scale because of the cone's rotation
@@ -85,7 +85,7 @@ namespace Holofunk.LevelWidget
             {
                 // ratio is between 1/MaxVolumeRatio and 1.
                 // just take the reciprocal!
-                float downwardsFraction = (1 / state.VolumeRatio) - 1;
+                float downwardsFraction = (1 / state.Adjustment) - 1;
 
                 // set the upwards cone's Z scale to almost 0 (to flatten it)
                 Transform upCone = transform.GetChild(0).GetChild(0);

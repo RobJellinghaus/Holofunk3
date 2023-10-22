@@ -52,13 +52,13 @@ namespace Holofunk.Menu
         /// <summary>
         /// Action executed on touched loopies as soon as they are touched with the Light button.
         /// </summary>
-        public readonly Action<HashSet<DistributedId>> TouchAction;
+        public readonly Action<DistributedId> TouchAction;
         /// <summary>
         /// Action executed per-Update on all touched loopies based on current level setting, with final commit.
         /// </summary>
-        public readonly Action<HashSet<DistributedId>, float, bool> LevelAction;
+        public readonly Action<DistributedId, float, bool> LevelAction;
 
-        private MenuVerb(MenuVerbKind kind, string name, Action promptAction, Action<HashSet<DistributedId>> touchAction, Action<HashSet<DistributedId>, float, bool> levelAction)
+        private MenuVerb(MenuVerbKind kind, string name, Action promptAction, Action<DistributedId> touchAction, Action<DistributedId, float, bool> levelAction)
         {
             Kind = kind;
             Name = name;
@@ -72,12 +72,12 @@ namespace Holofunk.Menu
             return new MenuVerb(MenuVerbKind.Prompt, name, action, null, null);
         }
 
-        public static MenuVerb MakeTouch(string name, Action<HashSet<DistributedId>> touchAction)
+        public static MenuVerb MakeTouch(string name, Action<DistributedId> touchAction)
         {
             return new MenuVerb(MenuVerbKind.Touch, name, null, touchAction, null);
         }
 
-        public static MenuVerb MakeLevel(string name, Action<HashSet<DistributedId>, float, bool> levelAction)
+        public static MenuVerb MakeLevel(string name, Action<DistributedId, float, bool> levelAction)
         {
             return new MenuVerb(MenuVerbKind.Level, name, null, null, levelAction);
         }

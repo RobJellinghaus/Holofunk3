@@ -39,13 +39,6 @@ namespace Holofunk.StateMachines
         /// If this returns None, the transition was guarded and should be ignored.
         /// </remarks>
         public abstract Option<State<TEvent>> ComputeDestination(Transition<TEvent> transition, TEvent evt, IModel model);
-
-
-        /// <summary>
-        /// Get the parent model of this State, given the current model.
-        /// </summary>
-        /// <returns></returns>
-        public abstract IModel GetParentModel(IModel thisModel);
     }
 
     public abstract class State<TEvent, TModel> : State<TEvent>
@@ -72,48 +65,18 @@ namespace Holofunk.StateMachines
     {
         readonly State<TEvent, TParentModel> _parent;
 
-        readonly List<Action<TEvent, TModel>> _entryActions;
-        readonly List<Action<TEvent, TModel>> _exitActions;
-
-        readonly Func<TParentModel, TModel> _entryConversionFunc;
-        readonly Func<TModel, TParentModel> _exitConversionFunc;
+        readonly Func<TEvent, TParentModel, TModel> _entryFunc;
+        readonly Action<TEvent, TModel> _exitAction;
 
         public State(
             string label,
             State<TEvent, TParentModel> parent,
-            Action<TEvent, TModel> entryAction,
-            Action<TEvent, TModel> exitAction,
-            Func<TParentModel, TModel> entryConversionFunc = null,
-            Func<TModel, TParentModel> exitConversionFunc = null)
-            : this(label, parent, new[] { entryAction }, new[] { exitAction }, entryConversionFunc, exitConversionFunc)
-        {
-        }
-
-        public State(
-            string label,
-            State<TEvent, TParentModel> parent,
-            Action<TEvent, TModel> entryAction,   
-            Func<TParentModel, TModel> entryConversionFunc = null,
-            Func<TModel, TParentModel> exitConversionFunc = null)
-            : this(label, parent, new[] { entryAction }, new Action<TEvent, TModel>[0], entryConversionFunc, exitConversionFunc)
-        {
-        }
-
-        public State(
-            string label,
-            State<TEvent, TParentModel> parent,
-            Action<TEvent, TModel>[] entryActions, 
-            Action<TEvent, TModel>[] exitActions,
-            Func<TParentModel, TModel> entryConversionFunc = null,
-            Func<TModel, TParentModel> exitConversionFunc = null)
-            : base(label)
+            Func<TEvent, TParentModel, TModel> entryFunc,
+            Action<TEvent, TModel> exitAction) : base(label)
         {
             _parent = parent;
-            _entryActions = new List<Action<TEvent, TModel>>(entryActions);
-            _exitActions = new List<Action<TEvent, TModel>>(exitActions);
-
-            _entryConversionFunc = entryConversionFunc;
-            _exitConversionFunc = exitConversionFunc;
+            _entryFunc = entryFunc;
+            _exitAction = exitAction;
         }
 
         public override Option<State<TEvent>> ComputeDestination(Transition<TEvent> transition, TEvent evt, IModel model)
@@ -126,48 +89,18 @@ namespace Holofunk.StateMachines
         public override IModel Enter(TEvent evt, IModel parentModel)
         {
             Spam.Model.WriteLine("State.Enter: state " + Label + ", event: " + evt + ", parentModel: " + parentModel.GetType());
-            TModel thisState;
-            if (_entryConversionFunc != null) {
-                thisState = _entryConversionFunc((TParentModel)parentModel);
-            }
-            else {
-                // had better be the same type!
-                thisState = (TModel)parentModel;
-            }
-            for (int i = 0; i < _entryActions.Count; i++) {
-                _entryActions[i](evt, thisState);
-            }
-            return thisState;
+            TModel thisModel = _entryFunc(evt, (TParentModel)parentModel);
+            return thisModel;
         }
 
         public override IModel Exit(TEvent evt, IModel model)
         {
             Spam.Model.WriteLine("State.Exit: state " + Label + ", event type: " + evt.GetType() + ", model.GetType(): " + model.GetType());
             TModel thisModel = (TModel)model;
-            for (int i = 0; i < _exitActions.Count; i++) {
-                _exitActions[i](evt, thisModel);
-            }
-            TParentModel parentModel;
-            if (_exitConversionFunc != null) {
-                parentModel = _exitConversionFunc(thisModel);
-            }
-            else {
-                // Terrible, but meets the expectation: these must be dynamically the same type.
-                parentModel = (TParentModel)(object)thisModel;
-            }
-            return parentModel;
+            _exitAction(evt, thisModel);
+            return thisModel.Parent;
         }
 
         public override State<TEvent> Parent { get { return _parent; } }
-
-        public override IModel GetParentModel(IModel thisModel)
-        {
-            if (_exitConversionFunc != null) {
-                return _exitConversionFunc((TModel)thisModel);
-            }
-            else {
-                return thisModel;
-            }
-        }
     }
 }

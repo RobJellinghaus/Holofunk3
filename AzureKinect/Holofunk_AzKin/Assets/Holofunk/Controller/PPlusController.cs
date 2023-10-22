@@ -14,6 +14,7 @@ using Holofunk.LevelWidget;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 
 namespace Holofunk.Controller
 {
@@ -26,7 +27,7 @@ namespace Holofunk.Controller
     /// This is even more horrible code duplication compared to PPlusController, but that will probably
     /// cease to exist soon.
     /// </remarks>
-    public class PPlusController : MonoBehaviour, IModel
+    public class PPlusController : MonoBehaviour
     {
         #region Fields
 
@@ -55,47 +56,13 @@ namespace Holofunk.Controller
         private ControllerStateMachineInstance stateMachineInstance;
 
         /// <summary>
-        /// The selected icon for this hand.
-        /// </summary>
-        private Option<GameObject> HandIcon;
-
-        /// <summary>
-        /// The loopie currently being held by this controller.
+        /// The MenuVerb currently held by this controller, if any was picked from the menu.
         /// </summary>
         /// <remarks>
-        /// This is only ever non-null when the stateMachineInstance is in recording state.
-        /// 
-        /// TODO: generalize this to a set of held loopies? if we support copying in bulk? In fact isn't this just
-        /// the touched loopie set?
+        /// This is used for rendering the verb name over the user's controller hand, and for determining the
+        /// variety of action that gets applied by the verb when the user hits the LIGHT button.
         /// </remarks>
-        private GameObject currentlyHeldLoopie;
-
-        /// <summary>
-        /// The menu this controller is manipulating, if any.
-        /// </summary>
-        /// <remarks>
-        /// Keeping this as closure state across the state machine instance was clever but invalid.
-        /// </remarks>
-        private GameObject currentlyOpenMenu;
-
-        /// <summary>
-        /// What should this controller do when it touches a loopie?
-        /// </summary>
-        /// <remarks>
-        /// This will be applied repeatedly on every update in which a loopie is touched, so idempotency is strongly recommended!
-        /// This is used for e.g. handling muting / unmuting to each newly touched loopie.
-        /// </remarks>
-        private Action<DistributedLoopie> touchedLoopieAction;
-
-        /// <summary>
-        /// What should this controller do on every update, before touching loopies?
-        /// </summary>
-        /// <remarks>
-        /// This is used for, e.g., updating the current level widget and performing other interactions that aren't
-        /// loopie-centric.
-        /// TODO: could touchedLoopieAction just be a sort of updateAction?
-        /// </remarks>
-        private Action updateAction;
+        private MenuVerb currentlyHeldVerb;
 
         /// <summary>
         /// The sorted IDs of the loopies touched by this controller.
@@ -110,21 +77,22 @@ namespace Holofunk.Controller
         /// </summary>
         private readonly List<DistributedId> previouslyTouchedLoopieIds = new List<DistributedId>();
 
-        /// <summary>
-        /// The (sorted) IDs of the loopies currently touched by this controller.
-        /// </summary>
-        public IEnumerable<DistributedId> TouchedLoopieIds => touchedLoopieIds;
+        #endregion Fields
+
+        #region Properties
+
+        internal DistributedPerformer DistributedPerformer => GetComponent<DistributedPerformer>();
 
         /// <summary>
-        /// Should the set of touched loopies be kept stable, rather than recomputed on each update?
+        /// for debugging only
         /// </summary>
-        /// <remarks>
-        /// When using a popup menu created by touching some loopie(s), we do not want to un-touch the loopies while picking from
-        /// the menu. Setting this flag causes the set of touched loopies to be stabilized for the duration of the flag.
-        /// There is probably a better way to think about this, but pending a fuller reactive or other UI structure,
-        /// we'll live with this.
-        /// </remarks>
-        internal bool KeepTouchedLoopiesStable { get; set; }
+        internal string HandStateMachineInstanceString => stateMachineInstance?.ToString() ?? "";
+
+        internal bool AnyLoopiesTouched => touchedLoopieIds.Count > 0;
+
+        internal MenuVerb CurrentlyHeldVerb => currentlyHeldVerb;
+
+        public IModel Parent => null;
 
         #endregion
 
@@ -133,15 +101,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// Any loopies touched by this controller?
         /// </summary>
-        internal bool AnyLoopiesTouched => touchedLoopieIds.Count > 0;
-
-        internal void SetUpdateAction(Action updateAction)
-            => this.updateAction = updateAction;
-
-        internal void SetTouchedLoopieAction(Action<DistributedLoopie> touchedLoopieAction)
-            => this.touchedLoopieAction = touchedLoopieAction;
-
-        private void ApplyToTouchedLoopies(Action<DistributedLoopie> action)
+        internal void ApplyToTouchedLoopies(Action<DistributedLoopie> action)
         {
             if (action != null)
             {
@@ -169,13 +129,6 @@ namespace Holofunk.Controller
         /// <summary>
         /// Get the DistributedPerformer component from our parent.
         /// </summary>
-        internal DistributedPerformer DistributedPerformer => GetComponent<DistributedPerformer>();
-
-        /// <summary>
-        /// for debugging only
-        /// </summary>
-        internal string HandStateMachineInstanceString => stateMachineInstance?.ToString() ?? "";
-
         public bool IsUpdatable()
         { 
             if (pplusIndex == -1 || HidManager.Instance == null || HidManager.Instance.pplus_list.Count <= pplusIndex){
@@ -220,7 +173,7 @@ namespace Holofunk.Controller
             // (it exists only as long as we are recognized by the viewpoint.)
             if (stateMachineInstance == null)
             {
-                stateMachineInstance = new ControllerStateMachineInstance(PPlusEvent.MikeUp, ControllerStateMachine.Instance, this);
+                stateMachineInstance = new ControllerStateMachineInstance(PPlusEvent.MikeUp, ControllerStateMachine.Instance, new PPlusModel(this, _ => { }));
             }
 
             // Dequeue any button events that are waiting.
@@ -231,48 +184,15 @@ namespace Holofunk.Controller
                 stateMachineInstance.OnNext(new PPlusEvent(ppevt.button, ppevt.down));
             }
 
-            // Update the loopie's position while the user is holding it.
-            if (currentlyHeldLoopie != null)
-            {
-                Vector3 viewpointHandPosition = GetViewpointHandPosition();
-                /*
-                Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
-                if (localToViewpointMatrix != Matrix4x4.zero)
-                {
-                    Vector3 viewpointHandPosition = localToViewpointMatrix.MultiplyPoint(performerHandPosition);
-                }
-                */
-                //Debug.Log($"Updated viewport hand position of loopie {currentlyHeldLoopie} to {viewpointHandPosition}");
-                currentlyHeldLoopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
-            }
-
-            // Update touched loopies first, before updating hand position and state.
-            if (KeepTouchedLoopiesStable)
-            {
-                // do nothing! the previous TouchedLoopieIdList can remain the same.
-                // Even if some or all of the loopies in it have been deleted, the effect
-                // of this is benign because when we go to actually traverse them, we
-                // will skip them.
-            }
-            else
-            {
-                // freely update the touched loopie list of the performer
-                UpdateTouchedLoopieList();
-            }
-
-            // apply the update action, if any
-            if (updateAction != null)
-            {
-                updateAction();
-            }
-
-            ApplyToTouchedLoopies(touchedLoopieAction);
+            // And update the state machine instance's model.
+            // In practice this winds up calling an update action defined by the state entry action.
+            stateMachineInstance.ModelUpdate();
         }
 
         /// <summary>
         /// Update the local lists of loopies touched by this hand.
         /// </summary>
-        private void UpdateTouchedLoopieList()
+        public void UpdateTouchedLoopieList()
         {
             touchedLoopieIds.Clear();
 
@@ -321,22 +241,25 @@ namespace Holofunk.Controller
         /// <summary>
         /// Create a new loopie at the current hand's position, and set it as the currentlyHeldLoopie.
         /// </summary>
-        public void CreateLoopie(NowSoundLib.AudioInputId audioInputId)
+        /// <param name="audioInputId">The audio input to record from (all loopies are created in record mode).</param>
+        public GameObject CreateLoopie(NowSoundLib.AudioInputId audioInputId)
         {
-            Holofunk.Core.Contract.Requires(currentlyHeldLoopie == null);
-
             if (DistributedViewpoint.Instance == null)
             {
                 HoloDebug.Log("No DistributedViewpoint.TheViewpoint; can't create loopie");
-                return;
+                return null;
             }
 
             Vector3 viewpointHandPosition = GetViewpointHandPosition();
 
             GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition, audioInputId);
-            currentlyHeldLoopie = newLoopie;
+            return newLoopie;
         }
 
+        /// <summary>
+        /// Create a menu instance held by this PPlusController.
+        /// </summary>
+        /// <returns>the GameObject for the menu instance</returns>
         public GameObject CreateMenu()
         {
             HoloDebug.Log($"Creating menu for pplusController #{playerIndex}{handSide}");
@@ -349,24 +272,13 @@ namespace Holofunk.Controller
 
             Vector3 viewpointForwardDirection = Vector3.forward;
 
-            HoloDebug.Assert(currentlyOpenMenu == null, "Must not already be an open menu for this controller");
-
-            currentlyOpenMenu = DistributedMenu.Create(
+            GameObject currentlyOpenMenu = DistributedMenu.Create(
                 viewpointForwardDirection,
                 viewpointHandPosition);
 
             currentlyOpenMenu.GetComponent<MenuController>().Initialize(this);
 
             return currentlyOpenMenu;
-        }
-
-        public GameObject CurrentlyOpenMenu => currentlyOpenMenu;
-
-        public void CloseOpenMenu()
-        {
-            HoloDebug.Assert(currentlyOpenMenu != null, "Must be an open menu to close");
-
-            currentlyOpenMenu = null;
         }
 
         /// <summary>
@@ -402,22 +314,15 @@ namespace Holofunk.Controller
             Vector3 viewpointHandPosition = handSide == Side.Left ? thisPlayer.LeftHandPosition : thisPlayer.RightHandPosition;
             return viewpointHandPosition;
         }
+    }
 
-        /// <summary>
-        /// Let go of the currentlyHeldLoopie, leaving it at its world space position.
-        /// </summary>
-        public void ReleaseLoopie()
+    class PPlusModel : RootModel<PPlusModel>
+    {
+        public PPlusController Controller { get; private set; }
+
+        public PPlusModel(PPlusController controller, Action<PPlusModel> updateAction) : base(updateAction)
         {
-            if (currentlyHeldLoopie == null)
-            {
-                //Debug.Log("HandController.ReleaseLoopie(): currentlyHeldLoopie is null and should not be!");
-            }
-            else
-            {
-                currentlyHeldLoopie.GetComponent<DistributedLoopie>().FinishRecording();
-
-                currentlyHeldLoopie = null;
-            }
+            Controller = controller;
         }
     }
 }

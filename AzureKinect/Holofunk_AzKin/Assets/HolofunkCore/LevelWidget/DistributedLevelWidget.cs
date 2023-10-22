@@ -91,7 +91,7 @@ namespace Holofunk.LevelWidget
             localWidget.Initialize(new LevelWidgetState
             {
                 ViewpointPosition = viewpointPosition,
-                VolumeRatio = 1 // 1 == multiply by 1 == no change in volume (yet)
+                Adjustment = 1 // 1 == multiply by 1 == no change in volume (yet)
             });
 
             // Then enable the distributed behavior.

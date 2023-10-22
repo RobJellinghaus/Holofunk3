@@ -47,8 +47,8 @@ namespace Holofunk.StateMachines
         public Transition(
             TEvent evt,
             State<TEvent> destinationState,
-            Func<bool> guardFunc)
-            : this(evt, (ignoreModel, ignoreEvent) => guardFunc() ? destinationState : Option<State<TEvent>>.None)
+            Func<TModel, bool> guardFunc)
+            : this(evt, (_, model) => guardFunc(model) ? destinationState : Option<State<TEvent>>.None)
         {
         }
 
