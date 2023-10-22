@@ -195,8 +195,9 @@ namespace Holofunk.App
                                 IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))
                                 {
-                                    HoloDebug.Log($"SoundEffectMenuFactory.alterSoundEffectAction: applying effect to effectable {asObj.Id}, pluginId {pluginId}, programId {pluginProgramId}");
+                                    HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying volume to effectable {asObj.Id} with alteration {alteration}");
                                     effectable.AlterSoundEffect(new EffectId(pluginId, pluginProgramId), alteration, commit);
+                                    effectable.AlterVolume(alteration, commit);
                                 }
                             }
                         };

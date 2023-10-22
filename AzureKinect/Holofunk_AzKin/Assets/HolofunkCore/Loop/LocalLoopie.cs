@@ -547,8 +547,6 @@ namespace Holofunk.Loop
 
         public void AlterSoundEffect(EffectId effect, float alteration, bool commit)
         {
-            HoloDebug.Log($"LocalLoopie.AlterSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}, alteration {alteration}, commit {commit}");
-
             // Is effect present in loopie.Effects already?
             int effectIndex = effect.FindIn(loopie.Effects);
             if (effectIndex == -1)
@@ -571,6 +569,8 @@ namespace Holofunk.Loop
 
             int newLevel = loopie.EffectLevels[effectIndex] + (int)(alteration * MagicNumbers.EffectLevelScale);
             newLevel = Mathf.Clamp(newLevel, 0, 100);
+
+            HoloDebug.Log($"LocalLoopie.AlterSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}, alteration {alteration}, newLevel {newLevel}, commit {commit}");
 
             NowSoundTrackAPI.SetPluginInstanceDryWet(trackId, (PluginInstanceIndex)(effectIndex + 1), newLevel);
 

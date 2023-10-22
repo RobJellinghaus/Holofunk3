@@ -157,8 +157,10 @@ namespace Holofunk.Controller
                         pplusModel,
                         loopie,
                         recordingModel => {
+                            // Move the loopie to follow the hand while recording.
                             Vector3 viewpointHandPosition = pplusModel.Controller.GetViewpointHandPosition();
-                            /*
+
+                            /* Commented out translation code between viewpoint and performer coordinates.
                             Matrix4x4 localToViewpointMatrix = DistributedViewpoint.Instance.LocalToViewpointMatrix();
                             if (localToViewpointMatrix != Matrix4x4.zero)
                             {
@@ -166,6 +168,7 @@ namespace Holofunk.Controller
                             }
                             */
                             //Debug.Log($"Updated viewport hand position of loopie {currentlyHeldLoopie} to {viewpointHandPosition}");
+
                             loopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
                         });
                 },
@@ -328,7 +331,7 @@ namespace Holofunk.Controller
                                 // clamp this to (-1, 1) interval
                                 adjustment = Math.Min(1f, Math.Max(-1f, adjustment));
 
-                                HoloDebug.Log($"ControllerStateMachineInstance.LouderSofter: initialHandY {initialHandYPosition}, currentHandY {currentHandYPosition}, adjustment {adjustment}, lastAdjustment {lastAdjustment}");
+                                //HoloDebug.Log($"ControllerStateMachineInstance.LevelAdjust: initialHandY {initialHandYPosition}, currentHandY {currentHandYPosition}, adjustment {adjustment}, lastAdjustment {lastAdjustment}");
 
                                 Core.Contract.Assert(!float.IsNaN(adjustment));
                                 Core.Contract.Assert(!float.IsInfinity(adjustment));
