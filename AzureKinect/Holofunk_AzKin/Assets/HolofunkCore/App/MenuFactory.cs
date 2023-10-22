@@ -189,10 +189,10 @@ namespace Holofunk.App
                         // on a proxy, that's fine, since the proxy will never call this action.
                         Action<HashSet<DistributedId>, float, bool> levelAction = (effectableIds, alteration, commit) =>
                         {
-                            // append this effect to all loopies being touched.
+                            // append this effect to all effectables being touched.
                             foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
                             {
-                                DistributedObject asObj = (DistributedObject)effectable;
+                                IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))
                                 {
                                     HoloDebug.Log($"SoundEffectMenuFactory.alterSoundEffectAction: applying effect to effectable {asObj.Id}, pluginId {pluginId}, programId {pluginProgramId}");

@@ -20,11 +20,11 @@ namespace Holofunk.Menu
         /// <summary>
         /// Level menu action creates level widget and allows adjustment.
         /// </summary>
-        Level = 2,
+        Level = 3,
         /// <summary>
         /// Label only, not directly selectable.
         /// </summary>
-        Label = 3,
+        Label = 4,
     }
 
     /// <summary>
