@@ -10,21 +10,25 @@ namespace Holofunk.Menu
     {
         Undefined = 0,
         /// <summary>
-        /// Prompt menu action takes place immediately and uses square icon.
+        /// The root menu verb; goes at the center, enables canceling the current verb.
         /// </summary>
-        Prompt = 1,
-        /// <summary>
-        /// Touch menu action takes place when user touches loopies and hits light button.
-        /// </summary>
-        Touch = 2,
-        /// <summary>
-        /// Level menu action creates level widget and allows adjustment.
-        /// </summary>
-        Level = 3,
+        Root = 1,
         /// <summary>
         /// Label only, not directly selectable.
         /// </summary>
-        Label = 4,
+        Label = 2,
+        /// <summary>
+        /// Prompt menu action takes place immediately and uses square icon.
+        /// </summary>
+        Prompt = 3,
+        /// <summary>
+        /// Touch menu action takes place when user touches loopies and hits light button.
+        /// </summary>
+        Touch = 4,
+        /// <summary>
+        /// Level menu action creates level widget and allows adjustment.
+        /// </summary>
+        Level = 5,
     }
 
     /// <summary>
@@ -83,6 +87,11 @@ namespace Holofunk.Menu
             PromptAction = promptAction;
             TouchAction = touchAction;
             LevelAction = levelAction;
+        }
+
+        public static MenuVerb MakeRoot()
+        {
+            return new MenuVerb(MenuVerbKind.Root, "🚫", false, null, null, null);
         }
 
         public static MenuVerb MakePrompt(string name, Action action)

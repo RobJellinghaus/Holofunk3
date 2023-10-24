@@ -68,6 +68,16 @@ namespace Holofunk.Controller
         /// </summary>
         private readonly List<DistributedId> previouslyTouchedLoopieIds = new List<DistributedId>();
 
+        /// <summary>
+        /// The currently held menu verb.
+        /// </summary>
+        private MenuVerb currentlyHeldVerb;
+
+        /// <summary>
+        /// The child GameObject describing the currently held MenuVerb (only if the verb is defined).
+        /// </summary>
+        private GameObject currentlyHeldVerbGameObject;
+
         #endregion Fields
 
         #region Properties
@@ -79,7 +89,27 @@ namespace Holofunk.Controller
         /// </summary>
         internal string HandStateMachineInstanceString => stateMachineInstance?.ToString() ?? "";
 
-        internal MenuVerb CurrentlyHeldVerb { get; set; }
+        internal MenuVerb CurrentlyHeldVerb
+        {
+            get { return currentlyHeldVerb; }
+            set
+            {
+                if (currentlyHeldVerb.IsDefined)
+                {
+                    Core.Contract.Assert(currentlyHeldVerbGameObject != null);
+                    GameObject.Destroy(currentlyHeldVerbGameObject);
+                    currentlyHeldVerbGameObject = null;
+                }
+
+                currentlyHeldVerb = value;
+
+                if (currentlyHeldVerb.IsDefined)
+                {
+                    currentlyHeldVerbGameObject = MenuLevel.CreateMenuItem(this.transform, Vector3.zero, currentlyHeldVerb.Name);
+                    MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);
+                }
+            }
+        }
 
         #endregion
 
@@ -174,6 +204,15 @@ namespace Holofunk.Controller
             // And update the state machine instance's model.
             // In practice this winds up calling an update action defined by the state entry action.
             stateMachineInstance.ModelUpdate();
+
+            // aaand, somewhat cheesily, update the menu verb game object if any
+            // tension: keeping this an implementation detail of the controller, vs avoiding ux-specific logic in the controller
+            // TODO: make there be a darn gameobject for the controller hand already (then could just stick it to that and 
+            // let Unity take care of it)
+            if (currentlyHeldVerbGameObject != null)
+            {
+                currentlyHeldVerbGameObject.transform.localPosition = GetViewpointHandPosition();
+            }
         }
 
         /// <summary>

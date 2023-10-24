@@ -60,21 +60,9 @@ namespace Holofunk.App
                     }
                 };
 
-                Action<bool> setRecordingAction = beRecording =>
-                {
-                    if (beRecording)
-                    {
-                        DistributedViewpoint.Instance.StartRecording();
-                    }
-                    else
-                    {
-                        DistributedViewpoint.Instance.StopRecording();
-                    }
-                };
-
                 Action deleteMySoundsAction = () =>
                 {
-                    // Collect all the loopie IDs first
+                    // Collect all the loopie IDs first (don't enumerate while deleting)
                     HashSet<DistributedLoopie> loopies = new HashSet<DistributedLoopie>();
                     foreach (DistributedLoopie loopie in DistributedObjectFactory.FindComponentInstances<DistributedLoopie>(
                         DistributedObjectFactory.DistributedType.Loopie, includeActivePrototype: false))
@@ -88,21 +76,26 @@ namespace Holofunk.App
                     }
                 };
 
-                items.Add((MenuVerb.MakeLabel("BPM"), new MenuStructure(
-                        (MenuVerb.MakePrompt($"=>{bpm + 10}", () => setBPMAction(10)), null),
-                        (MenuVerb.MakePrompt($"{bpm - 10}<=", () => setBPMAction(-10)), null))));
+                // The root menu item; enables "unselecting" the currently held verb, and (hackishly)
+                // goes at the center.
+                items.Add((MenuVerb.MakeRoot(), null));
 
-                items.Add((MenuVerb.MakePrompt("Delete My Sounds", deleteMySoundsAction), null));
+                items.Add((MenuVerb.MakeLabel("BPM"), new MenuStructure(
+                        (MenuVerb.MakePrompt($"BPM+10", () => setBPMAction(10)), null),
+                        (MenuVerb.MakePrompt($"BPM-10", () => setBPMAction(-10)), null))));
+
+                // TODO: add a both-arrow-buttons state that deletes all sounds
+                items.Add((MenuVerb.MakePrompt("Delete\nMy Sounds", deleteMySoundsAction), null));
 
                 if (isViewpoint)
                 {
                     if (isRecording)
                     {
-                        items.Add((MenuVerb.MakePrompt("Stop\nRecording", () => setRecordingAction(false)), null));
+                        items.Add((MenuVerb.MakePrompt("Stop\nRecording", () => DistributedViewpoint.Instance.StopRecording()), null));
                     }
                     else
                     {
-                        items.Add((MenuVerb.MakePrompt("Start\nRecording", () => setRecordingAction(true)), null));
+                        items.Add((MenuVerb.MakePrompt("Start\nRecording", () => DistributedViewpoint.Instance.StartRecording()), null));
                     }
                 }
 
@@ -138,37 +131,35 @@ namespace Holofunk.App
                     programs.Add(effect.PluginProgramId);
                 }
 
-                items.Add((
-                    MenuVerb.MakeTouch(
-                        "Clear Effects",
+                items.Add((MenuVerb.MakeLabel("FX"), new MenuStructure(
+                    (MenuVerb.MakeTouch(
+                        "Clear\nAll FX",
                         effectableIds =>
                         {
                             foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
                             {
-                                DistributedObject asObj = (DistributedObject)effectable;
+                                IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))
                                 {
                                     effectable.ClearSoundEffects();
                                 }
                             }
                         }),
-                    null));
-
-                items.Add((
-                    MenuVerb.MakeTouch(
-                        "Pop Effect",
+                    null),
+                    (MenuVerb.MakeTouch(
+                        "Remove\nLast FX",
                         effectableIds =>
                         {
                             foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
                             {
-                                DistributedObject asObj = (DistributedObject)effectable;
+                                IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))
                                 {
                                     effectable.PopSoundEffect();
                                 }
                             }
                         }),
-                    null));
+                    null))));
 
                 foreach (PluginId plid in pluginNames.Keys.OrderBy(k => k.Value))
                 {
@@ -196,6 +187,8 @@ namespace Holofunk.App
                                 if (effectableIds.Contains(asObj.Id))
                                 {
                                     HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying volume to effectable {asObj.Id} with alteration {alteration}");
+                                    // OK, OK, we don't have real per-effect dry/wet yet but we kind of hack it by
+                                    // just altering volume and effect on every move.
                                     effectable.AlterSoundEffect(new EffectId(pluginId, pluginProgramId), alteration, commit);
                                     effectable.AlterVolume(alteration, commit);
                                 }

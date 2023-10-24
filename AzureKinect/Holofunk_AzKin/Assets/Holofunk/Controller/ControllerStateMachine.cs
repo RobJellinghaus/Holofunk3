@@ -350,7 +350,13 @@ namespace Holofunk.Controller
                 (evt, levelAdjustModel) =>
                 {
                     PPlusModel pplusModel = (PPlusModel)levelAdjustModel.Parent;
-                    ApplyLevelVerb(pplusModel, pplusModel.Controller.CurrentlyHeldVerb, levelAdjustModel.Adjustment, true);
+                    PPlusController controller = pplusModel.Controller;
+                    MenuVerb verb = controller.CurrentlyHeldVerb;
+                    if (verb.Kind == MenuVerbKind.Level)
+                    {
+                        float adjustment = levelAdjustModel.Adjustment;
+                        ApplyLevelVerb(pplusModel, verb, levelAdjustModel.Adjustment, true);
+                    }
 
                     if (levelAdjustModel.LevelWidget != null)
                     {
@@ -380,10 +386,24 @@ namespace Holofunk.Controller
                     pplusModel.Controller.CreateMenu().GetComponent<DistributedMenu>()),
                 (evt, menuModel) => {
                     DistributedMenu menu = menuModel.Menu;
-                    MenuVerb heldVerb = menu.GetMenuVerb();
-                    ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = heldVerb;
+                    Option<MenuVerb> heldVerbOpt = menu.GetMenuVerb();
 
-                    HoloDebug.Log($"Set currentlyHeldVerb to {heldVerb.Name}");
+                    if (heldVerbOpt.HasValue)
+                    {
+                        MenuVerb heldVerb = heldVerbOpt.Value;
+                        if (heldVerb.Kind == MenuVerbKind.Root)
+                        {
+                            // there is no currently held verb now
+                            ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = MenuVerb.Undefined;
+                        }
+                        else
+                        {
+                            ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = heldVerb;
+                        }
+
+                        HoloDebug.Log($"Set currentlyHeldVerb to {heldVerb.Name}");
+                    }
+
                     HoloDebug.Log($"ControllerStateMachineInstance.Menu.exit: deleting menu {menu.Id}");
                     menu.Delete();
                 });

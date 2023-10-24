@@ -45,11 +45,10 @@ namespace Holofunk.Menu
         /// <summary>
         /// Initialize a newly instantiated MenuLevel.
         /// </summary>
-        /// <param name="menuModel">The base model that will be passed to the menu item actions.</param>
-        /// <param name="playerHandModel">The player hand model which this menu will use for tracking interaction.</param>
-        /// <param name="rootPosition">The world space position the menu tree is being popped up at.</param>
-        /// <param name="rootRelativePosition">The position of this (possibly multiply nested) child relative to
-        /// the root of the whole menu tree; None if this is the root menu.</param>
+        /// <param name="menu">The local menu object this comes from.</param>
+        /// <param name="parentLocalPosition">The position of this child relative to the parent.</param>
+        /// <param name="depth">The nesting depth of this menu level.</param>
+        /// <param name="menuStructure">The structure at this level.</param>
         public MenuLevel(
             LocalMenu menu,
             Vector3 parentLocalPosition,
@@ -60,24 +59,49 @@ namespace Holofunk.Menu
             this.depth = depth;
             this.menuStructure = menuStructure;
 
+
             for (int i = 0; i < menuStructure.Count; i++)
             {
-                Vector3 submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
+                Vector3 submenuRootRelativePosition;
 
-                GameObject menuItemGameObject = ShapeContainer.InstantiateShape(ShapeType.MenuItem, menu.transform);
-                // position this relative to its parent
-                menuItemGameObject.transform.localPosition = submenuRootRelativePosition;
+                // if this is the zeroth (base) level, add the "cancel" menu item in the middle
+                if (depth == 0)
+                {
+                    if (i == 0)
+                    {
+                        submenuRootRelativePosition = Vector3.zero;
+                    }
+                    else
+                    {
+                        submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
+                    }
+                }
+                else
+                {
+                    submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
+                }
 
-                //_logBuffer.Append($"  Created menu item {_menuModel[i].Label} at local position {menuItemGameObject.transform.localPosition} and global position {menuItemGameObject.transform.position}{Environment.NewLine}");
-
-                // set the text
-                TextMesh text = menuItemGameObject.transform.GetChild(0).GetComponent<TextMesh>();
-                text.text = menuStructure.Verb(i + 1).Name;
+                GameObject menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).Name);
 
                 menuItemGameObjects.Add(menuItemGameObject);
                 // everything starts off disabled
                 ColorizeMenuItem(i + 1, Color.grey);
             }
+        }
+
+        public static GameObject CreateMenuItem(Transform parentTransform, Vector3 localPosition, string text)
+        {
+            GameObject menuItemGameObject = ShapeContainer.InstantiateShape(ShapeType.MenuItem, parentTransform);
+            // position this relative to its parent
+            menuItemGameObject.transform.localPosition = localPosition;
+
+            //_logBuffer.Append($"  Created menu item {_menuModel[i].Label} at local position {menuItemGameObject.transform.localPosition} and global position {menuItemGameObject.transform.position}{Environment.NewLine}");
+
+            // set the text
+            TextMesh textMesh = menuItemGameObject.transform.GetChild(0).GetComponent<TextMesh>();
+            textMesh.text = text;
+
+            return menuItemGameObject;
         }
 
         /// <summary>
@@ -190,8 +214,13 @@ namespace Holofunk.Menu
 
         internal void ColorizeMenuItem(MenuItemId originalSelectedMenuItem, Color color)
         {
-            menuItemGameObjects[originalSelectedMenuItem.AsIndex].GetComponent<SpriteRenderer>().material.color = color;
-            menuItemGameObjects[originalSelectedMenuItem.AsIndex].transform.GetChild(0).gameObject.GetComponent<TextMesh>().color = color;
+            ColorizeMenuItem(menuItemGameObjects[originalSelectedMenuItem.AsIndex], color);
+        }
+
+        public static void ColorizeMenuItem(GameObject menuItemGameObject, Color color)
+        {
+            menuItemGameObject.GetComponent<SpriteRenderer>().material.color = color;
+            menuItemGameObject.transform.GetChild(0).gameObject.GetComponent<TextMesh>().color = color;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
 using Distributed.State;
+using Holofunk.Core;
 using Holofunk.Sound;
 using System.Collections.Generic;
 using UnityEngine;
@@ -45,6 +46,6 @@ namespace Holofunk.Menu
         /// user unselects the current verb).
         /// </remarks>
         [LocalMethod]
-        MenuVerb GetMenuVerb();
+        Option<MenuVerb> GetMenuVerb();
     }
 }

@@ -211,7 +211,7 @@ namespace Holofunk.Core
         /// <summary>
         /// scale factor to apply to the distance of menu nodes
         /// </summary>
-        public static readonly float MenuScale = 0.8f;
+        public static readonly float MenuScale = 0.7f;
 
         #endregion
 

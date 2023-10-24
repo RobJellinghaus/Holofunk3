@@ -68,13 +68,13 @@ namespace Holofunk.Menu
             menuState = currentState;
         }
 
-        public MenuVerb GetMenuVerb()
+        public Option<MenuVerb> GetMenuVerb()
         {
             MenuState state = MenuState;
             if (!state.TopSelectedItem.IsInitialized)
             {
                 // was nothing to do
-                return MenuVerb.Undefined;
+                return Option<MenuVerb>.None;
             }
 
             // ok top item is known initialized. get its structure entry
