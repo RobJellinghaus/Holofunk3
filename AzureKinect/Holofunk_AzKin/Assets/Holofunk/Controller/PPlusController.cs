@@ -212,7 +212,37 @@ namespace Holofunk.Controller
             if (currentlyHeldVerbGameObject != null)
             {
                 currentlyHeldVerbGameObject.transform.localPosition = GetViewpointHandPosition();
+
+                bool mikeToMouth = IsMikeNextToMouth();
+                bool isTouching = currentlyHeldVerb.Kind == MenuVerbKind.Prompt
+                    || (currentlyHeldVerb.Kind == MenuVerbKind.Touch && touchedLoopieIds.Count > 0)
+                    || (currentlyHeldVerb.Kind == MenuVerbKind.Level && currentlyHeldVerb.MayBePerformer && mikeToMouth)
+                    || (currentlyHeldVerb.Kind == MenuVerbKind.Level && touchedLoopieIds.Count > 0);
+                MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, isTouching ? Color.white : Color.grey);
             }
+        }
+
+        public bool IsMikeNextToMouth()
+        {
+            // Now apply the adjustment appropriately.
+            // Is the microphone hand close to the performer's mouth?
+            // First, which player ID are we?
+            bool result = false;
+            int playerIndex = this.playerIndex;
+            PlayerState playerState;
+            // Now, which Player is that?
+            if (DistributedViewpoint.Instance != null
+                && DistributedViewpoint.Instance.TryGetPlayerById((PlayerId)playerIndex, out playerState))
+            {
+                // get the distance between the player's non-controller hand and head
+                Vector3 playerHeadPos = playerState.HeadPosition;
+                Side handSide = this.handSide;
+                Vector3 mikeHandPos = handSide == Side.Left ? playerState.RightHandPosition : playerState.LeftHandPosition;
+
+                result = Vector3.Distance(playerHeadPos, mikeHandPos) < MagicNumbers.MaximumHeadToMikeHandDistance;
+            }
+
+            return result;
         }
 
         /// <summary>

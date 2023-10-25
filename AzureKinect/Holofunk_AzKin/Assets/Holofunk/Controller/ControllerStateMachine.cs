@@ -87,11 +87,16 @@ namespace Holofunk.Controller
             /// </summary>
             internal float Adjustment { get; set; }
             internal DistributedLevelWidget LevelWidget { get; private set; }
+            /// <summary>
+            /// Was the performer's mike next to their mouth when this menu verb started being applied?
+            /// </summary>
+            internal bool MikeNextToMouth { get; private set; }
 
-            internal MenuVerbModel(PPlusModel parent, Action<MenuVerbModel> updateAction, DistributedLevelWidget levelWidget)
+            internal MenuVerbModel(PPlusModel parent, Action<MenuVerbModel> updateAction, DistributedLevelWidget levelWidget, bool mikeNextToMouth)
                 : base(parent, updateAction)
             {
                 LevelWidget = levelWidget;
+                MikeNextToMouth = mikeNextToMouth;
             }
         }
 
@@ -298,6 +303,10 @@ namespace Holofunk.Controller
                         menuVerb.PromptAction();
                     }
 
+                    // Determine right now whether the microphone is to the mouth -- that determines what
+                    // we will be effecting during this state, even if they put the mike down in mid-waggle.
+                    bool mikeNextToMouth = pplusModel.Controller.IsMikeNextToMouth();
+
                     return new MenuVerbModel(
                         pplusModel,
                         menuVerbModel =>
@@ -308,9 +317,10 @@ namespace Holofunk.Controller
                                 return;
                             }
 
-                            // If this is a Touch menu verb, then update the touched loopie set.
                             if (menuVerb.Kind == MenuVerbKind.Touch)
                             {
+                                // If this is a Touch menu verb, then update the touched loopie set,
+                                // because we apply it to everything we touch as we move.
                                 pplusModel.Controller.UpdateTouchedLoopieList();
 
                                 DistributedPerformer performer = pplusModel.Controller.DistributedPerformer;
@@ -323,6 +333,8 @@ namespace Holofunk.Controller
                             }
                             else
                             {
+                                // Do NOT update the touched loopie list in this case. We want to control levels only.
+
                                 float lastAdjustment = menuVerbModel.Adjustment;
 
                                 float currentHandYPosition = pplusModel.Controller.GetViewpointHandPosition().y;
@@ -342,10 +354,11 @@ namespace Holofunk.Controller
                                 widget.UpdateState(
                                     new LevelWidgetState { ViewpointPosition = state.ViewpointPosition, Adjustment = adjustment });
 
-                                ApplyLevelVerb(pplusModel, menuVerb, adjustment, false);
+                                ApplyLevelVerb(pplusModel.Controller, mikeNextToMouth, adjustment, false);
                             }
                         },
-                        widget);
+                        widget,
+                        mikeNextToMouth);
                 },
                 (evt, levelAdjustModel) =>
                 {
@@ -355,7 +368,7 @@ namespace Holofunk.Controller
                     if (verb.Kind == MenuVerbKind.Level)
                     {
                         float adjustment = levelAdjustModel.Adjustment;
-                        ApplyLevelVerb(pplusModel, verb, levelAdjustModel.Adjustment, true);
+                        ApplyLevelVerb(pplusModel.Controller, levelAdjustModel.MikeNextToMouth, levelAdjustModel.Adjustment, true);
                     }
 
                     if (levelAdjustModel.LevelWidget != null)
@@ -419,29 +432,11 @@ namespace Holofunk.Controller
         /// <summary>
         /// Apply this MenuVerb with the given adjustment and perhaps commit.
         /// </summary>
-        private static void ApplyLevelVerb(PPlusModel pplusModel, MenuVerb menuVerb, float adjustment, bool commit)
+        private static void ApplyLevelVerb(PPlusController controller, bool mikeNextToMouth, float adjustment, bool commit)
         {
-            // Now apply the adjustment appropriately.
-            // Is the microphone hand close to the performer's mouth?
-            // First, which player ID are we?
-            int playerIndex = pplusModel.Controller.playerIndex;
-            PlayerState playerState;
-            bool mikeNextToMouth = false;
-            // Now, which Player is that?
-            if (DistributedViewpoint.Instance != null
-                && DistributedViewpoint.Instance.TryGetPlayerById((PlayerId)playerIndex, out playerState))
-            {
-                // get the distance between the player's non-controller hand and head
-                Vector3 playerHeadPos = playerState.HeadPosition;
-                Side handSide = pplusModel.Controller.handSide;
-                Vector3 mikeHandPos = handSide == Side.Left ? playerState.RightHandPosition : playerState.LeftHandPosition;
-
-                mikeNextToMouth = Vector3.Distance(playerHeadPos, mikeHandPos) < MagicNumbers.MaximumHeadToMikeHandDistance;
-            }
-
             HashSet<DistributedId> ids;
-            DistributedPerformer performer = pplusModel.Controller.DistributedPerformer;
-            if (mikeNextToMouth && menuVerb.MayBePerformer)
+            DistributedPerformer performer = controller.DistributedPerformer;
+            if (mikeNextToMouth && controller.CurrentlyHeldVerb.MayBePerformer)
             {
                 ids = new HashSet<DistributedId>(new[] { performer.Id });
             }
@@ -454,7 +449,7 @@ namespace Holofunk.Controller
                         .Select(id => new DistributedId(id)));
             }
 
-            menuVerb.LevelAction(ids, adjustment, commit);
+            controller.CurrentlyHeldVerb.LevelAction(ids, adjustment, commit);
         }
     }
 }
