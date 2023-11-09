@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Holofunk.Sound;
 using System.Linq;
+using Holofunk.Distributed;
 
 namespace Holofunk.Controller
 {
@@ -87,12 +88,24 @@ namespace Holofunk.Controller
             /// </summary>
             internal float Adjustment { get; set; }
             internal DistributedLevelWidget LevelWidget { get; private set; }
+
+            /// <summary>
+            /// The menu verb we are manipulating (may not be the same as the currently held verb
+            /// if we are setting the volume, which means we had no currently held verb).
+            /// </summary>
+            internal MenuVerb MenuVerb { get; private set; }
+
             /// <summary>
             /// Was the performer's mike next to their mouth when this menu verb started being applied?
             /// </summary>
             internal bool MikeNextToMouth { get; private set; }
 
-            internal MenuVerbModel(PPlusModel parent, Action<MenuVerbModel> updateAction, DistributedLevelWidget levelWidget, bool mikeNextToMouth)
+            internal MenuVerbModel(
+                PPlusModel parent,
+                MenuVerb menuVerb,
+                Action<MenuVerbModel> updateAction,
+                DistributedLevelWidget levelWidget,
+                bool mikeNextToMouth)
                 : base(parent, updateAction)
             {
                 LevelWidget = levelWidget;
@@ -296,6 +309,27 @@ namespace Holofunk.Controller
                     MenuVerb menuVerb = pplusModel.Controller.CurrentlyHeldVerb;
                     HoloDebug.Log($"Entering levelChange state, menuVerb is {menuVerb.Name} of kind {menuVerb.Kind}");
 
+                    // If the menu verb is unset, then it's volume time.
+                    if (menuVerb.Kind == MenuVerbKind.Undefined)
+                    {
+                        // at this point we decide that we actually have a Level MenuVerb
+                        Action<HashSet<DistributedId>, float, bool> volumeAction = (effectableIds, alteration, commit) =>
+                        {
+                            // append this effect to all effectables being touched.
+                            foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
+                            {
+                                IDistributedObject asObj = (IDistributedObject)effectable;
+                                if (effectableIds.Contains(asObj.Id))
+                                {
+                                    HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying volume to effectable {asObj.Id} with alteration {alteration}");
+                                    effectable.AlterVolume(alteration, commit);
+                                }
+                            }
+                        };
+
+                        menuVerb = MenuVerb.MakeLevel("Set\nVolume", false, volumeAction);
+                    }
+
                     if (menuVerb.Kind == MenuVerbKind.Prompt)
                     {
                         // take effect right now!
@@ -309,6 +343,7 @@ namespace Holofunk.Controller
 
                     return new MenuVerbModel(
                         pplusModel,
+                        menuVerb,
                         menuVerbModel =>
                         {
                             if (menuVerb.Kind == MenuVerbKind.Prompt)
@@ -354,36 +389,35 @@ namespace Holofunk.Controller
                                 widget.UpdateState(
                                     new LevelWidgetState { ViewpointPosition = state.ViewpointPosition, Adjustment = adjustment });
 
-                                ApplyLevelVerb(pplusModel.Controller, mikeNextToMouth, adjustment, false);
+                                ApplyLevelVerb(pplusModel.Controller, menuVerb, mikeNextToMouth, adjustment, false);
                             }
                         },
                         widget,
                         mikeNextToMouth);
                 },
-                (evt, levelAdjustModel) =>
+                (evt, menuVerbModel) =>
                 {
-                    PPlusModel pplusModel = (PPlusModel)levelAdjustModel.Parent;
-                    PPlusController controller = pplusModel.Controller;
-                    MenuVerb verb = controller.CurrentlyHeldVerb;
-                    if (verb.Kind == MenuVerbKind.Level)
+                    PPlusModel pplusModel = (PPlusModel)menuVerbModel.Parent;
+                    MenuVerb menuVerb = menuVerbModel.MenuVerb;
+                    if (menuVerb.Kind == MenuVerbKind.Level)
                     {
-                        float adjustment = levelAdjustModel.Adjustment;
-                        ApplyLevelVerb(pplusModel.Controller, levelAdjustModel.MikeNextToMouth, levelAdjustModel.Adjustment, true);
+                        float adjustment = menuVerbModel.Adjustment;
+                        ApplyLevelVerb(pplusModel.Controller, menuVerb, menuVerbModel.MikeNextToMouth, menuVerbModel.Adjustment, true);
                     }
 
-                    if (levelAdjustModel.LevelWidget != null)
+                    if (menuVerbModel.LevelWidget != null)
                     {
-                        levelAdjustModel.LevelWidget.Delete();
+                        menuVerbModel.LevelWidget.Delete();
                     }
                 });
 
-            // Light button will do something if there is a current menu verb.
+            // Light button will do something if there is a current menu verb, or even if there isn't (in which case it's Set Volume).
             AddTransition(
                 stateMachine,
                 initial,
                 PPlusEvent.LightDown,
                 applyMenuVerb,
-                pplusModel => pplusModel.Controller.CurrentlyHeldVerb.IsDefined);
+                model => model.Controller.CurrentlyHeldVerb.IsDefined || model.Controller.IsTouchingLoopies);
             AddTransition(stateMachine, applyMenuVerb, PPlusEvent.LightUp, initial);
 
             #endregion
@@ -432,7 +466,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// Apply this MenuVerb with the given adjustment and perhaps commit.
         /// </summary>
-        private static void ApplyLevelVerb(PPlusController controller, bool mikeNextToMouth, float adjustment, bool commit)
+        private static void ApplyLevelVerb(PPlusController controller, MenuVerb menuVerb, bool mikeNextToMouth, float adjustment, bool commit)
         {
             HashSet<DistributedId> ids;
             DistributedPerformer performer = controller.DistributedPerformer;
@@ -449,7 +483,7 @@ namespace Holofunk.Controller
                         .Select(id => new DistributedId(id)));
             }
 
-            controller.CurrentlyHeldVerb.LevelAction(ids, adjustment, commit);
+            menuVerb.LevelAction(ids, adjustment, commit);
         }
     }
 }

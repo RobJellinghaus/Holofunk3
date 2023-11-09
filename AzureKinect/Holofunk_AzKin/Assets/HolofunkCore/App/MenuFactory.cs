@@ -186,11 +186,10 @@ namespace Holofunk.App
                                 IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))
                                 {
-                                    HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying volume to effectable {asObj.Id} with alteration {alteration}");
+                                    HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying drywet level to effectable {asObj.Id} with alteration {alteration}");
                                     // OK, OK, we don't have real per-effect dry/wet yet but we kind of hack it by
                                     // just altering volume and effect on every move.
                                     effectable.AlterSoundEffect(new EffectId(pluginId, pluginProgramId), alteration, commit);
-                                    effectable.AlterVolume(alteration, commit);
                                 }
                             }
                         };

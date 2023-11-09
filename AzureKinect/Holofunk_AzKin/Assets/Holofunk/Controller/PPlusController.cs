@@ -111,6 +111,8 @@ namespace Holofunk.Controller
             }
         }
 
+        internal bool IsTouchingLoopies => touchedLoopieIds.Count > 0;
+
         #endregion
 
         #region Updates and actions
@@ -232,7 +234,7 @@ namespace Holofunk.Controller
             PlayerState playerState;
             // Now, which Player is that?
             if (DistributedViewpoint.Instance != null
-                && DistributedViewpoint.Instance.TryGetPlayerById((PlayerId)playerIndex, out playerState))
+                && DistributedViewpoint.Instance.TryGetPlayerById((PlayerId)(playerIndex + 1), out playerState))
             {
                 // get the distance between the player's non-controller hand and head
                 Vector3 playerHeadPos = playerState.HeadPosition;
