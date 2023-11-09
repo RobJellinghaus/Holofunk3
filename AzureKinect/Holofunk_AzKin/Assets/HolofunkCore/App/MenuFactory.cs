@@ -132,6 +132,7 @@ namespace Holofunk.App
                 }
 
                 items.Add((MenuVerb.MakeLabel("FX"), new MenuStructure(
+                    /*
                     (MenuVerb.MakeTouch(
                         "Clear\nAll FX",
                         effectableIds =>
@@ -146,8 +147,9 @@ namespace Holofunk.App
                             }
                         }),
                     null),
+                    */
                     (MenuVerb.MakeTouch(
-                        "Remove\nLast FX",
+                        "Pop\nLast",
                         effectableIds =>
                         {
                             foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())

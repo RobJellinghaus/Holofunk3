@@ -124,7 +124,7 @@ namespace Holofunk.Loop
                 AudioInput = new Sound.AudioInputId(audioInputId),
                 ViewpointPosition = viewpointPosition,
                 IsMuted = false,
-                Volume = 0.7f,
+                Volume = 0.6f,
                 Effects = new int[0],
                 EffectLevels = new int[0]
             });

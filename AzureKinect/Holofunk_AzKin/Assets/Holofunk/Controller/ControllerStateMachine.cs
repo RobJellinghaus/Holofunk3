@@ -109,6 +109,7 @@ namespace Holofunk.Controller
                 : base(parent, updateAction)
             {
                 LevelWidget = levelWidget;
+                MenuVerb = menuVerb;
                 MikeNextToMouth = mikeNextToMouth;
             }
         }
@@ -321,7 +322,7 @@ namespace Holofunk.Controller
                                 IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))
                                 {
-                                    HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying volume to effectable {asObj.Id} with alteration {alteration}");
+                                    HoloDebug.Log($"ControllerStateMachine.volumeAction: applying volume to effectable {asObj.Id} with alteration {alteration}");
                                     effectable.AlterVolume(alteration, commit);
                                 }
                             }
