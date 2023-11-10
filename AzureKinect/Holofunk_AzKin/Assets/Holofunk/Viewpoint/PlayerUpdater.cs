@@ -73,7 +73,11 @@ namespace Holofunk.Viewpoint
 
                     long userId = kinectManager.GetUserIdByIndex(playerIndex);
 
-                    Vector3 rawLeftHandPosition, rawRightHandPosition;
+                    Vector3 rawHeadPosition, rawLeftHandPosition, rawRightHandPosition;
+                    if (TryGetJointWorldSpacePosition(userId, KinectInterop.JointType.Head, out rawHeadPosition))
+                    {
+                        headPositionAverager.Update(rawHeadPosition);
+                    }
                     if (TryGetJointWorldSpacePosition(userId, KinectInterop.JointType.HandLeft, out rawLeftHandPosition))
                     {
                         leftHandAverager.Update(rawLeftHandPosition);

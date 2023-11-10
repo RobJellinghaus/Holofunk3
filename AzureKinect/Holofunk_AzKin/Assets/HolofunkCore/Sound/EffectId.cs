@@ -42,8 +42,12 @@ namespace Holofunk.Sound
         }
 
         /// <summary>
-        /// Find the given EffectId in the given array; return -1 if not found.
+        /// Return the logical index of this EffectId in the given array (which is a flattened int
+        /// array of EffectId values, hence 2x the length of the actual number of effects).
         /// </summary>
+        /// <remarks>
+        /// Return the logical index
+        /// </remarks>
         public int FindIn(int[] effects)
         {
             for (int i = 0; i < effects.Length / 2; i++)

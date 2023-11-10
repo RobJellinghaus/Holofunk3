@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
+using Holofunk.Shape;
 
 namespace Holofunk.Controller
 {
@@ -77,6 +78,16 @@ namespace Holofunk.Controller
         /// The child GameObject describing the currently held MenuVerb (only if the verb is defined).
         /// </summary>
         private GameObject currentlyHeldVerbGameObject;
+
+        /// <summary>
+        /// The icon for the microphone, when the mike is next to the mouth and there is a menu verb.
+        /// </summary>
+        private GameObject mikeIcon;
+
+        /// <summary>
+        /// The icon for the player index, floating next to their head.
+        /// </summary>
+        private GameObject headIcon;
 
         #endregion Fields
 
@@ -166,6 +177,15 @@ namespace Holofunk.Controller
             return true; 
         }
 
+        /// <summary>
+        /// The controller is starting up; initialize any standard objects.
+        /// </summary>
+        void Start()
+        {
+            headIcon = ShapeContainer.InstantiateShape(this.playerIndex == 0 ? ShapeType.Number1 : ShapeType.Number2, transform);
+            mikeIcon = ShapeContainer.InstantiateShape(ShapeType.Microphone, transform);
+        }
+
         // Update is called once per frame
         void Update()
         {
@@ -207,6 +227,24 @@ namespace Holofunk.Controller
             // In practice this winds up calling an update action defined by the state entry action.
             stateMachineInstance.ModelUpdate();
 
+            int playerIndex = this.playerIndex;
+            PlayerState playerState;
+            // Now, which Player is that?
+            if (DistributedViewpoint.Instance != null
+                && DistributedViewpoint.Instance.TryGetPlayerById((PlayerId)(playerIndex + 1), out playerState)
+                && !float.IsNaN(playerState.HeadPosition.x))
+            {
+                // get the distance between the player's non-controller hand and head
+                Vector3 playerHeadPos = playerState.HeadPosition;
+                // 0.1m to the right from the camera's perspective
+                headIcon.SetActive(true);
+                headIcon.transform.localPosition = playerHeadPos + new Vector3(MagicNumbers.HeadToPlayerNumberDistance, 0, 0);
+            }
+            else
+            {
+                headIcon.SetActive(false);
+            }
+
             // aaand, somewhat cheesily, update the menu verb game object if any
             // tension: keeping this an implementation detail of the controller, vs avoiding ux-specific logic in the controller
             // TODO: make there be a darn gameobject for the controller hand already (then could just stick it to that and 
@@ -221,6 +259,23 @@ namespace Holofunk.Controller
                     || (currentlyHeldVerb.Kind == MenuVerbKind.Level && currentlyHeldVerb.MayBePerformer && mikeToMouth)
                     || (currentlyHeldVerb.Kind == MenuVerbKind.Level && touchedLoopieIds.Count > 0);
                 MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, isTouching ? Color.white : Color.grey);
+
+                if (mikeToMouth)
+                {
+                    mikeIcon.SetActive(true);
+                    PlayerState thisPlayer = DistributedViewpoint.Instance.GetPlayerByIndex(playerIndex);
+                    Vector3 viewpointHandPosition = handSide == Side.Left ? thisPlayer.RightHandPosition : thisPlayer.LeftHandPosition;
+
+                    mikeIcon.transform.localPosition = viewpointHandPosition;
+                }
+                else
+                {
+                    mikeIcon.SetActive(false);
+                }
+            }
+            else
+            {
+                mikeIcon.SetActive(false);
             }
         }
 
@@ -241,7 +296,9 @@ namespace Holofunk.Controller
                 Side handSide = this.handSide;
                 Vector3 mikeHandPos = handSide == Side.Left ? playerState.RightHandPosition : playerState.LeftHandPosition;
 
-                result = Vector3.Distance(playerHeadPos, mikeHandPos) < MagicNumbers.MaximumHeadToMikeHandDistance;
+                float dist = Vector3.Distance(playerHeadPos, mikeHandPos);
+                result = dist < MagicNumbers.MaximumHeadToMikeHandDistance;
+                //HoloDebug.Log($"PPlusController.IsMikeNextToMouth(): playerHeadPos {playerHeadPos}, mikeHandPos {mikeHandPos}, dist {dist}, result {result}");
             }
 
             return result;
@@ -312,8 +369,9 @@ namespace Holofunk.Controller
             }
 
             Vector3 viewpointHandPosition = GetViewpointHandPosition();
+            PerformerState performerState = GetComponent<LocalPerformer>().GetState();
 
-            GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition, audioInputId);
+            GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition, audioInputId, performerState.Effects, performerState.EffectLevels);
             return newLoopie;
         }
 

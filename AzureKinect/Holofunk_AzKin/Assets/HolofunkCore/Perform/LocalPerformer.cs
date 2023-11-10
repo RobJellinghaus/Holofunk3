@@ -21,6 +21,23 @@ namespace Holofunk.Perform
 
         public IDistributedObject DistributedObject => gameObject.GetComponent<DistributedPerformer>();
 
+        /// <summary>
+        /// If this is a non-distributed LocalPerformer that is just statically part of a Player,
+        /// then initialize its state at this point.
+        /// </summary>
+        public void Start()
+        {
+            if (this.state.Effects == null)
+            {
+                this.state = new PerformerState
+                {
+                    Effects = new int[0],
+                    EffectLevels = new int[0],
+                    TouchedLoopieIdList = new uint[0],
+                };
+            }
+        }
+
         internal void Initialize(PerformerState state)
         {
             this.state = state;
@@ -67,11 +84,13 @@ namespace Holofunk.Perform
             int effectIndex = effect.FindIn(state.Effects);
             if (effectIndex == -1)
             {
+                HoloDebug.Log($"LocalPerformer.AlterSoundEffect: did not find effect ID {effect} in effect list {state.Effects.ArrayToString()}, creating new plugin");
+
                 state.Effects = effect.AppendTo(state.Effects);
                 // TODO: make per-effect custom initial levels here (they don't need to be passed in the verb/message)
                 int initialLevel = 100;
                 state.EffectLevels = EffectId.AppendTo(state.EffectLevels, initialLevel);
-                effectIndex = state.Effects.Length - 1;
+                effectIndex = state.EffectLevels.Length - 1;
 
                 if (SoundManager.Instance != null)
                 {
@@ -83,6 +102,7 @@ namespace Holofunk.Perform
                 }
             }
 
+            HoloDebug.Log($"LocalPerformer.AlterSoundEffect: about to alter effect index {effectIndex} (Effects {state.Effects.ArrayToString()}, EffectLevels {state.EffectLevels.ArrayToString()}");
             int newLevel = state.EffectLevels[effectIndex] + (int)(alteration * MagicNumbers.EffectLevelScale);
             newLevel = Mathf.Clamp(newLevel, 0, 100);
 
@@ -98,6 +118,9 @@ namespace Holofunk.Perform
             {
                 state.EffectLevels[effectIndex] = newLevel;
             }
+
+            // and update the state
+            this.state = state;
         }
 
         public void PopSoundEffect()

@@ -245,7 +245,12 @@ namespace Holofunk.Core
         /// If the performer is holding the mike to their mouth, any level menu verb effects will apply to the
         /// performer.
         /// </remarks>
-        public static readonly float MaximumHeadToMikeHandDistance = 0.1f;
+        public static readonly float MaximumHeadToMikeHandDistance = 0.4f;
+
+        /// <summary>
+        /// Distance to the right of the player's head where their player number will hover.
+        /// </summary>
+        public static readonly float HeadToPlayerNumberDistance = 0.2f;
 
         #endregion
     }

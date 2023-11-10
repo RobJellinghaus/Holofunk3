@@ -37,6 +37,21 @@ namespace Holofunk.Shape
         MenuItem,
 
         /// <summary>
+        /// A microphone sprite
+        /// </summary>
+        Microphone,
+
+        /// <summary>
+        /// A number 1 in an oval
+        /// </summary>
+        Number1,
+
+        /// <summary>
+        /// A number 2 in an oval
+        /// </summary>
+        Number2,
+
+        /// <summary>
         /// Simple 0.1 m sphere
         /// </summary>
         Sphere,

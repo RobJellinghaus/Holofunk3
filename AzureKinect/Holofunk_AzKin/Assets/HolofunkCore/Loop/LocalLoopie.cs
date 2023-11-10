@@ -119,6 +119,18 @@ namespace Holofunk.Loop
             if (SoundManager.Instance != null)
             {
                 trackId = NowSoundGraphAPI.CreateRecordingTrackAsync(loopie.AudioInput.Value);
+
+                // Set up all the effects on this loopie right now.
+                // While the loopie is recording, no sound will be played anyway; once the loopie
+                // finishes recording, all the effects will kick in.
+                for (int i = 0; i < loopie.EffectLevels.Length; i++)
+                {
+                    NowSoundTrackAPI.AddPluginInstance(
+                        trackId, 
+                        (NowSoundLib.PluginId)loopie.Effects[i * 2],
+                        (ProgramId)loopie.Effects[i * 2 + 1],
+                        loopie.EffectLevels[i]);
+                }
             }
 
             // TODO: support creating loopie with effects!
@@ -481,7 +493,7 @@ namespace Holofunk.Loop
         internal void Initialize(LoopieState loopie)
         {
             this.loopie = loopie;
-            HoloDebug.Log($"LocalLoopie.Initialize: initializing {DistributedObject.Id} at viewpoint position {loopie.ViewpointPosition}");
+            HoloDebug.Log($"LocalLoopie.Initialize: initializing {DistributedObject.Id} at viewpoint position {loopie.ViewpointPosition} with effects {loopie.Effects.ArrayToString()} and levels {loopie.EffectLevels.ArrayToString()}");
         }
 
         public void OnDelete()
@@ -582,7 +594,7 @@ namespace Holofunk.Loop
 
         public void PopSoundEffect()
         {
-            HoloDebug.Log($"LocalLoopie.PopSoundEffect: id {DistributedObject.Id}, {loopie.Effects.Length} effects");
+            HoloDebug.Log($"LocalLoopie.PopSoundEffect: id {DistributedObject.Id}, {loopie.Effects.Length / 2} effect(s)");
 
             if (loopie.Effects.Length == 0)
             {

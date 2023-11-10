@@ -342,6 +342,8 @@ namespace Holofunk.Controller
                     // we will be effecting during this state, even if they put the mike down in mid-waggle.
                     bool mikeNextToMouth = pplusModel.Controller.IsMikeNextToMouth();
 
+                    HoloDebug.Log($"ControllerStateMachine.levelChange: mikeNextToMouth {mikeNextToMouth}");
+
                     return new MenuVerbModel(
                         pplusModel,
                         menuVerb,
