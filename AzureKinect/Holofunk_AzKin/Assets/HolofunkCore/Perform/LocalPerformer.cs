@@ -126,6 +126,11 @@ namespace Holofunk.Perform
         public void PopSoundEffect()
         {
             PerformerState state = GetState();
+            if (state.EffectLevels.Length == 0)
+            {
+                return; // nothing to pop
+            }
+
             // TODO: use the PlayerPerformerMapper again. But for now, we're in the same damn object.
             int playerIndex = GetComponent<PlayerUpdater>().PlayerIndex;
             NowSoundLib.AudioInputId playerAudioInput = NowSoundLib.AudioInputId.AudioInput1 + playerIndex;
@@ -137,6 +142,9 @@ namespace Holofunk.Perform
             {
                 NowSoundGraphAPI.DeleteInputPluginInstance(playerAudioInput, (PluginInstanceIndex)(state.EffectLevels.Length + 1));
             }
+
+            // and update the state!!!
+            this.state = state;
         }
 
         public void ClearSoundEffects()
@@ -157,6 +165,11 @@ namespace Holofunk.Perform
                     NowSoundGraphAPI.DeleteInputPluginInstance(playerAudioInput, (PluginInstanceIndex)1);
                 }
             }
+
+            // and update the state!!!
+            state.Effects = new int[0];
+            state.EffectLevels = new int[0];
+            this.state = state;
         }
     }
 }

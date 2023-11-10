@@ -344,35 +344,37 @@ namespace Holofunk.Controller
 
                     HoloDebug.Log($"ControllerStateMachine.levelChange: mikeNextToMouth {mikeNextToMouth}");
 
+                    if (menuVerb.Kind == MenuVerbKind.Touch)
+                    {
+                        DistributedPerformer performer = pplusModel.Controller.DistributedPerformer;
+
+                        if (mikeNextToMouth)
+                        {
+                            // Apply the touch effect to the performer.
+                            HashSet<DistributedId> performerIdSet = new HashSet<DistributedId>();
+                            performerIdSet.Add(performer.Id);
+                            menuVerb.TouchAction(performerIdSet);
+                        }
+                        else
+                        {
+                            // Apply to the touched loopies.
+                            HashSet<DistributedId> ids = new HashSet<DistributedId>(
+                                ((LocalPerformer)performer.LocalObject)
+                                    .GetState()
+                                    .TouchedLoopieIdList
+                                    .Select(id => new DistributedId(id)));
+                            menuVerb.TouchAction(ids);
+                        }
+                    }
+
                     return new MenuVerbModel(
                         pplusModel,
                         menuVerb,
                         menuVerbModel =>
                         {
-                            if (menuVerb.Kind == MenuVerbKind.Prompt)
-                            {
-                                // we already happened; update does nothing
-                                return;
-                            }
-
-                            if (menuVerb.Kind == MenuVerbKind.Touch)
-                            {
-                                // If this is a Touch menu verb, then update the touched loopie set,
-                                // because we apply it to everything we touch as we move.
-                                pplusModel.Controller.UpdateTouchedLoopieList();
-
-                                DistributedPerformer performer = pplusModel.Controller.DistributedPerformer;
-                                HashSet<DistributedId> ids = new HashSet<DistributedId>(
-                                    ((LocalPerformer)performer.LocalObject)
-                                        .GetState()
-                                        .TouchedLoopieIdList
-                                        .Select(id => new DistributedId(id)));
-                                menuVerb.TouchAction(ids);
-                            }
-                            else
+                            if (menuVerb.Kind == MenuVerbKind.Level)
                             {
                                 // Do NOT update the touched loopie list in this case. We want to control levels only.
-
                                 float lastAdjustment = menuVerbModel.Adjustment;
 
                                 float currentHandYPosition = pplusModel.Controller.GetViewpointHandPosition().y;
