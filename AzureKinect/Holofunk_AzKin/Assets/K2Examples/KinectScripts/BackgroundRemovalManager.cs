@@ -305,7 +305,10 @@ public class BackgroundRemovalManager : MonoBehaviour
 			else
 			{
 				// show all players
-				sensorData.selectedBodyIndex = 255;
+				if (sensorData != null)
+				{
+					sensorData.selectedBodyIndex = 255;
+				}
 			}
 
 			// filter parameters

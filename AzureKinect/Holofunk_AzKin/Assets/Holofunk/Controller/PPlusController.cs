@@ -165,7 +165,7 @@ namespace Holofunk.Controller
         { 
             if (pplusIndex == -1 || HidManager.Instance == null || HidManager.Instance.pplus_list.Count <= pplusIndex){
                 // No PPlus yet associated with this player; nothing to do.
-                HoloDebug.Log($"pplus_list.Count is {HidManager.Instance.pplus_list.Count}, pplusIndex is {pplusIndex}, nothing to do");
+                HoloDebug.Log($"pplus_list.Count is {HidManager.Instance?.pplus_list?.Count}, pplusIndex is {pplusIndex}, nothing to do");
                 return false;
             }
 

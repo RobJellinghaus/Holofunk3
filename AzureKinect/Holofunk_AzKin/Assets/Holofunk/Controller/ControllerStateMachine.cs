@@ -271,12 +271,12 @@ namespace Holofunk.Controller
                             pplusModel.Controller.UpdateTouchedLoopieList();
                             pplusModel.Controller.ApplyToTouchedLoopies(loopie =>
                             {
-                                HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: loopie {loopie.Id}, IsMuted {loopie.GetLoopie().IsMuted}");
+                                //HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: loopie {loopie.Id}, IsMuted {loopie.GetLoopie().IsMuted}");
                                 // the first loopie touched, if it's a double-mute, puts us into delete mode
                                 if (!deletingTouchedLoopies.HasValue)
                                 {
                                     deletingTouchedLoopies = loopie.GetLoopie().IsMuted;
-                                    HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: deletingTouchedLoopies {deletingTouchedLoopies.Value}");
+                                    //HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: deletingTouchedLoopies {deletingTouchedLoopies.Value}");
                                 }
 
                                 if (!toggledLoopies.Contains(loopie.Id))

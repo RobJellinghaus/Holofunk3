@@ -302,7 +302,10 @@ namespace Holofunk.Sound
             if (currentAudioGraphState == NowSoundGraphState.GraphRunning)
             {
                 // update the distributed clock instance, which must exist
-                DistributedSoundClock.Instance.UpdateTimeInfo(timeInfo);
+                if (DistributedSoundClock.Instance != null)
+                {
+                    DistributedSoundClock.Instance.UpdateTimeInfo(timeInfo);
+                }
 
                 // ... and call the bogus hacked MessageTick() method
                 NowSoundGraphAPI.MessageTick();

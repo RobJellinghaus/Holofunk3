@@ -119,7 +119,7 @@ namespace Holofunk.App
                         HashSet<DistributedLoopie> copiedLoopies =
                         DistributedObjectFactory.CollectDistributedComponents<DistributedLoopie>(
                             DistributedObjectFactory.DistributedType.Loopie,
-                            menuVerbModel.CopiedLoopieIds);
+                            new HashSet<DistributedId>(controller.TouchedLoopieIds));
 
                         // Now copy each one.
                         HashSet<DistributedId> newLoopieIds = new HashSet<DistributedId>();
@@ -159,8 +159,10 @@ namespace Holofunk.App
 
             // Grab > move/copy
             items.Add((MenuVerb.MakeLabel("Grab"), new MenuStructure(
-                (MenuVerb.MakeTouch("Move", (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, false)), null),
-                (MenuVerb.MakeTouch("Copy", (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, false)), null))));
+                (MenuVerb.MakeTouch("Move", (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ false)),
+                 null),
+                (MenuVerb.MakeTouch("Copy", (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ true)),
+                 null))));
 
             // Construct sound effect menu items
             {

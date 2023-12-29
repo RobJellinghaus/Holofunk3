@@ -15,18 +15,21 @@ namespace Holofunk.Camera
         {
             // Look for a Viewpoint.
             DistributedViewpoint viewpoint = DistributedViewpoint.Instance;
-            Option<Vector3> viewpointCameraPosition = LocalCamera.Instance.LastViewpointCameraPosition;
-            if (viewpoint != null && viewpointCameraPosition.HasValue)
+            if (LocalCamera.Instance != null)
             {
-                Vector3 localCameraPosition = viewpoint.ViewpointToLocalMatrix()
-                    .MultiplyPoint(viewpointCameraPosition.Value);
-                Vector3 localForwardDirection = (transform.position - localCameraPosition).normalized;
-                localForwardDirection.y = 0;
-                if (localForwardDirection != Vector3.zero)
+                Option<Vector3> viewpointCameraPosition = LocalCamera.Instance.LastViewpointCameraPosition;
+                if (viewpoint != null && viewpointCameraPosition.HasValue)
                 {
-                    // this spams if it's zero
-                    Quaternion rotation = Quaternion.LookRotation(localForwardDirection, Vector3.up);
-                    transform.rotation = rotation;
+                    Vector3 localCameraPosition = viewpoint.ViewpointToLocalMatrix()
+                        .MultiplyPoint(viewpointCameraPosition.Value);
+                    Vector3 localForwardDirection = (transform.position - localCameraPosition).normalized;
+                    localForwardDirection.y = 0;
+                    if (localForwardDirection != Vector3.zero)
+                    {
+                        // this spams if it's zero
+                        Quaternion rotation = Quaternion.LookRotation(localForwardDirection, Vector3.up);
+                        transform.rotation = rotation;
+                    }
                 }
             }
         }
