@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2020 by Rob Jellinghaus.
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// Message sent by Peers that are just entering the system.

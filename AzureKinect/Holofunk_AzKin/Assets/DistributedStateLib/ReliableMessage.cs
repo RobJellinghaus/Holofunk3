@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2020 by Rob Jellinghaus.
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// Base message class containing Id and IsRequest properties.

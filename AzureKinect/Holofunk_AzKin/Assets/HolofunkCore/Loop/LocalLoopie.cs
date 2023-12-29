@@ -1,7 +1,8 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using Distributed.State;
+using DistributedStateLib;
 using Holofunk.Core;
+using Holofunk.Distributed;
 using Holofunk.Shape;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
@@ -115,10 +116,31 @@ namespace Holofunk.Loop
 
         public void Start()
         {
-            // if there is a sound manager, start recording!
+            // if there is a sound manager, let's set up audio.
             if (SoundManager.Instance != null)
             {
-                trackId = NowSoundGraphAPI.CreateRecordingTrackAsync(loopie.AudioInput.Value);
+                // if we have an audio input, start recording!
+                if (loopie.AudioInput.IsInitialized)
+                {
+                    trackId = NowSoundGraphAPI.CreateRecordingTrackAsync(loopie.AudioInput.Value);
+                }
+                else
+                {
+                    HoloDebug.Assert(loopie.CopiedLoopieId.IsInitialized, "Audio input wasn't defined so copied loopie ID should have been");
+
+                    // look up the local loopie with that distributed ID
+                    foreach (DistributedLoopie candidate in DistributedObjectFactory.FindComponentInstances<DistributedLoopie>(
+                            DistributedObjectFactory.DistributedType.Loopie, false))
+                    {
+                        if (candidate.Id == loopie.CopiedLoopieId)
+                        {
+                            TrackId copiedTrackId = ((LocalLoopie)candidate.LocalObject).trackId;
+                            HoloDebug.Log($"Found candidate with copied ID {loopie.CopiedLoopieId} and track ID {copiedTrackId}");
+
+                            trackId = NowSoundGraphAPI.CopyLoopingTrack(copiedTrackId);
+                        }
+                    }
+                }
 
                 // Set up all the effects on this loopie right now.
                 // While the loopie is recording, no sound will be played anyway; once the loopie
@@ -126,7 +148,7 @@ namespace Holofunk.Loop
                 for (int i = 0; i < loopie.EffectLevels.Length; i++)
                 {
                     NowSoundTrackAPI.AddPluginInstance(
-                        trackId, 
+                        trackId,
                         (NowSoundLib.PluginId)loopie.Effects[i * 2],
                         (ProgramId)loopie.Effects[i * 2 + 1],
                         loopie.EffectLevels[i]);
@@ -493,7 +515,7 @@ namespace Holofunk.Loop
         internal void Initialize(LoopieState loopie)
         {
             this.loopie = loopie;
-            HoloDebug.Log($"LocalLoopie.Initialize: initializing {DistributedObject.Id} at viewpoint position {loopie.ViewpointPosition} with effects {loopie.Effects.ArrayToString()} and levels {loopie.EffectLevels.ArrayToString()}");
+            HoloDebug.Log($"LocalLoopie.Initialize: initializing {DistributedObject.Id} with copied loopie ID {loopie.CopiedLoopieId} at viewpoint position {loopie.ViewpointPosition} with effects {loopie.Effects.ArrayToString()} and levels {loopie.EffectLevels.ArrayToString()}");
         }
 
         public void OnDelete()
@@ -582,7 +604,7 @@ namespace Holofunk.Loop
             int newLevel = loopie.EffectLevels[effectIndex] + (int)(alteration * MagicNumbers.EffectLevelScale);
             newLevel = Mathf.Clamp(newLevel, 0, 100);
 
-            HoloDebug.Log($"LocalLoopie.AlterSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}, alteration {alteration}, newLevel {newLevel}, commit {commit}");
+            //HoloDebug.Log($"LocalLoopie.AlterSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}, alteration {alteration}, newLevel {newLevel}, commit {commit}");
 
             NowSoundTrackAPI.SetPluginInstanceDryWet(trackId, (PluginInstanceIndex)(effectIndex + 1), newLevel);
 

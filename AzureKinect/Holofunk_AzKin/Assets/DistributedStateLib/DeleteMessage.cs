@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2020 by Rob Jellinghaus.
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// Message sent to delete existing proxy objects (or request deletion of an owner object).

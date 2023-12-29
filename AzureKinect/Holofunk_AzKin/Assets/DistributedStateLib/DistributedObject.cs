@@ -4,7 +4,7 @@ using LiteNetLib;
 using System;
 using System.Linq.Expressions;
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// Base class for distributed objects.

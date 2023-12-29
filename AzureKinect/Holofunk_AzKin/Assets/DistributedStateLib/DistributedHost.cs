@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 // and especially this DistributedPeer type.
 [assembly: InternalsVisibleTo("DistributedStateTest")]
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// Peer participant in the distributed system.

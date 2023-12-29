@@ -1,7 +1,7 @@
 ﻿// Copyright (c) 2020 by Rob Jellinghaus.
 using System;
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// Exception thrown due to unexpected condition in Peer code.

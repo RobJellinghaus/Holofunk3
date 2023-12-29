@@ -5,7 +5,7 @@ using LiteNetLib.Utils;
 using System;
 using System.Collections.Generic;
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// ID of a distributed object.

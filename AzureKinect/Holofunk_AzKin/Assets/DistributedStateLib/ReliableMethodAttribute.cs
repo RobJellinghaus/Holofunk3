@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// This method is implemented via reliable communication to the owner and then to all proxies.

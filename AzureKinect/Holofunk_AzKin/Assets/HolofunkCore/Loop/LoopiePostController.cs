@@ -1,6 +1,6 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using Distributed.State;
+using DistributedStateLib;
 using Holofunk.Controller;
 using Holofunk.Distributed;
 using Holofunk.Perform;

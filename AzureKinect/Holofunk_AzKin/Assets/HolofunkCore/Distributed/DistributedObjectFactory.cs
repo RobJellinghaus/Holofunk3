@@ -1,5 +1,6 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
+using DistributedStateLib;
 using Holofunk.Core;
 using Holofunk.Loop;
 using Holofunk.Perform;
@@ -60,9 +61,9 @@ namespace Holofunk.Distributed
         public static GameObject FindPrototypeContainer(DistributedType type)
         {
             GameObject prototypeContainer = GameObject.Find(DistributedObjectPrototypes);
-            Contract.Requires(prototypeContainer != null);
+            Core.Contract.Requires(prototypeContainer != null);
             Transform child = prototypeContainer.transform.Find(type.ToString());
-            Contract.Requires(child != null);
+            Core.Contract.Requires(child != null);
             return child.gameObject;
         }
 
@@ -98,7 +99,7 @@ namespace Holofunk.Distributed
         private static GameObject FindInstanceContainer(DistributedType type, string id)
         {
             Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
-            Contract.Requires(instanceContainer != null);
+            Core.Contract.Requires(instanceContainer != null);
 
             // find or create child game object for this host
             Transform hostContainer = instanceContainer.Find(id);
@@ -148,6 +149,18 @@ namespace Holofunk.Distributed
             where T : Component
             => FindComponentContainers(new DistributedType[] { type }, includeActivePrototype).Select(gameobj => gameobj.GetComponent<T>());
 
+        /// <summary>
+        /// Map a collection of IDs to a particular kind of object into the set of those objects.
+        /// </summary>
+        /// <remarks>
+        /// Used especially when copying, to allow creating all new objects (from these collected ones) without concurrent iteration.
+        /// </remarks>
+        public static HashSet<T> CollectDistributedComponents<T>(DistributedType type, HashSet<DistributedId> ids)
+            where T : DistributedComponent
+            => new HashSet<T>(FindComponentContainers(new DistributedType[] { type }, false)
+                .Select(gameobj => gameobj.GetComponent<T>())
+                .Where(component => ids.Contains(component.Id)));
+                
         // TODO: make this not so terribly hardcoded to just the one cross-type interface that exists
         public static IEnumerable<IEffectable> FindComponentInterfaces()
             // there is only one interface right now and we know Loopies and Performers are it
@@ -188,7 +201,7 @@ namespace Holofunk.Distributed
             }
 
             Transform instanceContainer = GameObject.Find(DistributedObjectInstances).transform;
-            Contract.Requires(instanceContainer != null);
+            Core.Contract.Requires(instanceContainer != null);
 
             for (int i = 0; i < instanceContainer.childCount; i++)
             {
@@ -213,7 +226,7 @@ namespace Holofunk.Distributed
             // TODO: make this not so terribly hacky... maybe there should be a general Id->DistributedObject
             // (owner OR proxy) lookup function on the DistributedHost?
             Transform playersContainer = GameObject.Find(Players).transform;
-            Contract.Requires(playersContainer != null);
+            Core.Contract.Requires(playersContainer != null);
             foreach (DistributedType type in types)
             {
                 if (type == DistributedType.Performer)

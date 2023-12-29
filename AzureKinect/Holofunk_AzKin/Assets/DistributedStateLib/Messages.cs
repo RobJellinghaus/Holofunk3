@@ -4,7 +4,7 @@ using LiteNetLib;
 using System;
 using System.Collections.Generic;
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     public class Messages
     {

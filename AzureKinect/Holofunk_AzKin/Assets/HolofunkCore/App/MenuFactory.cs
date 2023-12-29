@@ -1,16 +1,19 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using Holofunk.Sound;
-using System;
-using Holofunk.Menu;
-using Holofunk.Distributed;
-using Holofunk.Perform;
-using System.Collections.Generic;
-using Holofunk.Loop;
-using System.Linq;
-using Distributed.State;
+using DistributedStateLib;
+using Holofunk.Controller;
 using Holofunk.Core;
+using Holofunk.Distributed;
+using Holofunk.Loop;
+using Holofunk.Menu;
+using Holofunk.Perform;
+using Holofunk.Sound;
 using Holofunk.Viewpoint;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using static Holofunk.Controller.ControllerStateMachine;
 
 namespace Holofunk.App
 {
@@ -101,6 +104,64 @@ namespace Holofunk.App
 
             }
 
+            Action<MenuVerbModel, HashSet<DistributedId>, bool> grabAction = (menuVerbModel, loopieIds, isCopy) =>
+            {
+                PPlusController controller = ((PPlusModel)menuVerbModel.Parent).Controller;
+                Vector3 currentHandPosition = controller.GetViewpointHandPosition();
+                Vector3 delta = currentHandPosition - menuVerbModel.LastViewpointHandPosition;
+
+                // if we are copying and we don't have a set of copied loopie IDs yet, then create it and copy them all now
+                if (isCopy)
+                {
+                    if (menuVerbModel.CopiedLoopieIds == null)
+                    {
+                        // let's copy them all! First collect the ones we'll be copying.
+                        HashSet<DistributedLoopie> copiedLoopies =
+                        DistributedObjectFactory.CollectDistributedComponents<DistributedLoopie>(
+                            DistributedObjectFactory.DistributedType.Loopie,
+                            menuVerbModel.CopiedLoopieIds);
+
+                        // Now copy each one.
+                        HashSet<DistributedId> newLoopieIds = new HashSet<DistributedId>();
+                        foreach (DistributedLoopie copiedLoopie in copiedLoopies)
+                        {
+                            LocalLoopie localCopiedLoopie = (LocalLoopie)copiedLoopie.LocalObject;
+
+                            GameObject newLoopie = DistributedLoopie.Create(
+                                localCopiedLoopie.GetLoopie().ViewpointPosition,
+                                NowSoundLib.AudioInputId.AudioInputUndefined,
+                                copiedLoopie.Id,
+                                localCopiedLoopie.GetLoopie().Effects,
+                                localCopiedLoopie.GetLoopie().EffectLevels);
+
+                            newLoopieIds.Add(newLoopie.GetComponent<DistributedLoopie>().Id);
+                        }
+
+                        // And update the list of copied ones so we can drag them around.
+                        menuVerbModel.CopiedLoopieIds = newLoopieIds;
+                    }
+
+                    loopieIds = menuVerbModel.CopiedLoopieIds;
+                }
+
+                HashSet<DistributedLoopie> loopies =
+                    DistributedObjectFactory.CollectDistributedComponents<DistributedLoopie>(
+                        DistributedObjectFactory.DistributedType.Loopie,
+                        loopieIds);
+
+                foreach (DistributedLoopie loopie in loopies)
+                {
+                    loopie.SetViewpointPosition(loopie.GetLoopie().ViewpointPosition + delta);
+                }
+
+                menuVerbModel.SetLastViewpointHandPosition(currentHandPosition);
+            };
+
+            // Grab > move/copy
+            items.Add((MenuVerb.MakeLabel("Grab"), new MenuStructure(
+                (MenuVerb.MakeTouch("Move", (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, false)), null),
+                (MenuVerb.MakeTouch("Copy", (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, false)), null))));
+
             // Construct sound effect menu items
             {
                 // Collections of names for use in menu creation.
@@ -134,7 +195,7 @@ namespace Holofunk.App
                 items.Add((MenuVerb.MakeLabel("FX"), new MenuStructure(
                     (MenuVerb.MakeTouch(
                         "Clear\nAll",
-                        effectableIds =>
+                        (_, effectableIds) =>
                         {
                             foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
                             {
@@ -148,7 +209,7 @@ namespace Holofunk.App
                     null),
                     (MenuVerb.MakeTouch(
                         "Pop\nLast",
-                        effectableIds =>
+                        (_, effectableIds) =>
                         {
                             foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
                             {

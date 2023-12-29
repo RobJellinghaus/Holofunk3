@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// This method is implemented via unreliable broadcast from the sender to all other hosts.

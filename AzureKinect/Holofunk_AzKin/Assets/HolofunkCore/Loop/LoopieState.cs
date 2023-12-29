@@ -1,5 +1,6 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
+using DistributedStateLib;
 using Holofunk.Distributed;
 using Holofunk.Hand;
 using Holofunk.Sound;
@@ -14,16 +15,26 @@ namespace Holofunk.Loop
     /// <remarks>
     /// Note that this does not contain any state about the actual sound. The actual sound is kept
     /// as local state by only the viewpoint's proxy instance of the loopie.
-    /// 
-    /// Also note that the amplitude (current loudness) of the loopie is broadcast "ephemerally"
-    /// from one proxy to all instances, and isn't part of the "persistent" distributed state of the loopie.
     /// </remarks>
     public struct LoopieState : INetSerializable
     {
         /// <summary>
         /// The audio input to start recording from.
         /// </summary>
+        /// <remarks>
+        /// This is only used during initial recording.
+        /// 
+        /// If the loopie is being copied, this will be Undefined.
+        /// </remarks>
         public AudioInputId AudioInput { get; set; }
+
+        /// <summary>
+        /// The loopie from which this loopie is being copied, if any.
+        /// </summary>
+        /// <remarks>
+        /// If the loopie is not being copied, this will be Undefined.
+        /// </remarks>
+        public DistributedId CopiedLoopieId { get; set; }
 
         /// <summary>
         /// The position of the loopie, in viewpoint coordinates.
@@ -64,6 +75,7 @@ namespace Holofunk.Loop
         public void Deserialize(NetDataReader reader)
         {
             AudioInput = AudioInputId.Deserialize(reader);
+            CopiedLoopieId = DistributedId.Deserialize(reader);
             ViewpointPosition = reader.GetVector3();
             IsMuted = reader.GetBool();
             Volume = reader.GetFloat();
@@ -74,6 +86,7 @@ namespace Holofunk.Loop
         public void Serialize(NetDataWriter writer)
         {
             AudioInputId.Serialize(writer, AudioInput);
+            DistributedId.Serialize(writer, CopiedLoopieId);
             writer.Put(ViewpointPosition);
             writer.Put(IsMuted);
             writer.Put(Volume);
@@ -81,6 +94,6 @@ namespace Holofunk.Loop
             writer.PutArray(EffectLevels);
         }
 
-        public override string ToString() => $"Loopie[{AudioInput}, @{ViewpointPosition}]";
+        public override string ToString() => $"Loopie[input {AudioInput}, copiedId {CopiedLoopieId} @ {ViewpointPosition}]";
     }
 }

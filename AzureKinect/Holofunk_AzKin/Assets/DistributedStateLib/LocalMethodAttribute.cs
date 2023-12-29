@@ -2,7 +2,7 @@
 
 using System;
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// This method is implemented purely locally, with no distributed communication.

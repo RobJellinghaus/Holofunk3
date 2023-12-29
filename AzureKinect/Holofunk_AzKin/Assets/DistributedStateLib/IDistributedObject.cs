@@ -2,7 +2,7 @@
 
 using LiteNetLib;
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// A distributed object.

@@ -1,6 +1,6 @@
 ﻿// Copyright by Rob Jellinghaus. All rights reserved.
 
-using Distributed.State;
+using DistributedStateLib;
 using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Sound;
@@ -104,10 +104,13 @@ namespace Holofunk.Loop
         /// <remarks>
         /// This is how Loopies come to exist on their owning hosts.
         /// 
-        /// TODO: figure out how to refactor out the shared plumbing here, similarly to the Registrar.
+        /// The loopie may be being recorded (if audioInputId is defined), or copied (if copiedLoopieId is defined).
         /// </remarks>
-        public static GameObject Create(Vector3 viewpointPosition, NowSoundLib.AudioInputId audioInputId, int[] effects, int[] effectLevels)
+        public static GameObject Create(Vector3 viewpointPosition, NowSoundLib.AudioInputId audioInputId, DistributedId copiedLoopieId, int[] effects, int[] effectLevels)
         {
+            HoloDebug.Assert(audioInputId == NowSoundLib.AudioInputId.AudioInputUndefined || copiedLoopieId == default(DistributedId),
+                $"Exactly one of audioInputId {audioInputId} or copiedLoopieId {copiedLoopieId} must be defined -- loopies must be either recorded or copied");
+
             GameObject prototypeLoopie = DistributedObjectFactory.FindPrototypeContainer(
                 DistributedObjectFactory.DistributedType.Loopie);
             GameObject localContainer = DistributedObjectFactory.FindLocalhostInstanceContainer(
@@ -121,6 +124,7 @@ namespace Holofunk.Loop
             localLoopie.Initialize(new LoopieState
             {
                 AudioInput = new Sound.AudioInputId(audioInputId),
+                CopiedLoopieId = copiedLoopieId,
                 ViewpointPosition = viewpointPosition,
                 IsMuted = false,
                 Volume = 0.6f,

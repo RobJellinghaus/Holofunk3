@@ -1,6 +1,6 @@
 ﻿/// Copyright by Rob Jellinghaus.  All rights reserved.
 
-using Distributed.State;
+using DistributedStateLib;
 using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Hand;
@@ -123,6 +123,8 @@ namespace Holofunk.Controller
         }
 
         internal bool IsTouchingLoopies => touchedLoopieIds.Count > 0;
+
+        public List<DistributedId> TouchedLoopieIds => touchedLoopieIds;
 
         #endregion
 
@@ -371,7 +373,7 @@ namespace Holofunk.Controller
             Vector3 viewpointHandPosition = GetViewpointHandPosition();
             PerformerState performerState = GetComponent<LocalPerformer>().GetState();
 
-            GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition, audioInputId, performerState.Effects, performerState.EffectLevels);
+            GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition, audioInputId, default(DistributedId), performerState.Effects, performerState.EffectLevels);
             return newLoopie;
         }
 

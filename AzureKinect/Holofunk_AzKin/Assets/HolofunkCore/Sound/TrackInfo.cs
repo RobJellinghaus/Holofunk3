@@ -48,6 +48,7 @@ namespace Holofunk.Sound
             writer.Put(trackInfo.Value.Pan);
             writer.Put((long)trackInfo.Value.StartTime);
             writer.Put((float)trackInfo.Value.StartTimeInBeats);
+            writer.Put(trackInfo.Value.Volume);
         }
 
         public static TrackInfo Deserialize(NetDataReader reader)
@@ -62,7 +63,8 @@ namespace Holofunk.Sound
                 localClockTime: reader.GetLong(),
                 pan: reader.GetFloat(),
                 startTime: reader.GetLong(),
-                startTimeInBeats: reader.GetFloat());
+                startTimeInBeats: reader.GetFloat(),
+                volume: reader.GetFloat());
 
             return new TrackInfo(trackInfo);
         }
@@ -89,7 +91,8 @@ namespace Holofunk.Sound
                    && Value.LocalClockTime == id.Value.LocalClockTime
                    && Value.Pan == id.Value.Pan
                    && Value.StartTime == id.Value.StartTime
-                   && (float)Value.StartTimeInBeats == (float)id.Value.StartTimeInBeats;                    
+                   && (float)Value.StartTimeInBeats == (float)id.Value.StartTimeInBeats
+                   && Value.Volume == id.Value.Volume;
         }
 
         public override int GetHashCode()

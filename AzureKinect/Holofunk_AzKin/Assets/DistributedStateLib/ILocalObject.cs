@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2020 by Rob Jellinghaus.
 
-namespace Distributed.State
+namespace DistributedStateLib
 {
     /// <summary>
     /// Base class for local object implementations that handle the local behavior of a distributed object.

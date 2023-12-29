@@ -1,6 +1,6 @@
 ﻿/// Copyright by Rob Jellinghaus. All rights reserved.
 
-using Distributed.State;
+using DistributedStateLib;
 using Holofunk.Core;
 using Holofunk.Hand;
 using Holofunk.Loop;
@@ -22,7 +22,7 @@ namespace Holofunk.Controller
 {
     using ControllerState = State<PPlusEvent, PPlusModel, PPlusModel>;
 
-    class ControllerStateMachine : StateMachine<PPlusEvent>
+    public class ControllerStateMachine : StateMachine<PPlusEvent>
     {
         static ControllerStateMachine s_instance;
 
@@ -64,24 +64,39 @@ namespace Holofunk.Controller
         {
         }
 
-        internal class RecordingModel : BaseModel<RecordingModel>
+        public class RecordingModel : BaseModel<RecordingModel>
         {
             /// <summary>
             /// The loopie being recorded into.
             /// </summary>
-            internal GameObject HeldLoopie { get; private set; }
+            internal GameObject RecordingLoopie { get; private set; }
 
-            internal RecordingModel(PPlusModel parent, GameObject heldLoopie, Action<RecordingModel> updateAction)
+            internal RecordingModel(PPlusModel parent, GameObject recordingLoopie, Action<RecordingModel> updateAction)
                 : base(parent, updateAction)
             {
-                HeldLoopie = heldLoopie;
+                RecordingLoopie = recordingLoopie;
             }
         }
 
         /// <summary>
-        /// Model for level adjustment: contains the adjustment value and the widget that's displaying the value.
+        /// Catch-all model for all state needed by the union of all menu verbs.
         /// </summary>
-        internal class MenuVerbModel : BaseModel<MenuVerbModel>
+        /// <remarks>
+        /// This class demonstrates a current design weakness: menu verbs are really a whole lot like state machine states.
+        /// 
+        /// State machine states, however, have a good system for defining extensible models that are state-specific, giving
+        /// each state a good place to store its specific... state.
+        /// 
+        /// Menu verbs... don't. There's no current MenuVerb equivalent of the IModel type, for instance.
+        /// 
+        /// Ultimately, menu verbs arguably are "delegate states" more or less, and could potentially even *be* actual
+        /// state machine states. One could imagine reflecting the current menu verb into the state machine infrastructure
+        /// as the basis for a conditional transition.
+        /// 
+        /// For now, though, we avoid this generalization, and we just put any variables needed by any menu verb into this
+        /// ad hoc class.
+        /// </remarks>
+        public class MenuVerbModel : BaseModel<MenuVerbModel>
         {
             /// <summary>
             /// The current adjustment.
@@ -98,31 +113,60 @@ namespace Holofunk.Controller
             /// <summary>
             /// Was the performer's mike next to their mouth when this menu verb started being applied?
             /// </summary>
-            internal bool MikeNextToMouth { get; private set; }
+            internal bool IsMikeNextToMouth { get; private set; }
+
+            /// <summary>
+            /// The last-update viewport position of the hand which invoked this menu verb.
+            /// </summary>
+            /// <remarks>
+            /// Grab verbs (move/copy) use this field to calculate the delta from the last position, to
+            /// apply it to all grabbed loopies.
+            /// </remarks>
+            public Vector3 LastViewpointHandPosition { get; private set; }
+
+            /// <summary>
+            /// The loopie IDs that were copied, in the case of the Copy verb.
+            /// </summary>
+            /// <remarks>
+            /// This is not used by any other verb. It defaults to null unless copying is happening.
+            /// </remarks>
+            public HashSet<DistributedId> CopiedLoopieIds { get; set; }
+
+            public Vector3 CurrentViewpointHandPosition => ((PPlusController)Parent).GetViewpointHandPosition();
+
+            public void SetLastViewpointHandPosition(Vector3 value) => this.LastViewpointHandPosition = value;
 
             internal MenuVerbModel(
                 PPlusModel parent,
                 MenuVerb menuVerb,
                 Action<MenuVerbModel> updateAction,
                 DistributedLevelWidget levelWidget,
-                bool mikeNextToMouth)
+                bool isMikeNextToMouth,
+                Vector3 viewpointHandPosition)
                 : base(parent, updateAction)
             {
                 LevelWidget = levelWidget;
                 MenuVerb = menuVerb;
-                MikeNextToMouth = mikeNextToMouth;
+                IsMikeNextToMouth = isMikeNextToMouth;
+                LastViewpointHandPosition = viewpointHandPosition;
+                CopiedLoopieIds = null;
             }
         }
 
         /// <summary>
         /// Model for menu display.
         /// </summary>
-        internal class MenuModel : BaseModel<MenuModel>
+        public class MenuModel : BaseModel<MenuModel>
         {
             /// <summary>
-            /// The current adjustment.
+            /// The currently displayed menu for this state machine.
             /// </summary>
             internal DistributedMenu Menu { get; private set; }
+
+            /// <summary>
+            /// Get the parent, downcast to its concrete type.
+            /// </summary>
+            internal PPlusController ParentController => (PPlusController)Parent;
 
             internal MenuModel(PPlusModel parent, Action<MenuModel> updateAction, DistributedMenu menu)
                 : base(parent, updateAction)
@@ -191,7 +235,7 @@ namespace Holofunk.Controller
                             loopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
                         });
                 },
-                (_, recordingModel) => recordingModel.HeldLoopie.GetComponent<DistributedLoopie>().FinishRecording());
+                (_, recordingModel) => recordingModel.RecordingLoopie.GetComponent<DistributedLoopie>().FinishRecording());
 
             AddTransition(
                 stateMachine,
@@ -300,7 +344,7 @@ namespace Holofunk.Controller
             // DistributedLevelWidget widget = null;
 
             State<PPlusEvent, MenuVerbModel, PPlusModel> applyMenuVerb = new State<PPlusEvent, MenuVerbModel, PPlusModel>(
-                "levelChange",
+                "applyMenu",
                 initial,
                 (evt, pplusModel) =>
                 {
@@ -340,39 +384,38 @@ namespace Holofunk.Controller
 
                     // Determine right now whether the microphone is to the mouth -- that determines what
                     // we will be effecting during this state, even if they put the mike down in mid-waggle.
-                    bool mikeNextToMouth = pplusModel.Controller.IsMikeNextToMouth();
+                    bool isMikeNextToMouth = pplusModel.Controller.IsMikeNextToMouth();
 
-                    HoloDebug.Log($"ControllerStateMachine.levelChange: mikeNextToMouth {mikeNextToMouth}");
-
-                    if (menuVerb.Kind == MenuVerbKind.Touch)
-                    {
-                        DistributedPerformer performer = pplusModel.Controller.DistributedPerformer;
-
-                        if (mikeNextToMouth)
-                        {
-                            // Apply the touch effect to the performer.
-                            HashSet<DistributedId> performerIdSet = new HashSet<DistributedId>();
-                            performerIdSet.Add(performer.Id);
-                            menuVerb.TouchAction(performerIdSet);
-                        }
-                        else
-                        {
-                            // Apply to the touched loopies.
-                            HashSet<DistributedId> ids = new HashSet<DistributedId>(
-                                ((LocalPerformer)performer.LocalObject)
-                                    .GetState()
-                                    .TouchedLoopieIdList
-                                    .Select(id => new DistributedId(id)));
-                            menuVerb.TouchAction(ids);
-                        }
-                    }
+                    HoloDebug.Log($"ControllerStateMachine.levelChange: mikeNextToMouth {isMikeNextToMouth}");
 
                     return new MenuVerbModel(
                         pplusModel,
                         menuVerb,
                         menuVerbModel =>
                         {
-                            if (menuVerb.Kind == MenuVerbKind.Level)
+                            if (menuVerb.Kind == MenuVerbKind.Touch)
+                            {
+                                DistributedPerformer performer = pplusModel.Controller.DistributedPerformer;
+
+                                if (isMikeNextToMouth && menuVerb.MayBePerformer)
+                                {
+                                    // Apply the touch effect to the performer.
+                                    HashSet<DistributedId> performerIdSet = new HashSet<DistributedId>();
+                                    performerIdSet.Add(performer.Id);
+                                    menuVerb.TouchUpdateAction(menuVerbModel, performerIdSet);
+                                }
+                                else
+                                {
+                                    // Apply to the touched loopies.
+                                    HashSet<DistributedId> ids = new HashSet<DistributedId>(
+                                        ((LocalPerformer)performer.LocalObject)
+                                            .GetState()
+                                            .TouchedLoopieIdList
+                                            .Select(id => new DistributedId(id)));
+                                    menuVerb.TouchUpdateAction(menuVerbModel, ids);
+                                }
+                            }
+                            else if (menuVerb.Kind == MenuVerbKind.Level)
                             {
                                 // Do NOT update the touched loopie list in this case. We want to control levels only.
                                 float lastAdjustment = menuVerbModel.Adjustment;
@@ -394,11 +437,12 @@ namespace Holofunk.Controller
                                 widget.UpdateState(
                                     new LevelWidgetState { ViewpointPosition = state.ViewpointPosition, Adjustment = adjustment });
 
-                                ApplyLevelVerb(pplusModel.Controller, menuVerb, mikeNextToMouth, adjustment, false);
-                            }
+                                ApplyLevelVerb(pplusModel.Controller, menuVerb, isMikeNextToMouth, adjustment, false);
+                            } 
                         },
                         widget,
-                        mikeNextToMouth);
+                        isMikeNextToMouth,
+                        pplusModel.Controller.GetViewpointHandPosition());
                 },
                 (evt, menuVerbModel) =>
                 {
@@ -407,7 +451,7 @@ namespace Holofunk.Controller
                     if (menuVerb.Kind == MenuVerbKind.Level)
                     {
                         float adjustment = menuVerbModel.Adjustment;
-                        ApplyLevelVerb(pplusModel.Controller, menuVerb, menuVerbModel.MikeNextToMouth, menuVerbModel.Adjustment, true);
+                        ApplyLevelVerb(pplusModel.Controller, menuVerb, menuVerbModel.IsMikeNextToMouth, menuVerbModel.Adjustment, true);
                     }
 
                     if (menuVerbModel.LevelWidget != null)
@@ -488,7 +532,7 @@ namespace Holofunk.Controller
                         .Select(id => new DistributedId(id)));
             }
 
-            menuVerb.LevelAction(ids, adjustment, commit);
+            menuVerb.LevelUpdateAction(ids, adjustment, commit);
         }
     }
 }
