@@ -515,7 +515,7 @@ namespace Holofunk.Loop
         internal void Initialize(LoopieState loopie)
         {
             this.loopie = loopie;
-            HoloDebug.Log($"LocalLoopie.Initialize: initializing {DistributedObject.Id} with copied loopie ID {loopie.CopiedLoopieId} at viewpoint position {loopie.ViewpointPosition} with effects {loopie.Effects.ArrayToString()} and levels {loopie.EffectLevels.ArrayToString()}");
+            HoloDebug.Log($"LocalLoopie.Initialize: initializing with copied loopie ID {loopie.CopiedLoopieId} and volume {loopie.Volume} at viewpoint position {loopie.ViewpointPosition} with effects {loopie.Effects.ArrayToString()} and levels {loopie.EffectLevels.ArrayToString()}");
         }
 
         public void OnDelete()
