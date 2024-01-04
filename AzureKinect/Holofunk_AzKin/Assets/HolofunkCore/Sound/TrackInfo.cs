@@ -49,6 +49,8 @@ namespace Holofunk.Sound
             writer.Put((long)trackInfo.Value.StartTime);
             writer.Put((float)trackInfo.Value.StartTimeInBeats);
             writer.Put(trackInfo.Value.Volume);
+            writer.Put((float)trackInfo.Value.BeatsPerMinute);
+            writer.Put((int)trackInfo.Value.BeatsPerMeasure);
         }
 
         public static TrackInfo Deserialize(NetDataReader reader)
@@ -64,7 +66,9 @@ namespace Holofunk.Sound
                 pan: reader.GetFloat(),
                 startTime: reader.GetLong(),
                 startTimeInBeats: reader.GetFloat(),
-                volume: reader.GetFloat());
+                volume: reader.GetFloat(),
+                beatsPerMinute: reader.GetFloat(),
+                beatsPerMeasure: reader.GetInt());
 
             return new TrackInfo(trackInfo);
         }

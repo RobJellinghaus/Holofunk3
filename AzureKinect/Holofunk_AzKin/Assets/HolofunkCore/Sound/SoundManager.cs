@@ -119,7 +119,7 @@ namespace Holofunk.Sound
 
             // Create the distributed sound clock.
             // Note that this initializes the DistributedSoundClock.Instance field.
-            DistributedSoundClock.Create(new TimeInfo(new NowSoundLib.TimeInfo(4, 90f, 0, 0)));
+            DistributedSoundClock.Create(new TimeInfo(new NowSoundLib.TimeInfo(4, 90f, 4, 0, 0)));
 
             StartCoroutine(InitializeAudioGraph());
         }

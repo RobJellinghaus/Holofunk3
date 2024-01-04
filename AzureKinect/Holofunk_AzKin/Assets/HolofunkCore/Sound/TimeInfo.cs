@@ -39,6 +39,7 @@ namespace Holofunk.Sound
         public static void Serialize(NetDataWriter writer, TimeInfo TimeInfo)
         {
             writer.Put(TimeInfo.Value.BeatInMeasure);
+            writer.Put(TimeInfo.Value.BeatsPerMeasure);
             writer.Put(TimeInfo.Value.BeatsPerMinute);
             writer.Put((float)TimeInfo.Value.ExactBeat);
             writer.Put((long)TimeInfo.Value.TimeInSamples);
@@ -47,7 +48,8 @@ namespace Holofunk.Sound
         public static TimeInfo Deserialize(NetDataReader reader)
         {
             NowSoundLib.TimeInfo TimeInfo = new NowSoundLib.TimeInfo(
-                beatsInMeasure: reader.GetFloat(),
+                beatInMeasure: reader.GetFloat(),
+                beatsPerMeasure: reader.GetInt(),
                 beatsPerMinute: reader.GetFloat(),
                 exactBeat: reader.GetFloat(),
                 timeInSamples: reader.GetLong());
@@ -69,6 +71,7 @@ namespace Holofunk.Sound
         {
             return obj is TimeInfo id
                    && Value.BeatInMeasure == id.Value.BeatInMeasure
+                   && Value.BeatsPerMeasure == id.Value.BeatsPerMeasure
                    && Value.BeatsPerMinute == id.Value.BeatsPerMinute
                    && (float)Value.ExactBeat == (float)id.Value.ExactBeat // note: loses units :-P TODO: proper ContinuousDuration equality
                    && Value.TimeInSamples == id.Value.TimeInSamples;
