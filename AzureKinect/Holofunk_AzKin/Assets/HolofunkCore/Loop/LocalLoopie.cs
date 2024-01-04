@@ -230,11 +230,6 @@ namespace Holofunk.Loop
         }
 
         /// <summary>
-        /// 4/4 time right now. TODO: allow changing time signature
-        /// </summary>
-        private readonly static int BeatsPerMeasure = 4;
-
-        /// <summary>
         /// Update (and possibly add to) the BeatMeasureControllers.
         /// </summary>
         private void UpdateMeasureControllers()
@@ -242,7 +237,7 @@ namespace Holofunk.Loop
             int measureControllerCount = BeatMeasureContainer.childCount;
             // Did we advance to a new measure?
             // If so, make a new BeatMeasureController and move the existing ones to the left.
-            if ((int)trackInfo.DurationInBeats > measureControllerCount * BeatsPerMeasure)
+            if ((int)trackInfo.DurationInBeats > measureControllerCount * trackInfo.BeatsPerMeasure)
             {
                 // we need another beatMeasureController.
                 BeatMeasureController lastBeatMeasureController = 
@@ -256,7 +251,9 @@ namespace Holofunk.Loop
                 newBeatMeasureController.startingMeasure = measureControllerCount;
                 newBeatMeasureController.localLoopie = this;
 
-                newBeatMeasureController.transform.localPosition = lastBeatMeasureController.transform.localPosition + new Vector3(MagicNumbers.BeatMeasureSeparation * 2, 0, 0);
+                newBeatMeasureController.transform.localPosition = 
+                    lastBeatMeasureController.transform.localPosition 
+                    + new Vector3(MagicNumbers.BeatMeasureSeparation * 2, 0, 0);
 
                 for (int i = 0; i < BeatMeasureContainer.childCount; i++)
                 {
@@ -318,6 +315,7 @@ namespace Holofunk.Loop
         {
             if (SoundManager.Instance != null)
             {
+                // TODO: ugh, this is... not pretty. why do we have Yet Another Singleton? Eradicate the monoclock
                 ulong timestamp = (ulong)(long)DistributedSoundClock.Instance.TimeInfo.Value.TimeInSamples;
 
                 // we broadcast two timestamped packets per frame per loopie:

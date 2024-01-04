@@ -48,11 +48,11 @@ namespace Holofunk.Loop
             // And at what fractional beat position is it right now?
             ContinuousDuration<Beat> localClockBeat = trackInfo.LocalClockBeat;
 
-            int startingBeat = startingMeasure * DistributedSoundClock.Instance.BeatsPerMeasure;
+            int startingBeat = startingMeasure * (int)trackInfo.BeatsPerMeasure;
 
             // How many segments should we display?
-            int segmentCount = DistributedSoundClock.Instance.BeatsPerMeasure;
-            if (trackDuration > startingBeat && trackDuration <= startingBeat + DistributedSoundClock.Instance.BeatsPerMeasure)
+            int segmentCount = (int)trackInfo.BeatsPerMeasure;
+            if (trackDuration > startingBeat && trackDuration <= startingBeat + (int)trackInfo.BeatsPerMeasure)
             {
                 segmentCount = (int)trackDuration - startingBeat;
             }
@@ -64,11 +64,11 @@ namespace Holofunk.Loop
 
             // now fade in the appropriate filled quarter-circle (if any)
             int truncatedTrackPosition = (int)localClockBeat;
-            if (truncatedTrackPosition >= startingBeat && truncatedTrackPosition < startingBeat + DistributedSoundClock.Instance.BeatsPerMeasure)
+            if (truncatedTrackPosition >= startingBeat && truncatedTrackPosition < startingBeat + (int)trackInfo.BeatsPerMeasure)
             {
                 int beatWithinMeasure = truncatedTrackPosition - startingBeat;
                 float fraction = (float)localClockBeat - truncatedTrackPosition;
-                for (int i = 0; i < DistributedSoundClock.Instance.BeatsPerMeasure; i++)
+                for (int i = 0; i < (int)trackInfo.BeatsPerMeasure; i++)
                 {
                     filledQuarterCircles[i].enabled = i == beatWithinMeasure;
 
@@ -81,7 +81,7 @@ namespace Holofunk.Loop
             else
             {
                 // make sure everything is faded out completely
-                for (int i = 0; i < DistributedSoundClock.Instance.BeatsPerMeasure; i++)
+                for (int i = 0; i < trackInfo.BeatsPerMeasure; i++)
                 {
                     filledQuarterCircles[i].enabled = false;
                 }
