@@ -81,7 +81,7 @@ namespace Holofunk.Menu
                     submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
                 }
 
-                GameObject menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).Name);
+                GameObject menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).NameFunc());
 
                 menuItemGameObjects.Add(menuItemGameObject);
                 // everything starts off disabled
@@ -219,8 +219,22 @@ namespace Holofunk.Menu
 
         public static void ColorizeMenuItem(GameObject menuItemGameObject, Color color)
         {
-            menuItemGameObject.GetComponent<SpriteRenderer>().material.color = color;
-            menuItemGameObject.transform.GetChild(0).gameObject.GetComponent<TextMesh>().color = color;
+            Color currentColor = menuItemGameObject.GetComponent<SpriteRenderer>().material.color;
+            if (currentColor != color)
+            {
+                menuItemGameObject.GetComponent<SpriteRenderer>().material.color = color;
+                menuItemGameObject.transform.GetChild(0).gameObject.GetComponent<TextMesh>().color = color;
+            }
+        }
+
+        public static void SetMenuItemName(GameObject menuItemGameObject, string possiblyNewName)
+        {
+            TextMesh textComponent = menuItemGameObject.transform.GetChild(0).GetComponent<TextMesh>();
+            string name = textComponent.text;
+            if (name != possiblyNewName)
+            {
+                textComponent.text = possiblyNewName;
+            }
         }
     }
 }

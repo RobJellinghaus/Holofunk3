@@ -116,7 +116,7 @@ namespace Holofunk.Controller
 
                 if (currentlyHeldVerb.IsDefined)
                 {
-                    currentlyHeldVerbGameObject = MenuLevel.CreateMenuItem(this.transform, Vector3.zero, currentlyHeldVerb.Name);
+                    currentlyHeldVerbGameObject = MenuLevel.CreateMenuItem(this.transform, Vector3.zero, currentlyHeldVerb.NameFunc());
                     MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);
                 }
             }
@@ -254,6 +254,7 @@ namespace Holofunk.Controller
             if (currentlyHeldVerbGameObject != null)
             {
                 currentlyHeldVerbGameObject.transform.localPosition = GetViewpointHandPosition();
+                MenuLevel.SetMenuItemName(currentlyHeldVerbGameObject, currentlyHeldVerb.NameFunc());
 
                 bool mikeToMouth = IsMikeNextToMouth();
                 bool isTouching = currentlyHeldVerb.Kind == MenuVerbKind.Prompt

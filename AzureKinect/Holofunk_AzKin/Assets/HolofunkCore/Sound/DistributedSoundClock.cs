@@ -49,8 +49,8 @@ namespace Holofunk.Sound
         public void UpdateTimeInfo(TimeInfo timeInfo)
             => RouteReliableMessage(isRequest => new UpdateSoundClockTimeInfo(Id, isRequest: isRequest, timeInfo: timeInfo));
 
-        public void SetBeatsPerMinute(float newBPM)
-            => RouteReliableMessage(isRequest => new UpdateSoundClockBPM(Id, isRequest: isRequest, newBPM: newBPM));
+        public void SetTempo(float beatsPerMinute, int beatsPerMeasure)
+            => RouteReliableMessage(isRequest => new UpdateSoundClockTempo(Id, isRequest, beatsPerMinute, beatsPerMeasure));
 
         private LocalSoundClock GetLocalSoundClock() => gameObject.GetComponent<LocalSoundClock>();
 

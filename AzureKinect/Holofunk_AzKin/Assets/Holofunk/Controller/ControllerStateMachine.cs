@@ -352,7 +352,7 @@ namespace Holofunk.Controller
                     float initialHandYPosition = pplusModel.Controller.GetViewpointHandPosition().y;
 
                     MenuVerb menuVerb = pplusModel.Controller.CurrentlyHeldVerb;
-                    HoloDebug.Log($"Entering levelChange state, menuVerb is {menuVerb.Name} of kind {menuVerb.Kind}");
+                    HoloDebug.Log($"Entering levelChange state, menuVerb is {menuVerb.NameFunc()} of kind {menuVerb.Kind}");
 
                     // If the menu verb is unset, then it's volume time.
                     if (menuVerb.Kind == MenuVerbKind.Undefined)
@@ -497,7 +497,7 @@ namespace Holofunk.Controller
                             ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = heldVerb;
                         }
 
-                        HoloDebug.Log($"Set currentlyHeldVerb to {heldVerb.Name}");
+                        HoloDebug.Log($"Set currentlyHeldVerb to {heldVerb.NameFunc()}");
                     }
 
                     HoloDebug.Log($"ControllerStateMachineInstance.Menu.exit: deleting menu {menu.Id}");

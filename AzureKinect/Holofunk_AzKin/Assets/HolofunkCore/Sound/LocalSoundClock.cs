@@ -21,11 +21,11 @@ namespace Holofunk.Sound
 
         public void UpdateTimeInfo(TimeInfo timeInfo) => TimeInfo = timeInfo;
 
-        public void SetBeatsPerMinute(float newBPM)
+        public void SetTempo(float beatsPerMinute, int beatsPerMeasure)
         {
             if (SoundManager.Instance != null)
             {
-                SoundManager.Instance.SetBeatsPerMinute(newBPM);
+                SoundManager.Instance.SetTempo(beatsPerMinute, beatsPerMeasure);
             }
         }
 

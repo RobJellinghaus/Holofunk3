@@ -358,9 +358,9 @@ namespace Holofunk.Sound
 
         #region State update
 
-        public void SetBeatsPerMinute(float newBPM)
+        public void SetTempo(float beatsPerMinute, int beatsPerMeasure)
         {
-            NowSoundGraphAPI.SetBeatsPerMinute(newBPM);
+            NowSoundGraphAPI.SetTempo(beatsPerMinute, beatsPerMeasure);
         }
 
         #endregion

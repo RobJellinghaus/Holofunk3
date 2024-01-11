@@ -31,6 +31,6 @@ namespace Holofunk.Sound
         /// Set the beats per minute going forward.
         /// </summary>
         [ReliableMethod]
-        void SetBeatsPerMinute(float newBPM);
+        void SetTempo(float beatsPerMinute, int beatsPerMeasure);
     }
 }

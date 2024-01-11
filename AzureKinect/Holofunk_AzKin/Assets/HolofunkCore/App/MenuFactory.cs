@@ -58,7 +58,7 @@ namespace Holofunk.App
                         float newBPM = clock2.TimeInfo.Value.BeatsPerMinute + delta;
                         if (newBPM > 0)
                         {
-                            clock2.SetBeatsPerMinute(newBPM);
+                            clock2.SetTempo(newBPM, (int)clock2.TimeInfo.Value.BeatsPerMeasure);
                         }
                     }
                 };
@@ -84,8 +84,14 @@ namespace Holofunk.App
                 items.Add((MenuVerb.MakeRoot(), null));
 
                 items.Add((MenuVerb.MakeLabel("BPM"), new MenuStructure(
-                        (MenuVerb.MakePrompt($"BPM+10", () => setBPMAction(10)), null),
-                        (MenuVerb.MakePrompt($"BPM-10", () => setBPMAction(-10)), null))));
+                    (MenuVerb.MakePrompt(
+                        () => $"{DistributedSoundClock.Instance.TimeInfo.Value.BeatsPerMinute} BPM +",
+                        () => setBPMAction(10)),
+                     null),
+                    (MenuVerb.MakePrompt(
+                        () => $"{DistributedSoundClock.Instance.TimeInfo.Value.BeatsPerMinute} BPM -",
+                        () => setBPMAction(-10)),
+                     null))));
 
                 // TODO: add a both-arrow-buttons state that deletes all sounds
                 items.Add((MenuVerb.MakePrompt("Delete\nMy Sounds", deleteMySoundsAction), null));
