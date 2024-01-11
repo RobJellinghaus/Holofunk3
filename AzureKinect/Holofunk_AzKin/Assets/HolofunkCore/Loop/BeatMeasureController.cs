@@ -20,23 +20,25 @@ namespace Holofunk.Loop
         // Use this for initialization
         void Start()
         {
-            hollowQuarterCircles = new SpriteRenderer[DistributedSoundClock.Instance.BeatsPerMeasure];
-            filledQuarterCircles = new SpriteRenderer[DistributedSoundClock.Instance.BeatsPerMeasure];
-            for (int i = 0; i < DistributedSoundClock.Instance.BeatsPerMeasure; i++)
-            {
-                filledQuarterCircles[i] = transform.GetChild(i).gameObject.GetComponent<SpriteRenderer>();
-                filledQuarterCircles[i].enabled = false;
-                hollowQuarterCircles[i] = transform.GetChild(i + 4).gameObject.GetComponent<SpriteRenderer>();
-                hollowQuarterCircles[i].enabled = false;
-            }
         }
 
         // Update is called once per frame
         void Update()
         {
-            if (DistributedSoundClock.Instance == null)
+            // Instantiate our shapes the first time we update, so localLoopie.TrackInfo will have actual values.
+            // (The "prototype" beat measure controller, the default one for each loopie, gets Started before
+            // any update ever happens, hence before localLoopie.TrackInfo has valid data.)
+            if (hollowQuarterCircles == null)
             {
-                return;
+                hollowQuarterCircles = new SpriteRenderer[localLoopie.TrackInfo.BeatsPerMeasure];
+                filledQuarterCircles = new SpriteRenderer[localLoopie.TrackInfo.BeatsPerMeasure];
+                for (int i = 0; i < localLoopie.TrackInfo.BeatsPerMeasure; i++)
+                {
+                    filledQuarterCircles[i] = transform.GetChild(i).gameObject.GetComponent<SpriteRenderer>();
+                    filledQuarterCircles[i].enabled = false;
+                    hollowQuarterCircles[i] = transform.GetChild(i + 4).gameObject.GetComponent<SpriteRenderer>();
+                    hollowQuarterCircles[i].enabled = false;
+                }
             }
 
             // local copy of struct
