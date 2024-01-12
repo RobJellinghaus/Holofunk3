@@ -86,11 +86,11 @@ namespace Holofunk.App
                 items.Add((MenuVerb.MakeLabel("BPM"), new MenuStructure(
                     (MenuVerb.MakePrompt(
                         () => $"{DistributedSoundClock.Instance.TimeInfo.Value.BeatsPerMinute} BPM +",
-                        () => setBPMAction(10)),
+                        () => setBPMAction(5)),
                      null),
                     (MenuVerb.MakePrompt(
                         () => $"{DistributedSoundClock.Instance.TimeInfo.Value.BeatsPerMinute} BPM -",
-                        () => setBPMAction(-10)),
+                        () => setBPMAction(-5)),
                      null))));
 
                 // TODO: add a both-arrow-buttons state that deletes all sounds
