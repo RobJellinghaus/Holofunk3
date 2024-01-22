@@ -108,7 +108,7 @@ namespace NowSoundLib
         internal float Pan;
         internal float Volume;
         internal float BeatsPerMinute;
-        internal Int32 BeatsPerMeasure;
+        internal Int64 BeatsPerMeasure;
     };
 
     // Information about a track's time in NowSound terms.
