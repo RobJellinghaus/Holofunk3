@@ -107,15 +107,14 @@ namespace Holofunk.Sound
             TrackInfo trackInfo = NowSoundTrackAPI.GetStaticTrackInfo();
 
             Contract.Assert(trackInfo.Value.IsTrackLooping);
-            Contract.Assert(trackInfo.Value.StartTime == 2);
-            Contract.Assert((float)trackInfo.Value.StartTimeInBeats == 3);
-            Contract.Assert(trackInfo.Value.Duration == 4);
-            Contract.Assert(trackInfo.Value.DurationInBeats == 5);
-            Contract.Assert((float)trackInfo.Value.ExactDuration == 6);
-            Contract.Assert(trackInfo.Value.LocalClockTime == 7);
-            Contract.Assert((float)trackInfo.Value.LocalClockBeat == 8);
-            Contract.Assert(trackInfo.Value.LastSampleTime == 9);
-            Contract.Assert(trackInfo.Value.Pan == 10);
+            Contract.Assert(trackInfo.Value.BeatDuration == 2);
+            Contract.Assert((float)trackInfo.Value.ExactDuration == 3);
+            Contract.Assert((float)trackInfo.Value.ExactTrackTime == 4);
+            Contract.Assert((float)trackInfo.Value.ExactTrackBeat == 5);
+            Contract.Assert(trackInfo.Value.Pan == 6);
+            Contract.Assert(trackInfo.Value.Volume == 7);
+            Contract.Assert(trackInfo.Value.BeatsPerMinute == 8);
+            Contract.Assert(trackInfo.Value.BeatsPerMeasure == 9);
 
             // Create the distributed sound clock.
             // Note that this initializes the DistributedSoundClock.Instance field.

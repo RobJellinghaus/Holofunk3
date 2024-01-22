@@ -45,10 +45,10 @@ namespace Holofunk.Loop
             NowSoundLib.TrackInfo trackInfo = localLoopie.TrackInfo;
 
             // How many beats long is the audio track?
-            Duration<Beat> trackDuration = trackInfo.DurationInBeats;
+            Duration<Beat> trackDuration = trackInfo.BeatDuration;
 
             // And at what fractional beat position is it right now?
-            ContinuousDuration<Beat> localClockBeat = trackInfo.LocalClockBeat;
+            ContinuousTime<Beat> localClockBeat = trackInfo.ExactTrackBeat;
 
             int startingBeat = startingMeasure * (int)trackInfo.BeatsPerMeasure;
 

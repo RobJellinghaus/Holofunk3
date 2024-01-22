@@ -20,8 +20,6 @@ namespace Holofunk.Sound
             this.value = value;
         }
 
-        public bool IsInitialized => value.StartTime != 0;
-
         public static implicit operator TrackInfo(NowSoundLib.TrackInfo value) => new TrackInfo(value);
 
         public NowSoundLib.TrackInfo Value => value;
@@ -38,34 +36,26 @@ namespace Holofunk.Sound
 
         public static void Serialize(NetDataWriter writer, TrackInfo trackInfo)
         {
-            writer.Put(trackInfo.Value.Duration);
-            writer.Put(trackInfo.Value.DurationInBeats);
-            writer.Put((float)trackInfo.Value.ExactDuration);
             writer.Put(trackInfo.Value.IsTrackLooping);
-            writer.Put((long)trackInfo.Value.LastSampleTime);
-            writer.Put((float)trackInfo.Value.LocalClockBeat);
-            writer.Put(trackInfo.Value.LocalClockTime);
+            writer.Put(trackInfo.Value.BeatDuration);
+            writer.Put((float)trackInfo.Value.ExactDuration);
+            writer.Put((float)trackInfo.Value.ExactTrackTime);
+            writer.Put((float)trackInfo.Value.ExactTrackBeat);
             writer.Put(trackInfo.Value.Pan);
-            writer.Put((long)trackInfo.Value.StartTime);
-            writer.Put((float)trackInfo.Value.StartTimeInBeats);
             writer.Put(trackInfo.Value.Volume);
-            writer.Put((float)trackInfo.Value.BeatsPerMinute);
+            writer.Put(trackInfo.Value.BeatsPerMinute);
             writer.Put((int)trackInfo.Value.BeatsPerMeasure);
         }
 
         public static TrackInfo Deserialize(NetDataReader reader)
         {
             NowSoundLib.TrackInfo trackInfo = new NowSoundLib.TrackInfo(
-                duration: reader.GetLong(),
-                durationInBeats: reader.GetLong(),
-                exactDuration: reader.GetFloat(),
                 isTrackLooping: reader.GetBool(),
-                lastSampleTime: reader.GetLong(),
-                localClockBeat: reader.GetFloat(),
-                localClockTime: reader.GetLong(),
+                beatDuration: reader.GetLong(),
+                exactDuration: reader.GetFloat(),
+                exactTrackTime: reader.GetFloat(),
+                exactTrackBeat: reader.GetFloat(),
                 pan: reader.GetFloat(),
-                startTime: reader.GetLong(),
-                startTimeInBeats: reader.GetFloat(),
                 volume: reader.GetFloat(),
                 beatsPerMinute: reader.GetFloat(),
                 beatsPerMeasure: reader.GetInt());
@@ -86,17 +76,15 @@ namespace Holofunk.Sound
         public override bool Equals(object obj)
         {
             return obj is TrackInfo id
-                   && Value.Duration == id.Value.Duration
-                   && Value.DurationInBeats == id.Value.DurationInBeats
-                   && (float)Value.ExactDuration == (float)id.Value.ExactDuration // note: loses units :-P TODO: proper ContinuousDuration equality
                    && Value.IsTrackLooping == id.Value.IsTrackLooping
-                   && Value.LastSampleTime == id.Value.LastSampleTime
-                   && (float)Value.LocalClockBeat == (float)id.Value.LocalClockBeat
-                   && Value.LocalClockTime == id.Value.LocalClockTime
+                   && Value.BeatDuration == id.Value.BeatDuration
+                   && (float)Value.ExactDuration == (float)id.Value.ExactDuration // note: loses units :-P TODO: proper ContinuousDuration equality
+                   && (float)Value.ExactTrackTime == (float)id.Value.ExactTrackTime
+                   && (float)Value.ExactTrackBeat == (float)id.Value.ExactTrackBeat
                    && Value.Pan == id.Value.Pan
-                   && Value.StartTime == id.Value.StartTime
-                   && (float)Value.StartTimeInBeats == (float)id.Value.StartTimeInBeats
-                   && Value.Volume == id.Value.Volume;
+                   && Value.Volume == id.Value.Volume
+                   && (float)Value.BeatsPerMinute == (float)id.Value.BeatsPerMinute
+                   && Value.BeatsPerMeasure == id.Value.BeatsPerMeasure;
         }
 
         public override int GetHashCode()

@@ -237,7 +237,7 @@ namespace Holofunk.Loop
             int measureControllerCount = BeatMeasureContainer.childCount;
             // Did we advance to a new measure?
             // If so, make a new BeatMeasureController and move the existing ones to the left.
-            if ((int)trackInfo.DurationInBeats > measureControllerCount * trackInfo.BeatsPerMeasure)
+            if ((int)trackInfo.BeatDuration > measureControllerCount * trackInfo.BeatsPerMeasure)
             {
                 // we need another beatMeasureController.
                 BeatMeasureController lastBeatMeasureController = 
@@ -386,7 +386,7 @@ namespace Holofunk.Loop
             // - if the beat is even, we are rotating the top of stack by 90 degrees by end of beat;
             // - if the beat is odd, we are rotating the bottom of stack likewise.
             // All other rotation values are interpolated between the two.
-            float fractionalBeat = (float)trackInfo.LocalClockBeat - (int)trackInfo.LocalClockBeat;
+            float fractionalBeat = (float)trackInfo.ExactTrackBeat - (int)trackInfo.ExactTrackBeat;
 
             // if fractionalBeat is less than lastFractionalBeat and intBeat is 0,
             // then we just wrapped around and should increment our completedLoopBeats.

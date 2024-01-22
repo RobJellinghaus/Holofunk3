@@ -1,28 +1,58 @@
-/// Copyright (c) 2021 by Rob Jellinghaus.  All rights reserved.
+// NowSound library by Rob Jellinghaus, https://github.com/RobJellinghaus/NowSound
+// Licensed under the MIT license
 
 namespace Holofunk.Core
 {
+    /// <summary>
+    /// A time, with float precision.
+    /// </summary>
+    /// <typeparam name="TTime"></typeparam>
+    public struct ContinuousTime<TTime>
+    {
+        readonly float _value;
+
+        public ContinuousTime(float duration)
+        {
+            _value = duration;
+        }
+
+        public override string ToString()
+        {
+            return $"CT[{_value:F2}]";
+        }
+
+        public static explicit operator float(ContinuousTime<TTime> time)
+        {
+            return time._value;
+        }
+
+        public static implicit operator ContinuousTime<TTime>(float value)
+        {
+            return new ContinuousTime<TTime>(value);
+        }
+    }
+
     /// <summary>
     /// A continous distance between two Times.
     /// </summary>
     /// <typeparam name="TTime"></typeparam>
     public struct ContinuousDuration<TTime>
     {
-        readonly float _duration;
+        readonly float m_duration;
 
         public ContinuousDuration(float duration)
         {
-            _duration = duration;
+            m_duration = duration;
         }
 
         public override string ToString()
         {
-            return $"CD[{_duration}]";
+            return $"CD[{m_duration:F2}]";
         }
 
         public static explicit operator float(ContinuousDuration<TTime> duration)
         {
-            return duration._duration;
+            return duration.m_duration;
         }
 
         public static implicit operator ContinuousDuration<TTime>(float value)
@@ -32,11 +62,11 @@ namespace Holofunk.Core
 
         public static ContinuousDuration<TTime> operator *(ContinuousDuration<TTime> duration, float value)
         {
-            return new ContinuousDuration<TTime>(value * duration._duration);
+            return new ContinuousDuration<TTime>(value * duration.m_duration);
         }
         public static ContinuousDuration<TTime> operator *(float value, ContinuousDuration<TTime> duration)
         {
-            return new ContinuousDuration<TTime>(value * duration._duration);
+            return new ContinuousDuration<TTime>(value * duration.m_duration);
         }
     }
 }
