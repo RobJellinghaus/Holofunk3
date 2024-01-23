@@ -72,7 +72,7 @@ namespace Holofunk.Controller
         /// <summary>
         /// The currently held menu verb.
         /// </summary>
-        private MenuVerb currentlyHeldVerb;
+        private MenuVerb currentlyHeldVerb = MenuVerb.MakeRoot();
 
         /// <summary>
         /// The child GameObject describing the currently held MenuVerb (only if the verb is defined).
@@ -105,7 +105,6 @@ namespace Holofunk.Controller
             get { return currentlyHeldVerb; }
             set
             {
-                if (currentlyHeldVerb.IsDefined)
                 {
                     Core.Contract.Assert(currentlyHeldVerbGameObject != null);
                     GameObject.Destroy(currentlyHeldVerbGameObject);
@@ -114,7 +113,6 @@ namespace Holofunk.Controller
 
                 currentlyHeldVerb = value;
 
-                if (currentlyHeldVerb.IsDefined)
                 {
                     currentlyHeldVerbGameObject = MenuLevel.CreateMenuItem(this.transform, Vector3.zero, currentlyHeldVerb.NameFunc());
                     MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);

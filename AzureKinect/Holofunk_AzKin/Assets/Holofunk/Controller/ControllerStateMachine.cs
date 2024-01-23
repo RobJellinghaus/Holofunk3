@@ -352,10 +352,11 @@ namespace Holofunk.Controller
                     float initialHandYPosition = pplusModel.Controller.GetViewpointHandPosition().y;
 
                     MenuVerb menuVerb = pplusModel.Controller.CurrentlyHeldVerb;
-                    HoloDebug.Log($"Entering levelChange state, menuVerb is {menuVerb.NameFunc()} of kind {menuVerb.Kind}");
+                    Core.Contract.Assert(menuVerb.NameFunc != null);
+                    //HoloDebug.Log($"Entering levelChange state, menuVerb is {menuVerb.NameFunc()} of kind {menuVerb.Kind}");
 
-                    // If the menu verb is unset, then it's volume time.
-                    if (menuVerb.Kind == MenuVerbKind.Undefined)
+                    // If the menu verb is the root, then it's volume time.
+                    if (menuVerb.Kind == MenuVerbKind.Root)
                     {
                         // at this point we decide that we actually have a Level MenuVerb
                         Action<HashSet<DistributedId>, float, bool> volumeAction = (effectableIds, alteration, commit) =>
@@ -366,7 +367,7 @@ namespace Holofunk.Controller
                                 IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))
                                 {
-                                    HoloDebug.Log($"ControllerStateMachine.volumeAction: applying volume to effectable {asObj.Id} with alteration {alteration}");
+                                    //HoloDebug.Log($"ControllerStateMachine.volumeAction: applying volume to effectable {asObj.Id} with alteration {alteration}");
                                     effectable.AlterVolume(alteration, commit);
                                 }
                             }
@@ -460,13 +461,14 @@ namespace Holofunk.Controller
                     }
                 });
 
-            // Light button will do something if there is a current menu verb, or even if there isn't (in which case it's Set Volume).
+            // Light button will do something if there is a current menu verb, or even if there isn't (in which case it's Set Volume
+            // when touching loopies).
             AddTransition(
                 stateMachine,
                 initial,
                 PPlusEvent.LightDown,
                 applyMenuVerb,
-                model => model.Controller.CurrentlyHeldVerb.IsDefined || model.Controller.IsTouchingLoopies);
+                model => model.Controller.CurrentlyHeldVerb.Kind != MenuVerbKind.Root || model.Controller.IsTouchingLoopies);
             AddTransition(stateMachine, applyMenuVerb, PPlusEvent.LightUp, initial);
 
             #endregion
@@ -487,15 +489,7 @@ namespace Holofunk.Controller
                     if (heldVerbOpt.HasValue)
                     {
                         MenuVerb heldVerb = heldVerbOpt.Value;
-                        if (heldVerb.Kind == MenuVerbKind.Root)
-                        {
-                            // there is no currently held verb now
-                            ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = MenuVerb.Undefined;
-                        }
-                        else
-                        {
-                            ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = heldVerb;
-                        }
+                        ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = heldVerb;
 
                         HoloDebug.Log($"Set currentlyHeldVerb to {heldVerb.NameFunc()}");
                     }

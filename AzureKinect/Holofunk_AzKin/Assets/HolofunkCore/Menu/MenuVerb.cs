@@ -13,7 +13,6 @@ namespace Holofunk.Menu
     /// </summary>
     public enum MenuVerbKind
     {
-        Undefined = 0,
         /// <summary>
         /// The root menu verb; goes at the center, has no label, enables canceling the current verb.
         /// </summary>
@@ -79,10 +78,6 @@ namespace Holofunk.Menu
         /// Action executed per-Update on all touched loopies and/or performer, based on current level setting, with final commit flag.
         /// </summary>
         public readonly Action<HashSet<DistributedId>, float, bool> LevelUpdateAction;
-
-        public static MenuVerb Undefined => new MenuVerb(MenuVerbKind.Undefined, null, false, null, null, null);
-
-        public bool IsDefined => Kind != MenuVerbKind.Undefined;
 
         /// <summary>
         /// Private ctor, encapsulated by public factory methods
