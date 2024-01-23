@@ -105,14 +105,15 @@ namespace Holofunk.Controller
             get { return currentlyHeldVerb; }
             set
             {
+                if (currentlyHeldVerbGameObject != null)
                 {
-                    Core.Contract.Assert(currentlyHeldVerbGameObject != null);
                     GameObject.Destroy(currentlyHeldVerbGameObject);
                     currentlyHeldVerbGameObject = null;
                 }
 
                 currentlyHeldVerb = value;
 
+                if (currentlyHeldVerb.Kind != MenuVerbKind.Root)
                 {
                     currentlyHeldVerbGameObject = MenuLevel.CreateMenuItem(this.transform, Vector3.zero, currentlyHeldVerb.NameFunc());
                     MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);
