@@ -205,11 +205,14 @@ namespace Holofunk.App
                         "Clear\nAll",
                         (_, effectableIds) =>
                         {
-                            foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
+                            HoloDebug.Log($"MenuVerb::Clear_All: effectableIds is {string.Join(", ", effectableIds.AsEnumerable().Select(id => id.ToString()))}");
+                            foreach (IEffectable effectable in DistributedObjectFactory.FindEffectables())
                             {
                                 IDistributedObject asObj = (IDistributedObject)effectable;
+                                HoloDebug.Log($"MenuVerb::Clear_All: next effectable is {effectable}");
                                 if (effectableIds.Contains(asObj.Id))
                                 {
+                                    HoloDebug.Log($"MenuVerb::Clear_All: clearing sound effects on {effectable}");
                                     effectable.ClearSoundEffects();
                                 }
                             }
@@ -219,7 +222,7 @@ namespace Holofunk.App
                         "Pop\nLast",
                         (_, effectableIds) =>
                         {
-                            foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
+                            foreach (IEffectable effectable in DistributedObjectFactory.FindEffectables())
                             {
                                 IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))
@@ -250,7 +253,7 @@ namespace Holofunk.App
                         Action<HashSet<DistributedId>, float, bool> levelAction = (effectableIds, alteration, commit) =>
                         {
                             // append this effect to all effectables being touched.
-                            foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
+                            foreach (IEffectable effectable in DistributedObjectFactory.FindEffectables())
                             {
                                 IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))

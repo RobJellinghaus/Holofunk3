@@ -162,7 +162,7 @@ namespace Holofunk.Distributed
                 .Where(component => ids.Contains(component.Id)));
                 
         // TODO: make this not so terribly hardcoded to just the one cross-type interface that exists
-        public static IEnumerable<IEffectable> FindComponentInterfaces()
+        public static IEnumerable<IEffectable> FindEffectables()
             // there is only one interface right now and we know Loopies and Performers are it
             => FindComponentContainers(new DistributedType[] { DistributedType.Loopie, DistributedType.Performer }, false)
                 .Select(gameobj =>

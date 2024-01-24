@@ -362,7 +362,7 @@ namespace Holofunk.Controller
                         Action<HashSet<DistributedId>, float, bool> volumeAction = (effectableIds, alteration, commit) =>
                         {
                             // append this effect to all effectables being touched.
-                            foreach (IEffectable effectable in DistributedObjectFactory.FindComponentInterfaces())
+                            foreach (IEffectable effectable in DistributedObjectFactory.FindEffectables())
                             {
                                 IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))

@@ -155,9 +155,6 @@ namespace Holofunk.Loop
                 }
             }
 
-            // TODO: support creating loopie with effects!
-            // TODO: support applying effects to performer! LIST OF EFFECTS ON PERFORMER!
-
             frequencyBins = new float[MagicNumbers.OutputBinCount];
             scaledBins = new float[MagicNumbers.OutputBinCount];
 
@@ -634,11 +631,11 @@ namespace Holofunk.Loop
 
         public void ClearSoundEffects()
         {
-            HoloDebug.Log($"LocalLoopie.ClearSoundEffects: id {DistributedObject.Id}, {loopie.Effects.Length} effects");
+            HoloDebug.Log($"LocalLoopie.ClearSoundEffects: id {DistributedObject.Id}, {loopie.Effects.Length / 2} effect(s)");
 
             if (SoundManager.Instance != null)
             {
-                for (int i = 0; i < loopie.Effects.Length; i++)
+                for (int i = 0; i < loopie.Effects.Length; i += 2)
                 {
                     // since the plugin instance indices are just array indices, we can just delete
                     // the first plugin repeatedly until they are all gone
