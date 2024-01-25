@@ -213,6 +213,11 @@ namespace Holofunk.Core
         /// </summary>
         public static readonly float MenuScale = 0.7f;
 
+        /// <summary>
+        /// max number of sub-items for a menu
+        /// </summary>
+        public static readonly int MaximumSubItemCount = 4;
+
         #endregion
 
         #region Volume widgets

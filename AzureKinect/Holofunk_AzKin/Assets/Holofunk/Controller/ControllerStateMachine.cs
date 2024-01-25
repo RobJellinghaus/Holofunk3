@@ -348,7 +348,6 @@ namespace Holofunk.Controller
                 initial,
                 (evt, pplusModel) =>
                 {
-                    DistributedLevelWidget widget = pplusModel.Controller.CreateLevelWidget().GetComponent<DistributedLevelWidget>();
                     float initialHandYPosition = pplusModel.Controller.GetViewpointHandPosition().y;
 
                     MenuVerb menuVerb = pplusModel.Controller.CurrentlyHeldVerb;
@@ -388,6 +387,12 @@ namespace Holofunk.Controller
                     bool isMikeNextToMouth = pplusModel.Controller.IsMikeNextToMouth();
 
                     HoloDebug.Log($"ControllerStateMachine.levelChange: mikeNextToMouth {isMikeNextToMouth}");
+
+                    DistributedLevelWidget widget = null;
+                    if (menuVerb.Kind == MenuVerbKind.Level)
+                    {
+                        widget = pplusModel.Controller.CreateLevelWidget().GetComponent<DistributedLevelWidget>();
+                    }
 
                     return new MenuVerbModel(
                         pplusModel,

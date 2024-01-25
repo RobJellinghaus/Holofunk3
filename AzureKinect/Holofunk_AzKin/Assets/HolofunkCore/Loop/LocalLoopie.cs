@@ -354,12 +354,20 @@ namespace Holofunk.Loop
             // TODO: also scale by volume for total size?
             float minFrequencyAmplitude = float.MaxValue;
             float maxFrequencyAmplitude = 0;
+            bool badValuesFound = false;
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
                 if (float.IsNaN(frequencyBins[i]))
                 {
                     // We don't even try to deal with any NaNs, which evidently happen only when the loop is just starting.
-                    return;
+                    badValuesFound = true;
+                    break;
+                }
+                if (frequencyBins[i] > 1e2 || frequencyBins[i] < -1e2)
+                {
+                    // also, skip any out of range values, which seems to happen just after loop creation
+                    badValuesFound = true;
+                    break;
                 }
 
                 if (frequencyBins[i] < MagicNumbers.FrequencyBinMinValue)
@@ -370,6 +378,12 @@ namespace Holofunk.Loop
 
                 minFrequencyAmplitude = Mathf.Min(minFrequencyAmplitude, frequencyBins[i]);
                 maxFrequencyAmplitude = Mathf.Max(maxFrequencyAmplitude, frequencyBins[i]);
+            }
+
+            if (badValuesFound)
+            {
+                // treat as all silent
+                maxFrequencyAmplitude = 0;
             }
 
             if (maxFrequencyAmplitude == 0)

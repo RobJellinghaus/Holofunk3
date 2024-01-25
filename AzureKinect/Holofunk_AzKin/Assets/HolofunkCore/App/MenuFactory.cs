@@ -241,39 +241,62 @@ namespace Holofunk.App
                     PluginId pluginId = plid;
                     string pluginName = pluginNames[pluginId];
                     List<PluginProgramId> childPrograms = plugins[pluginId];
-                    List<(MenuVerb, MenuStructure)> subItems = new List<(MenuVerb, MenuStructure)>();
-                    foreach (PluginProgramId prid in childPrograms)
+
+                    // Break up childPrograms into multiple menu items if necessary
+                    int menuItemCount = (int)Math.Ceiling((float)childPrograms.Count / MagicNumbers.MaximumSubItemCount);
+                    int subItemCount = (int)Math.Ceiling((float)childPrograms.Count / menuItemCount);
+
+                    int subItemIndex = 0;
+                    for (int menuItemIndex = 0; menuItemIndex < menuItemCount; menuItemIndex++)
                     {
-                        PluginProgramId pluginProgramId = prid;
-                        EffectId effectId = new EffectId(pluginId, pluginProgramId);
-                        string label = programNames[effectId];
-
-                        // The action which actually applies a sound effect to whatever's being touched (or not).
-                        // Note that this action is only ever called on the machine that owns the menu.
-                        // So if in practice some of the state being closed over (e.g. distributedPerformer) is null
-                        // on a proxy, that's fine, since the proxy will never call this action.
-                        Action<HashSet<DistributedId>, float, bool> levelAction = (effectableIds, alteration, commit) =>
+                        if (subItemIndex + subItemCount > childPrograms.Count)
                         {
-                            // append this effect to all effectables being touched.
-                            foreach (IEffectable effectable in DistributedObjectFactory.FindEffectables())
+                            // the last menu item comes up a bit short, oh well
+                            subItemCount = childPrograms.Count - subItemIndex;
+                        }
+
+                        List<(MenuVerb, MenuStructure)> subItems = new List<(MenuVerb, MenuStructure)>();
+                        for (int i = 0; i < subItemCount; i++)
+                        {
+                            PluginProgramId pluginProgramId = childPrograms[subItemIndex + i];
+                            EffectId effectId = new EffectId(pluginId, pluginProgramId);
+                            string label = programNames[effectId];
+
+                            // The action which actually applies a sound effect to whatever's being touched (or not).
+                            // Note that this action is only ever called on the machine that owns the menu.
+                            // So if in practice some of the state being closed over (e.g. distributedPerformer) is null
+                            // on a proxy, that's fine, since the proxy will never call this action.
+                            Action<HashSet<DistributedId>, float, bool> levelAction = (effectableIds, alteration, commit) =>
                             {
-                                IDistributedObject asObj = (IDistributedObject)effectable;
-                                if (effectableIds.Contains(asObj.Id))
+                                // append this effect to all effectables being touched.
+                                foreach (IEffectable effectable in DistributedObjectFactory.FindEffectables())
                                 {
-                                    //HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying drywet level to effectable {asObj.Id} with alteration {alteration}");
-                                    // OK, OK, we don't have real per-effect dry/wet yet but we kind of hack it by
-                                    // just altering volume and effect on every move.
-                                    effectable.AlterSoundEffect(new EffectId(pluginId, pluginProgramId), alteration, commit);
+                                    IDistributedObject asObj = (IDistributedObject)effectable;
+                                    if (effectableIds.Contains(asObj.Id))
+                                    {
+                                        //HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying drywet level to effectable {asObj.Id} with alteration {alteration}");
+                                        // OK, OK, we don't have real per-effect dry/wet yet but we kind of hack it by
+                                        // just altering volume and effect on every move.
+                                        effectable.AlterSoundEffect(new EffectId(pluginId, pluginProgramId), alteration, commit);
+                                    }
                                 }
-                            }
-                        };
+                            };
 
-                        subItems.Add((MenuVerb.MakeLevel(label, true, levelAction), null));
+                            subItems.Add((MenuVerb.MakeLevel(label, true, levelAction), null));
+                        }
+
+                        subItemIndex += subItemCount;
+
+                        string menuLabel = pluginName;
+                        if (menuItemCount > 1)
+                        {
+                            menuLabel += $" {menuItemIndex + 1}";
+                        }
+
+                        MenuStructure subMenu = new MenuStructure(subItems.ToArray());
+
+                        items.Add((MenuVerb.MakeLabel(menuLabel), subMenu));
                     }
-
-                    MenuStructure subMenu = new MenuStructure(subItems.ToArray());
-
-                    items.Add((MenuVerb.MakeLabel(pluginName), subMenu));
                 }
             }
 
