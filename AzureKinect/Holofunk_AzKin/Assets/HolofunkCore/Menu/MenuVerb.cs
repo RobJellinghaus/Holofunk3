@@ -114,9 +114,9 @@ namespace Holofunk.Menu
             return new MenuVerb(MenuVerbKind.Prompt, nameFunc, false, action, null, null);
         }
 
-        public static MenuVerb MakeTouch(string name, Action<MenuVerbModel, HashSet<DistributedId>> touchUpdateAction)
+        public static MenuVerb MakeTouch(string name, bool mayBePerformer, Action<MenuVerbModel, HashSet<DistributedId>> touchUpdateAction)
         {
-            return new MenuVerb(MenuVerbKind.Touch, () => name, false, null, touchUpdateAction, null);
+            return new MenuVerb(MenuVerbKind.Touch, () => name, mayBePerformer, null, touchUpdateAction, null);
         }
 
         public static MenuVerb MakeLevel(string name, bool mayBePerformer, Action<HashSet<DistributedId>, float, bool> levelUpdateAction)

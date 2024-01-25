@@ -165,9 +165,9 @@ namespace Holofunk.App
 
             // Grab > move/copy
             items.Add((MenuVerb.MakeLabel("Grab"), new MenuStructure(
-                (MenuVerb.MakeTouch("Move", (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ false)),
+                (MenuVerb.MakeTouch("Move", false, (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ false)),
                  null),
-                (MenuVerb.MakeTouch("Copy", (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ true)),
+                (MenuVerb.MakeTouch("Copy", false, (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ true)),
                  null))));
 
             // Construct sound effect menu items
@@ -203,9 +203,10 @@ namespace Holofunk.App
                 items.Add((MenuVerb.MakeLabel("FX"), new MenuStructure(
                     (MenuVerb.MakeTouch(
                         "Clear\nAll",
+                        /*mayBePerformer:*/ true,
                         (_, effectableIds) =>
                         {
-                            HoloDebug.Log($"MenuVerb::Clear_All: effectableIds is {string.Join(", ", effectableIds.AsEnumerable().Select(id => id.ToString()))}");
+                            HoloDebug.Log($"MenuVerb::Clear_All: effectableIds.Count is {effectableIds.Count}, contents are {string.Join(", ", effectableIds.AsEnumerable().Select(id => id.ToString()))}");
                             foreach (IEffectable effectable in DistributedObjectFactory.FindEffectables())
                             {
                                 IDistributedObject asObj = (IDistributedObject)effectable;
@@ -220,6 +221,7 @@ namespace Holofunk.App
                     null),
                     (MenuVerb.MakeTouch(
                         "Pop\nLast",
+                        /*mayBePerformer:*/ true,
                         (_, effectableIds) =>
                         {
                             foreach (IEffectable effectable in DistributedObjectFactory.FindEffectables())
@@ -258,7 +260,7 @@ namespace Holofunk.App
                                 IDistributedObject asObj = (IDistributedObject)effectable;
                                 if (effectableIds.Contains(asObj.Id))
                                 {
-                                    HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying drywet level to effectable {asObj.Id} with alteration {alteration}");
+                                    //HoloDebug.Log($"SoundEffectMenuFactory.levelAction: applying drywet level to effectable {asObj.Id} with alteration {alteration}");
                                     // OK, OK, we don't have real per-effect dry/wet yet but we kind of hack it by
                                     // just altering volume and effect on every move.
                                     effectable.AlterSoundEffect(new EffectId(pluginId, pluginProgramId), alteration, commit);
