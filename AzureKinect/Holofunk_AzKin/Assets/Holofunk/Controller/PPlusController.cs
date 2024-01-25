@@ -116,7 +116,7 @@ namespace Holofunk.Controller
                 if (currentlyHeldVerb.Kind != MenuVerbKind.Root)
                 {
                     currentlyHeldVerbGameObject = MenuLevel.CreateMenuItem(this.transform, Vector3.zero, currentlyHeldVerb.NameFunc());
-                    MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);
+                    //MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);
                 }
             }
         }
@@ -260,7 +260,7 @@ namespace Holofunk.Controller
                     || (currentlyHeldVerb.Kind == MenuVerbKind.Touch && touchedLoopieIds.Count > 0)
                     || (currentlyHeldVerb.Kind == MenuVerbKind.Level && currentlyHeldVerb.MayBePerformer && mikeToMouth)
                     || (currentlyHeldVerb.Kind == MenuVerbKind.Level && touchedLoopieIds.Count > 0);
-                MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, isTouching ? Color.white : Color.grey);
+                //MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, isTouching ? Color.white : Color.grey);
 
                 if (mikeToMouth)
                 {
