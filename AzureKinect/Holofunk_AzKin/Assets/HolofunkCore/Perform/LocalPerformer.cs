@@ -102,7 +102,7 @@ namespace Holofunk.Perform
                 }
             }
 
-            HoloDebug.Log($"LocalPerformer.AlterSoundEffect: about to alter effect index {effectIndex} (Effects {state.Effects.ArrayToString()}, EffectLevels {state.EffectLevels.ArrayToString()}");
+            //HoloDebug.Log($"LocalPerformer.AlterSoundEffect: about to alter effect index {effectIndex} (Effects {state.Effects.ArrayToString()}, EffectLevels {state.EffectLevels.ArrayToString()}");
             int newLevel = state.EffectLevels[effectIndex] + (int)(alteration * MagicNumbers.EffectLevelScale);
             newLevel = Mathf.Clamp(newLevel, 0, 100);
 
