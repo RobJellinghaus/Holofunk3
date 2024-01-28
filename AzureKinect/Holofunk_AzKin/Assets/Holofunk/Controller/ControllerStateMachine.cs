@@ -379,7 +379,7 @@ namespace Holofunk.Controller
                     {
                         // take effect right now!
                         // Prompt menu verbs just execute.
-                        menuVerb.PromptAction();
+                        menuVerb.PromptAction(pplusModel.Controller);
                     }
 
                     // Determine right now whether the microphone is to the mouth -- that determines what

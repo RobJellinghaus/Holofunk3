@@ -125,7 +125,8 @@ namespace Holofunk.Menu
             // and whose angles are the angles of our menu.
             // Placing circles of that diameter at the vertices of such a polygon will result in them just touching.
             double startingAngle = 0;
-            double perItemAngle = 2 * Math.PI / menuStructure.Count;
+            // at root level, item 0 is the root item (at the center); we want remaining items to fill the circle
+            double perItemAngle = 2 * Math.PI / (depth == 0 ? (menuStructure.Count - 1) : menuStructure.Count);
             double polygonRadius = menuStructure.Count == 1
                 ? 0
                 : menuStructure.Count == 2

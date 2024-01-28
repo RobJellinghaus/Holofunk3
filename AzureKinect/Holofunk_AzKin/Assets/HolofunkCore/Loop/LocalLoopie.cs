@@ -397,11 +397,15 @@ namespace Holofunk.Loop
             // - if the beat is even, we are rotating the top of stack by 90 degrees by end of beat;
             // - if the beat is odd, we are rotating the bottom of stack likewise.
             // All other rotation values are interpolated between the two.
-            float fractionalBeat = (float)trackInfo.ExactTrackBeat - (int)trackInfo.ExactTrackBeat;
+            float fractionalBeat = (float)trackInfo.ExactTrackBeat - (float)Math.Floor((float)trackInfo.ExactTrackBeat);
 
-            // if fractionalBeat is less than lastFractionalBeat and intBeat is 0,
-            // then we just wrapped around and should increment our completedLoopBeats.
-            if (lastFractionalBeat > fractionalBeat)
+            // If we wrapped around, then update completedLoopBeats.
+            // If we go backwards a lot, completedLoopBeats could well go negative, which is fine.
+            if (GetState().IsPlaybackBackwards && lastFractionalBeat < fractionalBeat)
+            {
+                completedLoopBeats -= 1;
+            }
+            else if (!GetState().IsPlaybackBackwards && lastFractionalBeat > fractionalBeat)
             {
                 completedLoopBeats += 1;
             }

@@ -1,4 +1,5 @@
 ﻿using DistributedStateLib;
+using Holofunk.Controller;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -69,7 +70,7 @@ namespace Holofunk.Menu
         /// <summary>
         /// Action executed promptly when this prompt verb is selected.
         /// </summary>
-        public readonly Action PromptAction;
+        public readonly Action<PPlusController> PromptAction;
         /// <summary>
         /// Action executed per-Update on touched loopies and/or performer.
         /// </summary>
@@ -86,7 +87,7 @@ namespace Holofunk.Menu
             MenuVerbKind kind,
             Func<string> nameFunc,
             bool mayBePerformer,
-            Action promptAction,
+            Action<PPlusController> promptAction,
             Action<MenuVerbModel, HashSet<DistributedId>> touchUpdateAction,
             Action<HashSet<DistributedId>, float, bool> levelAction)
         {
@@ -104,12 +105,12 @@ namespace Holofunk.Menu
             return new MenuVerb(MenuVerbKind.Root, () => "🚫", false, null, null, null);
         }
 
-        public static MenuVerb MakePrompt(string name, Action action)
+        public static MenuVerb MakePrompt(string name, Action<PPlusController> action)
         {
             return new MenuVerb(MenuVerbKind.Prompt, () => name, false, action, null, null);
         }
 
-        public static MenuVerb MakePrompt(Func<string> nameFunc, Action action)
+        public static MenuVerb MakePrompt(Func<string> nameFunc, Action<PPlusController> action)
         {
             return new MenuVerb(MenuVerbKind.Prompt, nameFunc, false, action, null, null);
         }
