@@ -373,7 +373,13 @@ namespace Holofunk.Controller
             Vector3 viewpointHandPosition = GetViewpointHandPosition();
             PerformerState performerState = GetComponent<LocalPerformer>().GetState();
 
-            GameObject newLoopie = DistributedLoopie.Create(viewpointHandPosition, audioInputId, default(DistributedId), performerState.Effects, performerState.EffectLevels);
+            GameObject newLoopie = DistributedLoopie.Create(
+                viewpointHandPosition,
+                audioInputId,
+                default(DistributedId),
+                performerState.Effects,
+                performerState.EffectLevels,
+                isPlaybackBackwards: false);
             return newLoopie;
         }
 

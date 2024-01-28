@@ -112,7 +112,13 @@ namespace Holofunk.Loop
         /// 
         /// The loopie may be being recorded (if audioInputId is defined), or copied (if copiedLoopieId is defined).
         /// </remarks>
-        public static GameObject Create(Vector3 viewpointPosition, NowSoundLib.AudioInputId audioInputId, DistributedId copiedLoopieId, int[] effects, int[] effectLevels)
+        public static GameObject Create(
+            Vector3 viewpointPosition,
+            NowSoundLib.AudioInputId audioInputId,
+            DistributedId copiedLoopieId,
+            int[] effects,
+            int[] effectLevels,
+            bool isPlaybackBackwards)
         {
             HoloDebug.Assert(audioInputId == NowSoundLib.AudioInputId.AudioInputUndefined || copiedLoopieId == default(DistributedId),
                 $"Exactly one of audioInputId {audioInputId} or copiedLoopieId {copiedLoopieId} must be defined -- loopies must be either recorded or copied");
@@ -135,7 +141,8 @@ namespace Holofunk.Loop
                 IsMuted = false,
                 Volume = 0.6f,
                 Effects = (int[])effects.Clone(),
-                EffectLevels = (int[])effectLevels.Clone()
+                EffectLevels = (int[])effectLevels.Clone(),
+                IsPlaybackBackwards = isPlaybackBackwards,
             });
 
             // Then enable the distributed behavior.

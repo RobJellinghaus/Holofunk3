@@ -143,13 +143,16 @@ namespace Holofunk.App
                         foreach (DistributedLoopie copiedLoopie in copiedLoopies)
                         {
                             LocalLoopie localCopiedLoopie = (LocalLoopie)copiedLoopie.LocalObject;
+                            LoopieState loopieState = localCopiedLoopie.GetState();
 
                             GameObject newLoopie = DistributedLoopie.Create(
-                                localCopiedLoopie.GetState().ViewpointPosition,
+                                loopieState.ViewpointPosition,
                                 NowSoundLib.AudioInputId.AudioInputUndefined,
                                 copiedLoopie.Id,
-                                localCopiedLoopie.GetState().Effects,
-                                localCopiedLoopie.GetState().EffectLevels);
+                                loopieState.Effects,
+                                loopieState.EffectLevels,
+                                loopieState.IsPlaybackBackwards
+                                );
 
                             newLoopieIds.Add(newLoopie.GetComponent<DistributedLoopie>().Id);
                         }
