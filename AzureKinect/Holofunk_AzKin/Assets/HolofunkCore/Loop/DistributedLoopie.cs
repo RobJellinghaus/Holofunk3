@@ -42,7 +42,7 @@ namespace Holofunk.Loop
         /// <summary>
         /// Get the loopie state.
         /// </summary>
-        public LoopieState GetLoopie() => GetLocalLoopie().GetLoopie();
+        public LoopieState GetState() => GetLocalLoopie().GetState();
 
         public void SetMute(bool isMuted) => 
             RouteReliableMessage(isRequest => new SetMute(Id, isRequest: !IsOwner, isMuted: isMuted));
@@ -71,6 +71,12 @@ namespace Holofunk.Loop
         public void SetCurrentWaveform(float[] frequencyBins, ulong timestamp) =>
             RouteBroadcastMessage(new SetCurrentWaveform(Id, OwnerAddress, frequencyBins, timestamp));
 
+        public void SetPlaybackDirection(bool isPlaybackBackwards) =>
+            RouteReliableMessage(isRequest => new SetPlaybackDirection(Id, isRequest: !IsOwner, isPlaybackBackwards));
+
+        public void Rewind() =>
+            RouteReliableMessage(isRequest => new Rewind(Id, isRequest: !IsOwner));
+
         #endregion
 
         #region DistributedState
@@ -84,13 +90,13 @@ namespace Holofunk.Loop
 
         protected override void SendCreateMessage(NetPeer netPeer)
         {
-            HoloDebug.Log($"DistributedLoopie.SendCreateMessage: Sending Loopie.Create for id {Id} to peer {netPeer.EndPoint} with loopie {GetLoopie()}");
-            Host.SendReliableMessage(new Create(Id, GetLoopie()), netPeer);
+            HoloDebug.Log($"DistributedLoopie.SendCreateMessage: Sending Loopie.Create for id {Id} to peer {netPeer.EndPoint} with loopie {GetState()}");
+            Host.SendReliableMessage(new Create(Id, GetState()), netPeer);
         }
 
         protected override void SendDeleteMessage(NetPeer netPeer, bool isRequest)
         {
-            HoloDebug.Log($"DistributedLoopie.SendDeleteMessage: Sending Loopie.Delete for id {Id} to peer {netPeer.EndPoint} with loopie {GetLoopie()}");
+            HoloDebug.Log($"DistributedLoopie.SendDeleteMessage: Sending Loopie.Delete for id {Id} to peer {netPeer.EndPoint} with loopie {GetState()}");
             Host.SendReliableMessage(new Delete(Id, isRequest), netPeer);
         }
 

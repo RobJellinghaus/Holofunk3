@@ -112,6 +112,21 @@ namespace Holofunk.Loop
             public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetCurrentWaveform(FrequencyBins, Timestamp);
         }
 
+        public class SetPlaybackDirection : ReliableMessage
+        {
+            public bool IsPlaybackBackwards { get; set; }
+            public SetPlaybackDirection() : base() { }
+            public SetPlaybackDirection(DistributedId id, bool isRequest, bool isPlaybackBackwards) : base(id, isRequest) { IsPlaybackBackwards = isPlaybackBackwards; }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).SetPlaybackDirection(IsPlaybackBackwards);
+        }
+
+        public class Rewind : ReliableMessage
+        {
+            public Rewind() : base() { }
+            public Rewind(DistributedId id, bool isRequest) : base(id, isRequest) { }
+            public override void Invoke(IDistributedInterface target) => ((IDistributedLoopie)target).Rewind();
+        }
+
         public static void RegisterTypes(DistributedHost.ProxyCapability proxyCapability)
         {
             proxyCapability.RegisterType<LoopieState>();
@@ -134,6 +149,8 @@ namespace Holofunk.Loop
             Registrar.RegisterReliableMessage<AlterSoundEffect, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<PopSoundEffect, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
             Registrar.RegisterReliableMessage<ClearSoundEffects, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterReliableMessage<SetPlaybackDirection, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
+            Registrar.RegisterReliableMessage<Rewind, DistributedLoopie, LocalLoopie, IDistributedLoopie>(proxyCapability);
         }
     }
 }

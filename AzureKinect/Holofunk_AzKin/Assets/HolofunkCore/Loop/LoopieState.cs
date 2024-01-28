@@ -72,6 +72,11 @@ namespace Holofunk.Loop
         /// </remarks>
         public int[] EffectLevels { get; set; }
 
+        /// <summary>
+        /// Is the loopie playing backwards?
+        /// </summary>
+        public bool IsPlaybackBackwards { get; set; }
+
         public void Deserialize(NetDataReader reader)
         {
             AudioInput = AudioInputId.Deserialize(reader);
@@ -81,6 +86,7 @@ namespace Holofunk.Loop
             Volume = reader.GetFloat();
             Effects = reader.GetIntArray();
             EffectLevels = reader.GetIntArray();
+            IsPlaybackBackwards = reader.GetBool();
         }
 
         public void Serialize(NetDataWriter writer)
@@ -92,6 +98,7 @@ namespace Holofunk.Loop
             writer.Put(Volume);
             writer.PutArray(Effects);
             writer.PutArray(EffectLevels);
+            writer.Put(IsPlaybackBackwards);
         }
 
         public override string ToString() => $"Loopie[input {AudioInput}, copiedId {CopiedLoopieId} @ {ViewpointPosition}]";

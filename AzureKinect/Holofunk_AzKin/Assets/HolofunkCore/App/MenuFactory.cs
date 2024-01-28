@@ -134,11 +134,11 @@ namespace Holofunk.App
                             LocalLoopie localCopiedLoopie = (LocalLoopie)copiedLoopie.LocalObject;
 
                             GameObject newLoopie = DistributedLoopie.Create(
-                                localCopiedLoopie.GetLoopie().ViewpointPosition,
+                                localCopiedLoopie.GetState().ViewpointPosition,
                                 NowSoundLib.AudioInputId.AudioInputUndefined,
                                 copiedLoopie.Id,
-                                localCopiedLoopie.GetLoopie().Effects,
-                                localCopiedLoopie.GetLoopie().EffectLevels);
+                                localCopiedLoopie.GetState().Effects,
+                                localCopiedLoopie.GetState().EffectLevels);
 
                             newLoopieIds.Add(newLoopie.GetComponent<DistributedLoopie>().Id);
                         }
@@ -157,7 +157,7 @@ namespace Holofunk.App
 
                 foreach (DistributedLoopie loopie in loopies)
                 {
-                    loopie.SetViewpointPosition(loopie.GetLoopie().ViewpointPosition + delta);
+                    loopie.SetViewpointPosition(loopie.GetState().ViewpointPosition + delta);
                 }
 
                 menuVerbModel.SetLastViewpointHandPosition(currentHandPosition);
@@ -168,6 +168,34 @@ namespace Holofunk.App
                 (MenuVerb.MakeTouch("Move", false, (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ false)),
                  null),
                 (MenuVerb.MakeTouch("Copy", false, (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ true)),
+                 null))));
+
+            Action<MenuVerbModel, HashSet<DistributedId>, bool> timeAction = (menuVerbModel, loopieIds, isFlip) =>
+            {
+                HashSet<DistributedLoopie> loopies =
+                    DistributedObjectFactory.CollectDistributedComponents<DistributedLoopie>(
+                        DistributedObjectFactory.DistributedType.Loopie,
+                        loopieIds);
+
+                foreach (DistributedLoopie loopie in loopies)
+                {
+                    if (isFlip)
+                    {
+                        bool isPlaybackBackwards = ((LocalLoopie)loopie.LocalObject).GetState().IsPlaybackBackwards;
+                        loopie.SetPlaybackDirection(!isPlaybackBackwards);
+                    }
+                    else
+                    {
+                        loopie.Rewind();
+                    }
+                }
+            };
+
+            // Time > rewind/flip
+            items.Add((MenuVerb.MakeLabel("Time"), new MenuStructure(
+                (MenuVerb.MakeTouch("Rewind", false, (menuVerbModel, loopieIds) => timeAction(menuVerbModel, loopieIds, /*isFlip:*/ false)),
+                 null),
+                (MenuVerb.MakeTouch("Flip", false, (menuVerbModel, loopieIds) => timeAction(menuVerbModel, loopieIds, /*isFlip:*/ true)),
                  null))));
 
             // Construct sound effect menu items

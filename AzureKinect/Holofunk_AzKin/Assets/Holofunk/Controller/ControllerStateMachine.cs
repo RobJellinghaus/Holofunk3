@@ -275,7 +275,7 @@ namespace Holofunk.Controller
                                 // the first loopie touched, if it's a double-mute, puts us into delete mode
                                 if (!deletingTouchedLoopies.HasValue)
                                 {
-                                    deletingTouchedLoopies = loopie.GetLoopie().IsMuted;
+                                    deletingTouchedLoopies = loopie.GetState().IsMuted;
                                     //HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: deletingTouchedLoopies {deletingTouchedLoopies.Value}");
                                 }
 
@@ -286,7 +286,7 @@ namespace Holofunk.Controller
                                     // we know it has a value now
                                     if (deletingTouchedLoopies.Value)
                                     {
-                                        if (loopie.GetLoopie().IsMuted)
+                                        if (loopie.GetState().IsMuted)
                                         {
                                             HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: Deleting loopie {loopie.Id}");
                                             loopie.Delete();

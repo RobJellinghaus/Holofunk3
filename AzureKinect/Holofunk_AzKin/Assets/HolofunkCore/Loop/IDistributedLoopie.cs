@@ -24,7 +24,7 @@ namespace Holofunk.Loop
         /// The state of the Loopie.
         /// </summary>
         [LocalMethod]
-        LoopieState GetLoopie();
+        LoopieState GetState();
 
         /// <summary>
         /// Move the loopie in space.
@@ -56,5 +56,17 @@ namespace Holofunk.Loop
         /// </summary>
         [BroadcastMethod]
         void SetCurrentWaveform(float[] frequencyBins, ulong timestamp);
+
+        /// <summary>
+        /// Set the direction of playback.
+        /// </summary>
+        [ReliableMethod]
+        void SetPlaybackDirection(bool isPlaybackBackwards);
+
+        /// <summary>
+        /// Rewind to start.
+        /// </summary>
+        [ReliableMethod]
+        void Rewind();
     }
 }

@@ -23,7 +23,7 @@ namespace Holofunk.Loop
         /// <summary>
         /// The state of this Loopie, in distributed terms.
         /// </summary>
-        private LoopieState loopie;
+        private LoopieState state;
 
         /// <summary>
         /// Is someone touching this loopie?
@@ -120,22 +120,22 @@ namespace Holofunk.Loop
             if (SoundManager.Instance != null)
             {
                 // if we have an audio input, start recording!
-                if (loopie.AudioInput.IsInitialized)
+                if (state.AudioInput.IsInitialized)
                 {
-                    trackId = NowSoundGraphAPI.CreateRecordingTrackAsync(loopie.AudioInput.Value);
+                    trackId = NowSoundGraphAPI.CreateRecordingTrackAsync(state.AudioInput.Value);
                 }
                 else
                 {
-                    HoloDebug.Assert(loopie.CopiedLoopieId.IsInitialized, "Audio input wasn't defined so copied loopie ID should have been");
+                    HoloDebug.Assert(state.CopiedLoopieId.IsInitialized, "Audio input wasn't defined so copied loopie ID should have been");
 
                     // look up the local loopie with that distributed ID
                     foreach (DistributedLoopie candidate in DistributedObjectFactory.FindComponentInstances<DistributedLoopie>(
                             DistributedObjectFactory.DistributedType.Loopie, false))
                     {
-                        if (candidate.Id == loopie.CopiedLoopieId)
+                        if (candidate.Id == state.CopiedLoopieId)
                         {
                             TrackId copiedTrackId = ((LocalLoopie)candidate.LocalObject).trackId;
-                            HoloDebug.Log($"Found candidate with copied ID {loopie.CopiedLoopieId} and track ID {copiedTrackId}");
+                            HoloDebug.Log($"Found candidate with copied ID {state.CopiedLoopieId} and track ID {copiedTrackId}");
 
                             trackId = NowSoundGraphAPI.CopyLoopingTrack(copiedTrackId);
                         }
@@ -145,13 +145,13 @@ namespace Holofunk.Loop
                 // Set up all the effects on this loopie right now.
                 // While the loopie is recording, no sound will be played anyway; once the loopie
                 // finishes recording, all the effects will kick in.
-                for (int i = 0; i < loopie.EffectLevels.Length; i++)
+                for (int i = 0; i < state.EffectLevels.Length; i++)
                 {
                     NowSoundTrackAPI.AddPluginInstance(
                         trackId,
-                        (NowSoundLib.PluginId)loopie.Effects[i * 2],
-                        (ProgramId)loopie.Effects[i * 2 + 1],
-                        loopie.EffectLevels[i]);
+                        (NowSoundLib.PluginId)state.Effects[i * 2],
+                        (ProgramId)state.Effects[i * 2 + 1],
+                        state.EffectLevels[i]);
                 }
             }
 
@@ -269,15 +269,15 @@ namespace Holofunk.Loop
         private void UpdateLoopiePanPosition()
         {
             // move to viewpoint position if viewpoint position moved (and/or viewpoint matrix came back)
-            if (lastViewpointPosition != loopie.ViewpointPosition)
+            if (lastViewpointPosition != state.ViewpointPosition)
             {
-                Vector3 loopieViewpointPosition = loopie.ViewpointPosition;
+                Vector3 loopieViewpointPosition = state.ViewpointPosition;
 
                 if (DistributedViewpoint.Instance != null)
                 {
                     Matrix4x4 viewpointToLocalMatrix = DistributedViewpoint.Instance.ViewpointToLocalMatrix();
                     Vector3 localLoopiePosition = viewpointToLocalMatrix.MultiplyPoint(loopieViewpointPosition);
-                    lastViewpointPosition = loopie.ViewpointPosition;
+                    lastViewpointPosition = state.ViewpointPosition;
 
                     // why the heck are there apparently some NaNs creeping in here?!?!
                     if (float.IsNaN(localLoopiePosition.x) || float.IsNaN(localLoopiePosition.y) || float.IsNaN(localLoopiePosition.z))
@@ -294,7 +294,7 @@ namespace Holofunk.Loop
                             PlayerState firstPlayer = DistributedViewpoint.Instance.GetPlayerByIndex(0);
                             if (firstPlayer.Tracked)
                             {
-                                float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, loopie.ViewpointPosition, log: true);
+                                float panValue = CalculatePanValue(firstPlayer.SensorPosition, firstPlayer.SensorForwardDirection, state.ViewpointPosition, log: true);
                                 NowSoundTrackAPI.SetPan(trackId, panValue);
                                 float updatedPan = NowSoundTrackAPI.Pan(trackId);
                                 // HoloDebug.Log($"LocalLoopie.UpdateLoopiePanPosition: loopie {trackId}, viewpointPosition {loopie.ViewpointPosition}, panValue {panValue}, updatedPanValue {updatedPan}");
@@ -483,7 +483,7 @@ namespace Holofunk.Loop
                 {
                     discColor = new Color(Increase(discColor.r), Increase(discColor.g), Increase(discColor.b), Increase(discColor.a));
                 }
-                if (GetLoopie().IsMuted)
+                if (GetState().IsMuted)
                 {
                     float average = (discColor.r + discColor.g + discColor.b) / 3;
                     discColor = new Color(average, average, average, discColor.a);
@@ -519,11 +519,11 @@ namespace Holofunk.Loop
         /// <summary>
         /// Get the loopie's state.
         /// </summary>
-        public LoopieState GetLoopie() => loopie;
+        public LoopieState GetState() => state;
 
         internal void Initialize(LoopieState loopie)
         {
-            this.loopie = loopie;
+            this.state = loopie;
             HoloDebug.Log($"LocalLoopie.Initialize: initializing with copied loopie ID {loopie.CopiedLoopieId} and volume {loopie.Volume} at viewpoint position {loopie.ViewpointPosition} with effects {loopie.Effects.ArrayToString()} and levels {loopie.EffectLevels.ArrayToString()}");
         }
 
@@ -544,7 +544,7 @@ namespace Holofunk.Loop
         public void SetMute(bool isMuted)
         {
             HoloDebug.Log($"LocalLoopie.SetMute: id {DistributedObject.Id}, isMuted {isMuted}");
-            loopie.IsMuted = isMuted;
+            state.IsMuted = isMuted;
 
             if (SoundManager.Instance != null)
             {
@@ -554,7 +554,7 @@ namespace Holofunk.Loop
 
         public void SetViewpointPosition(Vector3 viewpointPosition)
         {
-            loopie.ViewpointPosition = viewpointPosition;
+            state.ViewpointPosition = viewpointPosition;
         }
 
         public void FinishRecording()
@@ -567,13 +567,35 @@ namespace Holofunk.Loop
             }
         }
 
+        public void SetPlaybackDirection(bool isPlaybackBackwards)
+        {
+            state.IsPlaybackBackwards = isPlaybackBackwards;
+
+            if (SoundManager.Instance != null)
+            {
+                Core.Contract.Assert(trackId != TrackId.Undefined);
+
+                NowSoundTrackAPI.SetPlaybackDirection(trackId, isPlaybackBackwards);
+            }
+        }
+
+        public void Rewind()
+        {
+            if (SoundManager.Instance != null)
+            {
+                Core.Contract.Assert(trackId != TrackId.Undefined);
+
+                NowSoundTrackAPI.Rewind(trackId);
+            }
+        }
+
         #endregion
 
         #region IEffectable
 
         public void AlterVolume(float alteration, bool commit)
         {
-            float newVolume = loopie.Volume + alteration;
+            float newVolume = state.Volume + alteration;
             newVolume = Mathf.Clamp(newVolume, 0, 1);
             //HoloDebug.Log($"LocalLoopie.MultiplyVolume: multiplied by {ratio}, volume is now {loopie.Volume}");
 
@@ -584,25 +606,25 @@ namespace Holofunk.Loop
 
             if (commit)
             {
-                loopie.Volume = newVolume;
+                state.Volume = newVolume;
             }
         }
 
         public void AlterSoundEffect(EffectId effect, float alteration, bool commit)
         {
             // Is effect present in loopie.Effects already?
-            int effectIndex = effect.FindIn(loopie.Effects);
+            int effectIndex = effect.FindIn(state.Effects);
             if (effectIndex == -1)
             {
                 // add the effect
-                loopie.Effects = effect.AppendTo(loopie.Effects);
+                state.Effects = effect.AppendTo(state.Effects);
 
                 // and set the new level properly
                 // TODO: per-effect initial levels
                 int initialLevel = 100;
-                loopie.EffectLevels = EffectId.AppendTo(loopie.EffectLevels, initialLevel);
+                state.EffectLevels = EffectId.AppendTo(state.EffectLevels, initialLevel);
 
-                effectIndex = loopie.EffectLevels.Length - 1;
+                effectIndex = state.EffectLevels.Length - 1;
 
                 if (SoundManager.Instance != null)
                 {
@@ -610,7 +632,7 @@ namespace Holofunk.Loop
                 }
             }
 
-            int newLevel = loopie.EffectLevels[effectIndex] + (int)(alteration * MagicNumbers.EffectLevelScale);
+            int newLevel = state.EffectLevels[effectIndex] + (int)(alteration * MagicNumbers.EffectLevelScale);
             newLevel = Mathf.Clamp(newLevel, 0, 100);
 
             //HoloDebug.Log($"LocalLoopie.AlterSoundEffect: id {DistributedObject.Id}, pluginId {effect.PluginId}, programId {effect.PluginProgramId}, alteration {alteration}, newLevel {newLevel}, commit {commit}");
@@ -619,37 +641,37 @@ namespace Holofunk.Loop
 
             if (commit)
             {
-                loopie.EffectLevels[effectIndex] = newLevel;
+                state.EffectLevels[effectIndex] = newLevel;
             }
         }
 
         public void PopSoundEffect()
         {
-            HoloDebug.Log($"LocalLoopie.PopSoundEffect: id {DistributedObject.Id}, {loopie.Effects.Length / 2} effect(s)");
+            HoloDebug.Log($"LocalLoopie.PopSoundEffect: id {DistributedObject.Id}, {state.Effects.Length / 2} effect(s)");
 
-            if (loopie.Effects.Length == 0)
+            if (state.Effects.Length == 0)
             {
                 // nothing to pop
                 return;
             }
 
-            loopie.Effects = EffectId.PopFrom(loopie.Effects, 2);
-            loopie.EffectLevels = EffectId.PopFrom(loopie.EffectLevels, 1);
+            state.Effects = EffectId.PopFrom(state.Effects, 2);
+            state.EffectLevels = EffectId.PopFrom(state.EffectLevels, 1);
 
             if (SoundManager.Instance != null)
             {
                 // +1 here because PluginInstanceIndex is 1-based
-                NowSoundTrackAPI.DeletePluginInstance(trackId, (PluginInstanceIndex)(loopie.EffectLevels.Length + 1));
+                NowSoundTrackAPI.DeletePluginInstance(trackId, (PluginInstanceIndex)(state.EffectLevels.Length + 1));
             }
         }
 
         public void ClearSoundEffects()
         {
-            HoloDebug.Log($"LocalLoopie.ClearSoundEffects: id {DistributedObject.Id}, {loopie.Effects.Length / 2} effect(s)");
+            HoloDebug.Log($"LocalLoopie.ClearSoundEffects: id {DistributedObject.Id}, {state.Effects.Length / 2} effect(s)");
 
             if (SoundManager.Instance != null)
             {
-                for (int i = 0; i < loopie.Effects.Length; i += 2)
+                for (int i = 0; i < state.Effects.Length; i += 2)
                 {
                     // since the plugin instance indices are just array indices, we can just delete
                     // the first plugin repeatedly until they are all gone
@@ -657,8 +679,8 @@ namespace Holofunk.Loop
                 }
             }
 
-            loopie.Effects = new int[0];
-            loopie.EffectLevels = new int[0];
+            state.Effects = new int[0];
+            state.EffectLevels = new int[0];
         }
 
         public void SetCurrentInfo(SignalInfo signalInfo, Sound.TrackInfo trackInfo, ulong timestamp)

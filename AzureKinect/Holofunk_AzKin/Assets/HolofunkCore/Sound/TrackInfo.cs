@@ -37,6 +37,7 @@ namespace Holofunk.Sound
         public static void Serialize(NetDataWriter writer, TrackInfo trackInfo)
         {
             writer.Put(trackInfo.Value.IsTrackLooping);
+            writer.Put(trackInfo.Value.IsPlaybackBackwards);
             writer.Put(trackInfo.Value.BeatDuration);
             writer.Put((float)trackInfo.Value.ExactDuration);
             writer.Put((float)trackInfo.Value.ExactTrackTime);
@@ -51,6 +52,7 @@ namespace Holofunk.Sound
         {
             NowSoundLib.TrackInfo trackInfo = new NowSoundLib.TrackInfo(
                 isTrackLooping: reader.GetBool(),
+                isPlaybackBackwards: reader.GetBool(),
                 beatDuration: reader.GetLong(),
                 exactDuration: reader.GetFloat(),
                 exactTrackTime: reader.GetFloat(),
