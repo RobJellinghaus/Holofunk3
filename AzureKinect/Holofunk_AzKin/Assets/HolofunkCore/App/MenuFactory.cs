@@ -111,7 +111,7 @@ namespace Holofunk.App
                  null),
                 (MenuVerb.MakePrompt(
                     () => $"{DistributedSoundClock.Instance.TimeInfo.Value.BeatsPerMinute} BPM -",
-                    _ => setBPMAction(2)),
+                    _ => setBPMAction(-2)),
                  null),
                 (MenuVerb.MakePrompt("Delete\nMy Sounds", deleteMySoundsAction),
                 null),
