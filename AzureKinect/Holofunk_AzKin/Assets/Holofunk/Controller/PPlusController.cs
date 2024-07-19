@@ -171,7 +171,7 @@ namespace Holofunk.Controller
             if (DistributedViewpoint.Instance == null || DistributedViewpoint.Instance.PlayerCount <= playerIndex)
             {
                 // No Kinect player recognized yet.
-                Debug.Log(string.Format("No Kinect, nothing to do."));
+                HoloDebug.Log(string.Format("No Kinect, nothing to do."));
                 return false;
             }
 
@@ -195,33 +195,43 @@ namespace Holofunk.Controller
                 return;
             }
 
-            PPlus thisPPlus = HidManager.Instance.pplus_list[pplusIndex];
-
-            // Joycon bailed, we're done
-            if (thisPPlus.state == PPlus.State.DROPPED)
+            // Check all odd/even PPlus controllers. Since we don't support more than two players
+            // (due to Kinect limitations), we give all even-index controllers to player 1 (e.g. pplusIndex 0)
+            // and all odd-index controllers to player 2 (e.g. pplusIndex 1).
+            for (int pplusLoopIndex = pplusIndex; pplusLoopIndex < HidManager.Instance.pplus_list.Count; pplusLoopIndex += 2)
             {
-                HoloDebug.Log($"pplusIndex {pplusIndex}; thisPPlus.state == DROPPED; closing and exiting.");
-                if (stateMachineInstance != null)
+                PPlus thisPPlus = HidManager.Instance.pplus_list[pplusLoopIndex];
+                if (thisPPlus == null)
                 {
-                    stateMachineInstance.OnCompleted();
-                    stateMachineInstance = null;
+                    continue; // you never know, they might not be contiguous if some get unpaired
                 }
-                return;
-            }
 
-            // if we don't have a state machine instance yet, then we should now create one!
-            // (it exists only as long as we are recognized by the viewpoint.)
-            if (stateMachineInstance == null)
-            {
-                stateMachineInstance = new ControllerStateMachineInstance(PPlusEvent.MikeUp, ControllerStateMachine.Instance, new PPlusModel(null, this, _ => { }));
-            }
+                // Joycon bailed, we're done
+                if (thisPPlus.state == PPlus.State.DROPPED)
+                {
+                    HoloDebug.Log($"pplusIndex {pplusIndex}; thisPPlus.state == DROPPED; closing and exiting.");
+                    if (stateMachineInstance != null)
+                    {
+                        stateMachineInstance.OnCompleted();
+                        stateMachineInstance = null;
+                    }
+                    return;
+                }
 
-            // Dequeue any button events that are waiting.
-            PPlus.ButtonEvent ppevt;
-            while (thisPPlus.TryDequeueEvent(out ppevt))
-            {
-                Debug.Log($"PPlus button event: button {ppevt.button}, down {ppevt.down}");
-                stateMachineInstance.OnNext(new PPlusEvent(ppevt.button, ppevt.down));
+                // if we don't have a state machine instance yet, then we should now create one!
+                // (it exists only as long as we are recognized by the viewpoint.)
+                if (stateMachineInstance == null)
+                {
+                    stateMachineInstance = new ControllerStateMachineInstance(PPlusEvent.MikeUp, ControllerStateMachine.Instance, new PPlusModel(null, this, _ => { }));
+                }
+
+                // Dequeue any button events that are waiting on any of the PPluses that we consider ours.
+                PPlus.ButtonEvent ppevt;
+                while (thisPPlus.TryDequeueEvent(out ppevt))
+                {
+                    Debug.Log($"PPlus #{pplusLoopIndex} button event: button {ppevt.button}, down {ppevt.down}");
+                    stateMachineInstance.OnNext(new PPlusEvent(ppevt.button, ppevt.down));
+                }
             }
 
             // And update the state machine instance's model.
