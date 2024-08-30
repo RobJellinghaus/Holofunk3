@@ -59,12 +59,13 @@ namespace Holofunk.Menu
             this.depth = depth;
             this.menuStructure = menuStructure;
 
-
             for (int i = 0; i < menuStructure.Count; i++)
             {
                 Vector3 submenuRootRelativePosition;
 
                 // if this is the zeroth (base) level, add the "cancel" menu item in the middle
+                GameObject menuItemGameObject;
+
                 if (depth == 0)
                 {
                     if (i == 0)
@@ -75,14 +76,15 @@ namespace Holofunk.Menu
                     {
                         submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
                     }
+
+                    //menuItemGameObject = ShapeContainer.InstantiateShape(ShapeType.NoRecCircle, menu.transform);
                 }
                 else
                 {
                     submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
                 }
 
-                GameObject menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).NameFunc());
-
+                menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).NameFunc());
                 menuItemGameObjects.Add(menuItemGameObject);
                 // everything starts off disabled
                 ColorizeMenuItem(i + 1, Color.grey);

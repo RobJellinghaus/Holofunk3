@@ -227,16 +227,9 @@ namespace Holofunk.Controller
                     ((PPlusModel)recordingModel.Parent).Controller.PopSprite();
                 });
 
-            AddTransition(
-                stateMachine,
-                initial,
-                PPlusEvent.MikeDown,
-                // Start recording if and only if 1) the UI didn't capture this, and 2) the root (recording) menu item is held.
-                (evt, pplusModel) => (!evt.IsCaptured && pplusModel.Controller.CurrentlyHeldVerb.Kind == MenuVerbKind.Root)
-                    ? (State<PPlusEvent>)recording
-                    : (State<PPlusEvent>)initial);
-
-            AddTransition(stateMachine, recording, PPlusEvent.MikeUp, initial);
+            // The only transition into Recording happens from initial -> MikeDown. So it needs to be a computed transition
+            // and is computed below, after the applyMenu state has been defined. The transition out of Recording is added
+            // there as well, for consistency.
 
             #endregion
 
@@ -460,17 +453,29 @@ namespace Holofunk.Controller
                     }
                 });
 
-            // Main action button conditional transition if there's a non-root (non-recording) menu verb.
+            // Main action button conditional transition; recording, or menu application?
             AddTransition(
                 stateMachine,
                 initial,
                 PPlusEvent.MikeDown,
-                applyMenu,
-                model => model.Controller.CurrentlyHeldVerb.Kind != MenuVerbKind.Root);
+                (evt, pplusModel) =>
+                {
+                    MenuVerbKind menuVerbKind = pplusModel.Controller.CurrentlyHeldVerb.Kind;
+                    // note that a conditional expression doesn't work here, due to different implicit conversions; go figure
+                    if (menuVerbKind == MenuVerbKind.Root)
+                    {
+                        return recording;
+                    }
+                    else
+                    {
+                        return applyMenu;
+                    }
+                });
+            AddTransition(stateMachine, recording, PPlusEvent.MikeUp, initial);
             AddTransition(stateMachine, applyMenu, PPlusEvent.MikeUp, initial);
 
-            // Light button will do something if we're touching loopies. If the recording/root verb is selected,
-            // the applyMenu transition entry code above will treat it as SetVolume.
+            // Light button will do something if we're touching loopies. If we enter applyMenu with a LightDown
+            // event, the currently held menu verb will be ignored, and the SetVolume action will be applied.
             AddTransition(
                 stateMachine,
                 initial,
@@ -500,6 +505,10 @@ namespace Holofunk.Controller
                         ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = heldVerb;
 
                         HoloDebug.Log($"Set currentlyHeldVerb to {heldVerb.NameFunc()}");
+                    }
+                    else
+                    {
+                        ((PPlusModel)menuModel.Parent).Controller.CurrentlyHeldVerb = MenuVerb.MakeRoot();
                     }
 
                     HoloDebug.Log($"ControllerStateMachineInstance.Menu.exit: deleting menu {menu.Id}");

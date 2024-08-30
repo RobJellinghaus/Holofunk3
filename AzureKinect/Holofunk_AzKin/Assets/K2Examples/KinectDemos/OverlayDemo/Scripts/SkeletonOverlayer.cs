@@ -22,6 +22,9 @@ public class SkeletonOverlayer : MonoBehaviour
 	public LineRenderer linePrefab;
 	//public float smoothFactor = 10f;
 
+	public bool ShowLeftHandSphere = true;
+	public bool ShowRightHandSphere = true;
+
 	//public UnityEngine.UI.Text debugText;
 	
 	private GameObject[] joints = null;
@@ -127,8 +130,8 @@ public class SkeletonOverlayer : MonoBehaviour
 						{
 							// overlay the joint, only on the hands
 							if (posJoint != Vector3.zero
-								&& (joint == (int)KinectInterop.JointType.HandLeft 
-									|| joint == (int)KinectInterop.JointType.HandRight))
+								&& ((joint == (int)KinectInterop.JointType.HandLeft && ShowLeftHandSphere)
+									|| (joint == (int)KinectInterop.JointType.HandRight && ShowRightHandSphere)))
 							{
 //								if(debugText && joint == 0)
 //								{
@@ -138,7 +141,6 @@ public class SkeletonOverlayer : MonoBehaviour
 //								}
 								
 								joints[i].SetActive(true);
-								averagers[i].Update(posJoint);
 								joints[i].transform.position = posJoint;
 
 								Quaternion rotJoint = manager.GetJointOrientation(userId, joint, false);
@@ -152,7 +154,7 @@ public class SkeletonOverlayer : MonoBehaviour
 							}
 						}
 
-						if(lines[i] == null && linePrefab != null)
+						if (lines[i] == null && linePrefab != null)
 						{
 							lines[i] = Instantiate(linePrefab) as LineRenderer;
 							lines[i].transform.parent = transform;

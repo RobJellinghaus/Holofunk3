@@ -40,7 +40,7 @@ namespace Holofunk.StateMachines
         public Transition(
             TEvent evt,
             State<TEvent> destinationState)
-            : this(evt, (ignoreModel, ignoreEvent) => destinationState)
+            : this(evt, (_1, _2) => destinationState)
         {
         }
 

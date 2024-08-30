@@ -26,7 +26,9 @@ namespace Holofunk.StateMachines
         // root state will fail when making transitions between disjoint roots.)
         readonly State<TEvent> _rootState;
 
-        // A state -> event -> state transition map.
+        // Each state has a list of Transitions; each Transition's Event must be disjoint with all other
+        // Transitions in the list. Yes, this could and possibly should be a sub-Dictionary instead of a
+        // sub-List.
         readonly Dictionary<State<TEvent>, List<Transition<TEvent>>> _transitions
             = new Dictionary<State<TEvent>, List<Transition<TEvent>>>();
 

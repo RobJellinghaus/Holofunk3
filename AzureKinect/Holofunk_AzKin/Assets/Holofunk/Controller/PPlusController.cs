@@ -94,6 +94,14 @@ namespace Holofunk.Controller
         /// </summary>
         private Stack<GameObject> pushedSprites = new Stack<GameObject>();
 
+        /// <summary>
+        /// Has any Update already happened?
+        /// </summary>
+        /// <remarks>
+        /// This works around a CurrentlyHeldVerbGameObject initialization issue.
+        /// </remarks>
+        private bool firstUpdate = false;
+
         #endregion Fields
 
         #region Properties
@@ -134,11 +142,17 @@ namespace Holofunk.Controller
         {
             GameObject sprite = ShapeContainer.InstantiateShape(spriteType, transform);
 
-            // if there was a previous sprite, then hide it
+            // if there was a previous sprite, then hide it.
+            // if no previous sprite, hide the currently held game object
             if (pushedSprites.Count > 0)
             {
                 pushedSprites.Peek().SetActive(false);
             }
+            else if (currentlyHeldVerbGameObject != null)
+            {
+                currentlyHeldVerbGameObject.SetActive(false);
+            }
+
             sprite.SetActive(true);
             pushedSprites.Push(sprite);
         }
@@ -149,6 +163,11 @@ namespace Holofunk.Controller
             {
                 GameObject popped = pushedSprites.Pop();
                 GameObject.Destroy(popped);
+            }
+            
+            if (pushedSprites.Count == 0)
+            {
+                currentlyHeldVerbGameObject.SetActive(true);
             }
         }
 
@@ -226,6 +245,14 @@ namespace Holofunk.Controller
                 return;
             }
 
+            if (!firstUpdate)
+            {
+                firstUpdate = true;
+
+                // initialize us to "ready to record" visual state
+                CurrentlyHeldVerb = MenuVerb.MakeRoot();
+            }
+
             // Check all odd/even PPlus controllers. Since we don't support more than two players
             // (due to Kinect limitations), we give all even-index controllers to player 1 (e.g. pplusIndex 0)
             // and all odd-index controllers to player 2 (e.g. pplusIndex 1).
@@ -287,8 +314,9 @@ namespace Holofunk.Controller
                 headIcon.SetActive(false);
             }
 
-            // If there's a currentlyHeldVerbGameObject, update its name.
-            if (currentlyHeldVerbGameObject != null)
+            // If there's a currentlyHeldVerbGameObject that's not root, update its name.
+            // (Root is special and has its own nameless "white-dot-in-circle" sprite.)
+            if (currentlyHeldVerbGameObject != null && currentlyHeldVerb.Kind != MenuVerbKind.Root)
             {
                 MenuLevel.SetMenuItemName(currentlyHeldVerbGameObject, currentlyHeldVerb.NameFunc());
             }
@@ -306,7 +334,11 @@ namespace Holofunk.Controller
             }
             if (handGameObject != null)
             {
-                handGameObject.transform.localPosition = GetViewpointHandPosition();
+                Vector3 position = GetViewpointHandPosition();
+                if (!float.IsNaN(position.x))
+                {
+                    handGameObject.transform.localPosition = position;
+                }
 
                 bool mikeToMouth = IsMikeNextToMouth();
                 //bool isTouching = currentlyHeldVerb.Kind == MenuVerbKind.Prompt
