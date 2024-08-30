@@ -89,6 +89,11 @@ namespace Holofunk.Controller
         /// </summary>
         private GameObject headIcon;
 
+        /// <summary>
+        /// The sprites which have been pushed by the current state (if any).
+        /// </summary>
+        private Stack<GameObject> pushedSprites = new Stack<GameObject>();
+
         #endregion Fields
 
         #region Properties
@@ -118,6 +123,32 @@ namespace Holofunk.Controller
                     currentlyHeldVerbGameObject = MenuLevel.CreateMenuItem(this.transform, Vector3.zero, currentlyHeldVerb.NameFunc());
                     //MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);
                 }
+                else
+                {
+                    currentlyHeldVerbGameObject = ShapeContainer.InstantiateShape(ShapeType.NoRecCircle, this.transform);
+                }
+            }
+        }
+
+        internal void PushSprite(ShapeType spriteType)
+        {
+            GameObject sprite = ShapeContainer.InstantiateShape(spriteType, transform);
+
+            // if there was a previous sprite, then hide it
+            if (pushedSprites.Count > 0)
+            {
+                pushedSprites.Peek().SetActive(false);
+            }
+            sprite.SetActive(true);
+            pushedSprites.Push(sprite);
+        }
+
+        internal void PopSprite()
+        {
+            if (pushedSprites.Count > 0)
+            {
+                GameObject popped = pushedSprites.Pop();
+                GameObject.Destroy(popped);
             }
         }
 
@@ -256,20 +287,32 @@ namespace Holofunk.Controller
                 headIcon.SetActive(false);
             }
 
-            // aaand, somewhat cheesily, update the menu verb game object if any
-            // tension: keeping this an implementation detail of the controller, vs avoiding ux-specific logic in the controller
-            // TODO: make there be a darn gameobject for the controller hand already (then could just stick it to that and 
-            // let Unity take care of it)
+            // If there's a currentlyHeldVerbGameObject, update its name.
             if (currentlyHeldVerbGameObject != null)
             {
-                currentlyHeldVerbGameObject.transform.localPosition = GetViewpointHandPosition();
                 MenuLevel.SetMenuItemName(currentlyHeldVerbGameObject, currentlyHeldVerb.NameFunc());
+            }
+
+            // aaand, cheesily, update whatever the heck game object we are "holding".
+            // This will be CurrentlyHeldMenuVerbGameObject UNLESS we have any pushed sprites (which override whatever menu
+            // was being held, during the state in which they're pushed).
+            // Tension: keeping this an implementation detail of the controller, vs avoiding ux-specific logic in the controller.
+            // TODO: make there be a darn gameobject for the controller hand already (then could just stick it to that and 
+            // let Unity take care of it).
+            GameObject handGameObject = currentlyHeldVerbGameObject;
+            if (pushedSprites.Count > 0)
+            {
+                handGameObject = pushedSprites.Peek();
+            }
+            if (handGameObject != null)
+            {
+                handGameObject.transform.localPosition = GetViewpointHandPosition();
 
                 bool mikeToMouth = IsMikeNextToMouth();
-                bool isTouching = currentlyHeldVerb.Kind == MenuVerbKind.Prompt
-                    || (currentlyHeldVerb.Kind == MenuVerbKind.Touch && touchedLoopieIds.Count > 0)
-                    || (currentlyHeldVerb.Kind == MenuVerbKind.Level && currentlyHeldVerb.MayBePerformer && mikeToMouth)
-                    || (currentlyHeldVerb.Kind == MenuVerbKind.Level && touchedLoopieIds.Count > 0);
+                //bool isTouching = currentlyHeldVerb.Kind == MenuVerbKind.Prompt
+                //    || (currentlyHeldVerb.Kind == MenuVerbKind.Touch && touchedLoopieIds.Count > 0)
+                //    || (currentlyHeldVerb.Kind == MenuVerbKind.Level && currentlyHeldVerb.MayBePerformer && mikeToMouth)
+                //    || (currentlyHeldVerb.Kind == MenuVerbKind.Level && touchedLoopieIds.Count > 0);
                 //MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, isTouching ? Color.white : Color.grey);
 
                 if (mikeToMouth)

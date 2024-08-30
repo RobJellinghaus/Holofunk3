@@ -81,21 +81,6 @@ namespace Holofunk.Controller
         /// <summary>
         /// Catch-all model for all state needed by the union of all menu verbs.
         /// </summary>
-        /// <remarks>
-        /// This class demonstrates a current design weakness: menu verbs are really a whole lot like state machine states.
-        /// 
-        /// State machine states, however, have a good system for defining extensible models that are state-specific, giving
-        /// each state a good place to store its specific... state.
-        /// 
-        /// Menu verbs... don't. There's no current MenuVerb equivalent of the IModel type, for instance.
-        /// 
-        /// Ultimately, menu verbs arguably are "delegate states" more or less, and could potentially even *be* actual
-        /// state machine states. One could imagine reflecting the current menu verb into the state machine infrastructure
-        /// as the basis for a conditional transition.
-        /// 
-        /// For now, though, we avoid this generalization, and we just put any variables needed by any menu verb into this
-        /// ad hoc class.
-        /// </remarks>
         public class MenuVerbModel : BaseModel<MenuVerbModel>
         {
             /// <summary>
@@ -206,7 +191,7 @@ namespace Holofunk.Controller
                 initial,
                 (evt, pplusModel) =>
                 {
-                    //pplusController.PushSprite(SpriteId.HollowCircle, Color.red);
+                    pplusModel.Controller.PushSprite(ShapeType.RecCircle);
 
                     // Creating the loopie here assigns it as the currently held loopie.
                     // Note that this implicitly starts recording.
@@ -219,7 +204,8 @@ namespace Holofunk.Controller
                     return new RecordingModel(
                         pplusModel,
                         loopie,
-                        recordingModel => {
+                        recordingModel =>
+                        {
                             // Move the loopie to follow the hand while recording.
                             Vector3 viewpointHandPosition = pplusModel.Controller.GetViewpointHandPosition();
 
@@ -235,14 +221,18 @@ namespace Holofunk.Controller
                             loopie.GetComponent<DistributedLoopie>().SetViewpointPosition(viewpointHandPosition);
                         });
                 },
-                (_, recordingModel) => recordingModel.RecordingLoopie.GetComponent<DistributedLoopie>().FinishRecording());
+                (_, recordingModel) =>
+                {
+                    recordingModel.RecordingLoopie.GetComponent<DistributedLoopie>().FinishRecording();
+                    ((PPlusModel)recordingModel.Parent).Controller.PopSprite();
+                });
 
             AddTransition(
                 stateMachine,
                 initial,
                 PPlusEvent.MikeDown,
-                // Start recording if and only if 1) the UI didn't capture this, and 2) recording is enabled.
-                (evt, pplusModel) => (!evt.IsCaptured /* && HolofunkController.Instance.IsRecordingEnabled */)
+                // Start recording if and only if 1) the UI didn't capture this, and 2) the root (recording) menu item is held.
+                (evt, pplusModel) => (!evt.IsCaptured && pplusModel.Controller.CurrentlyHeldVerb.Kind == MenuVerbKind.Root)
                     ? (State<PPlusEvent>)recording
                     : (State<PPlusEvent>)initial);
 
@@ -257,6 +247,8 @@ namespace Holofunk.Controller
                 initial,
                 (evt, pplusModel) =>
                 {
+                    pplusModel.Controller.PushSprite(ShapeType.MuteCircle);
+
                     // initialize whether we are deleting the loopies we touch
                     Option<bool> deletingTouchedLoopies = Option<bool>.None;
 
@@ -301,7 +293,7 @@ namespace Holofunk.Controller
                             });
                         });
                 },
-                (_1, _2) => { });
+                (_1, pplusModel) => pplusModel.Controller.PopSprite());
 
             AddTransition(stateMachine, initial, PPlusEvent.LeftDown, mute);
             AddTransition(stateMachine, mute, PPlusEvent.LeftUp, initial);
@@ -311,6 +303,8 @@ namespace Holofunk.Controller
                 initial,
                 (evt, pplusModel) =>
                 {
+                    pplusModel.Controller.PushSprite(ShapeType.UnmuteCircle);
+
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
                     return new PPlusModel(
@@ -329,7 +323,7 @@ namespace Holofunk.Controller
                             });
                         });
                 },
-                (_1, _2) => { });
+                (_1, pplusModel) => pplusModel.Controller.PopSprite());
 
             AddTransition(stateMachine, initial, PPlusEvent.RightDown, unmute);
             AddTransition(stateMachine, unmute, PPlusEvent.RightUp, initial);
@@ -343,7 +337,7 @@ namespace Holofunk.Controller
             // (it works only when there is exactly one state machine instance in existence)
             // DistributedLevelWidget widget = null;
 
-            State<PPlusEvent, MenuVerbModel, PPlusModel> applyMenuVerb = new State<PPlusEvent, MenuVerbModel, PPlusModel>(
+            State<PPlusEvent, MenuVerbModel, PPlusModel> applyMenu = new State<PPlusEvent, MenuVerbModel, PPlusModel>(
                 "applyMenu",
                 initial,
                 (evt, pplusModel) =>
@@ -354,8 +348,8 @@ namespace Holofunk.Controller
                     Core.Contract.Assert(menuVerb.NameFunc != null);
                     //HoloDebug.Log($"Entering levelChange state, menuVerb is {menuVerb.NameFunc()} of kind {menuVerb.Kind}");
 
-                    // If the menu verb is the root, then it's volume time.
-                    if (menuVerb.Kind == MenuVerbKind.Root)
+                    // If we got here with the LightDown button, then it's volume time.
+                    if (evt.Button == PPlus.Button.LIGHT && evt.IsDown)
                     {
                         // at this point we decide that we actually have a Level MenuVerb
                         Action<HashSet<DistributedId>, float, bool> volumeAction = (effectableIds, alteration, commit) =>
@@ -466,15 +460,24 @@ namespace Holofunk.Controller
                     }
                 });
 
-            // Light button will do something if there is a current menu verb, or even if there isn't (in which case it's Set Volume
-            // when touching loopies).
+            // Main action button conditional transition if there's a non-root (non-recording) menu verb.
+            AddTransition(
+                stateMachine,
+                initial,
+                PPlusEvent.MikeDown,
+                applyMenu,
+                model => model.Controller.CurrentlyHeldVerb.Kind != MenuVerbKind.Root);
+            AddTransition(stateMachine, applyMenu, PPlusEvent.MikeUp, initial);
+
+            // Light button will do something if we're touching loopies. If the recording/root verb is selected,
+            // the applyMenu transition entry code above will treat it as SetVolume.
             AddTransition(
                 stateMachine,
                 initial,
                 PPlusEvent.LightDown,
-                applyMenuVerb,
-                model => model.Controller.CurrentlyHeldVerb.Kind != MenuVerbKind.Root || model.Controller.IsTouchingLoopies);
-            AddTransition(stateMachine, applyMenuVerb, PPlusEvent.LightUp, initial);
+                applyMenu,
+                model => model.Controller.IsTouchingLoopies);
+            AddTransition(stateMachine, applyMenu, PPlusEvent.LightUp, initial);
 
             #endregion
 

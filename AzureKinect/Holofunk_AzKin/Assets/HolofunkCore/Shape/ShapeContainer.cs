@@ -42,6 +42,16 @@ namespace Holofunk.Shape
         Microphone,
 
         /// <summary>
+        /// The mute icon in a circle.
+        /// </summary>
+        MuteCircle,
+
+        /// <summary>
+        /// A white dot in a circle, indicating recording mode (but not currently recording).
+        /// </summary>
+        NoRecCircle,
+
+        /// <summary>
         /// A number 1 in an oval
         /// </summary>
         Number1,
@@ -52,9 +62,19 @@ namespace Holofunk.Shape
         Number2,
 
         /// <summary>
+        /// A red dot in a circle, indicating active recording.
+        /// </summary>
+        RecCircle,
+
+        /// <summary>
         /// Simple 0.1 m sphere
         /// </summary>
         Sphere,
+
+        /// <summary>
+        /// The "unmute" speaker-with-waves icon in a circle.
+        /// </summary>
+        UnmuteCircle,
     }
 
     public static class ShapeContainer

@@ -15,8 +15,12 @@ namespace Holofunk.Menu
     public enum MenuVerbKind
     {
         /// <summary>
-        /// The root menu verb; goes at the center, has no label, enables canceling the current verb.
+        /// The root menu verb; goes at the center, means "recording".
         /// </summary>
+        /// <remarks>
+        /// Yes it is a bit sketchy to couple the concept of "recording" to the concept of "root menu item"
+        /// at the semantic level. But sometimes you take shortcuts in order to make an omelette.
+        /// </remarks>
         Root = 1,
         /// <summary>
         /// Label only, not directly selectable.
