@@ -71,20 +71,20 @@ namespace Holofunk.Menu
                     if (i == 0)
                     {
                         submenuRootRelativePosition = Vector3.zero;
+                        menuItemGameObject = ShapeContainer.InstantiateShape(ShapeType.NoRecCircle, menu.transform);
                     }
                     else
                     {
                         submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
+                        menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).NameFunc());
                     }
-
-                    //menuItemGameObject = ShapeContainer.InstantiateShape(ShapeType.NoRecCircle, menu.transform);
                 }
                 else
                 {
                     submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
+                    menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).NameFunc());
                 }
 
-                menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).NameFunc());
                 menuItemGameObjects.Add(menuItemGameObject);
                 // everything starts off disabled
                 ColorizeMenuItem(i + 1, Color.grey);
@@ -226,17 +226,26 @@ namespace Holofunk.Menu
             if (currentColor != color)
             {
                 menuItemGameObject.GetComponent<SpriteRenderer>().material.color = color;
-                menuItemGameObject.transform.GetChild(0).gameObject.GetComponent<TextMesh>().color = color;
+                TextMesh maybeTextMesh;
+                if (menuItemGameObject.transform.childCount > 0
+                    && (maybeTextMesh = menuItemGameObject.transform.GetChild(0).gameObject.GetComponent<TextMesh>()) != null)
+                {
+                    maybeTextMesh.color = color;
+                }
             }
         }
 
         public static void SetMenuItemName(GameObject menuItemGameObject, string possiblyNewName)
         {
-            TextMesh textComponent = menuItemGameObject.transform.GetChild(0).GetComponent<TextMesh>();
-            string name = textComponent.text;
-            if (name != possiblyNewName)
+            TextMesh maybeTextMesh;
+            if (menuItemGameObject.transform.childCount > 0
+                && (maybeTextMesh = menuItemGameObject.transform.GetChild(0).gameObject.GetComponent<TextMesh>()) != null)
             {
-                textComponent.text = possiblyNewName;
+                string name = maybeTextMesh.text;
+                if (name != possiblyNewName)
+                {
+                    maybeTextMesh.text = possiblyNewName;
+                }
             }
         }
     }
