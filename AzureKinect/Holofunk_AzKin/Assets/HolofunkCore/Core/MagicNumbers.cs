@@ -64,7 +64,7 @@ namespace Holofunk.Core
         /// <summary>
         /// Number of output bins; this can be whatever we want to see, rendering-wise.
         /// </summary>
-        public static readonly int OutputBinCount = 64;
+        public static readonly int OutputBinCount = 128;
         /// <summary>
         /// 12 divisions per octave = 12 semitones per octave... how diatonic
         /// </summary>
@@ -84,7 +84,7 @@ namespace Holofunk.Core
         /// <summary>
         /// The bin (out of OutputBinCount) in which the central frequency should be mapped; zero-indexed.
         /// </summary>
-        public static readonly int CentralFrequencyBin = 32;
+        public static readonly int CentralFrequencyBin = 64;
 
         #endregion
 
@@ -165,7 +165,7 @@ namespace Holofunk.Core
         /// <summary>
         /// The vertical distance apart to place each frequency disc.
         /// </summary>
-        public static readonly float FrequencyDiscVerticalDistance = 0.002f;
+        public static readonly float FrequencyDiscVerticalDistance = 0.001f;
 
         /// <summary>
         /// The minimum value below which frequency bins will be ignored.

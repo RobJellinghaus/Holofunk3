@@ -237,7 +237,7 @@ namespace Holofunk.Loop
             if ((int)trackInfo.BeatDuration > measureControllerCount * trackInfo.BeatsPerMeasure)
             {
                 // we need another beatMeasureController.
-                BeatMeasureController lastBeatMeasureController = 
+                BeatMeasureController lastBeatMeasureController =
                     BeatMeasureContainer
                     .GetChild(measureControllerCount - 1)
                     .GetComponent<BeatMeasureController>();
@@ -248,15 +248,38 @@ namespace Holofunk.Loop
                 newBeatMeasureController.startingMeasure = measureControllerCount;
                 newBeatMeasureController.localLoopie = this;
 
-                newBeatMeasureController.transform.localPosition = 
-                    lastBeatMeasureController.transform.localPosition 
+                newBeatMeasureController.transform.localPosition =
+                    lastBeatMeasureController.transform.localPosition
                     + new Vector3(MagicNumbers.BeatMeasureSeparation * 2, 0, 0);
 
-                for (int i = 0; i < BeatMeasureContainer.childCount; i++)
-                {
-                    // shove them all to the left just a bit
-                    BeatMeasureContainer.GetChild(i).localPosition -= new Vector3(MagicNumbers.BeatMeasureSeparation, 0, 0);
-                }
+                // shove them all a bit to the left
+                TranslateControllers(-MagicNumbers.BeatMeasureSeparation);
+            }
+
+            // Did we *shorten* by a measure?
+            // This will happen if we go no more than a beat past the end of a measure -- we will momentarily become
+            // one measure longer as soon as the measure ends, but if we stop recording in less than one additional beat,
+            // we will truncate that entire extra measure.
+            if ((int)trackInfo.BeatDuration < measureControllerCount * trackInfo.BeatsPerMeasure
+                && (int)trackInfo.BeatDuration >= DistributedSoundClock.Instance.BeatsPerMeasure)
+            {
+                // this beatMeasureController must die.
+                BeatMeasureController lastBeatMeasureController =
+                    BeatMeasureContainer
+                    .GetChild(measureControllerCount - 1)
+                    .GetComponent<BeatMeasureController>();
+                GameObject.Destroy(lastBeatMeasureController.gameObject);
+
+                // shove them back to the right
+                TranslateControllers(MagicNumbers.BeatMeasureSeparation);
+            }
+        }
+
+        private void TranslateControllers(float xDelta)
+        {
+            for (int i = 0; i < BeatMeasureContainer.childCount; i++)
+            {
+                BeatMeasureContainer.GetChild(i).localPosition += new Vector3(xDelta, 0, 0);
             }
         }
 
@@ -354,20 +377,12 @@ namespace Holofunk.Loop
             // TODO: also scale by volume for total size?
             float minFrequencyAmplitude = float.MaxValue;
             float maxFrequencyAmplitude = 0;
-            bool badValuesFound = false;
             for (int i = 0; i < MagicNumbers.OutputBinCount; i++)
             {
                 if (float.IsNaN(frequencyBins[i]))
                 {
                     // We don't even try to deal with any NaNs, which evidently happen only when the loop is just starting.
-                    badValuesFound = true;
-                    break;
-                }
-                if (frequencyBins[i] > 1e2 || frequencyBins[i] < -1e2)
-                {
-                    // also, skip any out of range values, which seems to happen just after loop creation
-                    badValuesFound = true;
-                    break;
+                    continue;
                 }
 
                 if (frequencyBins[i] < MagicNumbers.FrequencyBinMinValue)
@@ -378,12 +393,6 @@ namespace Holofunk.Loop
 
                 minFrequencyAmplitude = Mathf.Min(minFrequencyAmplitude, frequencyBins[i]);
                 maxFrequencyAmplitude = Mathf.Max(maxFrequencyAmplitude, frequencyBins[i]);
-            }
-
-            if (badValuesFound)
-            {
-                // treat as all silent
-                maxFrequencyAmplitude = 0;
             }
 
             if (maxFrequencyAmplitude == 0)
