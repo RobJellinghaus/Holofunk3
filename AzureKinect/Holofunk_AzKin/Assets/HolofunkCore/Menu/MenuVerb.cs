@@ -1,5 +1,6 @@
 ﻿using DistributedStateLib;
 using Holofunk.Controller;
+using Holofunk.Shape;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,6 +62,10 @@ namespace Holofunk.Menu
         /// </summary>
         public readonly MenuVerbKind Kind;
         /// <summary>
+        /// What kind of shape should this verb display?
+        /// </summary>
+        public readonly ShapeType ShapeType;
+        /// <summary>
         /// What's the name of this (when stuck to the controller hand)?
         /// </summary>
        public readonly Func<string> NameFunc;
@@ -89,6 +94,7 @@ namespace Holofunk.Menu
         /// </summary>
         private MenuVerb(
             MenuVerbKind kind,
+            ShapeType shapeType,
             Func<string> nameFunc,
             bool mayBePerformer,
             Action<PPlusController> promptAction,
@@ -96,6 +102,7 @@ namespace Holofunk.Menu
             Action<HashSet<DistributedId>, float, bool> levelAction)
         {
             Kind = kind;
+            ShapeType = shapeType;
             NameFunc = nameFunc;
             MayBePerformer = mayBePerformer;
             PromptAction = promptAction;
@@ -106,32 +113,32 @@ namespace Holofunk.Menu
         public static MenuVerb MakeRoot()
         {
             // lol this character doesn't render, oh well, blank is fine
-            return new MenuVerb(MenuVerbKind.Root, () => "🚫", false, null, null, null);
+            return new MenuVerb(MenuVerbKind.Root, ShapeType.NoRecCircleSprite, () => "🚫", false, null, null, null);
         }
 
-        public static MenuVerb MakePrompt(string name, Action<PPlusController> action)
+        public static MenuVerb MakePrompt(string name, ShapeType shapeType, Action<PPlusController> action)
         {
-            return new MenuVerb(MenuVerbKind.Prompt, () => name, false, action, null, null);
+            return new MenuVerb(MenuVerbKind.Prompt, shapeType, () => name, false, action, null, null);
         }
 
-        public static MenuVerb MakePrompt(Func<string> nameFunc, Action<PPlusController> action)
+        public static MenuVerb MakePrompt(Func<string> nameFunc, ShapeType shapeType, Action<PPlusController> action)
         {
-            return new MenuVerb(MenuVerbKind.Prompt, nameFunc, false, action, null, null);
+            return new MenuVerb(MenuVerbKind.Prompt, shapeType, nameFunc, false, action, null, null);
         }
 
-        public static MenuVerb MakeTouch(string name, bool mayBePerformer, Action<MenuVerbModel, HashSet<DistributedId>> touchUpdateAction)
+        public static MenuVerb MakeTouch(string name, ShapeType shapeType, bool mayBePerformer, Action<MenuVerbModel, HashSet<DistributedId>> touchUpdateAction)
         {
-            return new MenuVerb(MenuVerbKind.Touch, () => name, mayBePerformer, null, touchUpdateAction, null);
+            return new MenuVerb(MenuVerbKind.Touch, shapeType, () => name, mayBePerformer, null, touchUpdateAction, null);
         }
 
-        public static MenuVerb MakeLevel(string name, bool mayBePerformer, Action<HashSet<DistributedId>, float, bool> levelUpdateAction)
+        public static MenuVerb MakeLevel(string name, ShapeType shapeType, bool mayBePerformer, Action<HashSet<DistributedId>, float, bool> levelUpdateAction)
         {
-            return new MenuVerb(MenuVerbKind.Level, () => name, mayBePerformer, null, null, levelUpdateAction);
+            return new MenuVerb(MenuVerbKind.Level, shapeType, () => name, mayBePerformer, null, null, levelUpdateAction);
         }
 
-        public static MenuVerb MakeLabel(string name)
+        public static MenuVerb MakeLabel(string name, ShapeType shapeType)
         {
-            return new MenuVerb(MenuVerbKind.Label, () => name, false, null, null, null);
+            return new MenuVerb(MenuVerbKind.Label, shapeType, () => name, false, null, null, null);
         }
     }
 

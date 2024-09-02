@@ -71,31 +71,33 @@ namespace Holofunk.Menu
                     if (i == 0)
                     {
                         submenuRootRelativePosition = Vector3.zero;
-                        menuItemGameObject = ShapeContainer.InstantiateShape(ShapeType.NoRecCircle, menu.transform);
                     }
                     else
                     {
                         submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
-                        menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).NameFunc());
                     }
                 }
                 else
                 {
                     submenuRootRelativePosition = GetRelativePosition(parentLocalPosition, i);
-                    menuItemGameObject = CreateMenuItem(menu.transform, submenuRootRelativePosition, menuStructure.Verb(i + 1).NameFunc());
                 }
 
+                menuItemGameObject = CreateMenuItem(menu.transform, menuStructure.Verb(i + 1).ShapeType, submenuRootRelativePosition, menuStructure.Verb(i + 1).NameFunc());
                 menuItemGameObjects.Add(menuItemGameObject);
                 // everything starts off disabled
                 ColorizeMenuItem(i + 1, Color.grey);
             }
         }
 
-        public static GameObject CreateMenuItem(Transform parentTransform, Vector3 localPosition, string text)
+        public static GameObject CreateMenuItem(Transform parentTransform, ShapeType shapeType, Vector3 localPosition, string text)
         {
             GameObject menuItemGameObject = ShapeContainer.InstantiateShape(ShapeType.MenuItem, parentTransform);
             // position this relative to its parent
             menuItemGameObject.transform.localPosition = localPosition;
+
+            // Instantiate the right shape of menu item as a child.
+            // Child 0 is the text mesh (if any); child 1 is the transform to hold whatever shape we instantiate.
+            ShapeContainer.InstantiateShape(shapeType, menuItemGameObject.transform.GetChild(1).transform);
 
             //_logBuffer.Append($"  Created menu item {_menuModel[i].Label} at local position {menuItemGameObject.transform.localPosition} and global position {menuItemGameObject.transform.position}{Environment.NewLine}");
 
@@ -220,15 +222,19 @@ namespace Holofunk.Menu
             ColorizeMenuItem(menuItemGameObjects[originalSelectedMenuItem.AsIndex], color);
         }
 
+        internal static SpriteRenderer GetSpriteRenderer(GameObject gameObject)
+        {
+            return gameObject.transform.GetChild(1).GetChild(0).GetComponent<SpriteRenderer>();
+        }
+
         public static void ColorizeMenuItem(GameObject menuItemGameObject, Color color)
         {
-            Color currentColor = menuItemGameObject.GetComponent<SpriteRenderer>().material.color;
+            Color currentColor = GetSpriteRenderer(menuItemGameObject).material.color;
             if (currentColor != color)
             {
-                menuItemGameObject.GetComponent<SpriteRenderer>().material.color = color;
+                GetSpriteRenderer(menuItemGameObject).material.color = color;
                 TextMesh maybeTextMesh;
-                if (menuItemGameObject.transform.childCount > 0
-                    && (maybeTextMesh = menuItemGameObject.transform.GetChild(0).gameObject.GetComponent<TextMesh>()) != null)
+                if ((maybeTextMesh = menuItemGameObject.transform.GetChild(0).gameObject.GetComponent<TextMesh>()) != null)
                 {
                     maybeTextMesh.color = color;
                 }

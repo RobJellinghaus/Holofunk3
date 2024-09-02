@@ -126,21 +126,17 @@ namespace Holofunk.Controller
 
                 currentlyHeldVerb = value;
 
-                if (currentlyHeldVerb.Kind != MenuVerbKind.Root)
-                {
-                    currentlyHeldVerbGameObject = MenuLevel.CreateMenuItem(this.transform, Vector3.zero, currentlyHeldVerb.NameFunc());
-                    //MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);
-                }
-                else
-                {
-                    currentlyHeldVerbGameObject = ShapeContainer.InstantiateShape(ShapeType.NoRecCircle, this.transform);
-                }
+                currentlyHeldVerbGameObject = MenuLevel.CreateMenuItem(this.transform, currentlyHeldVerb.ShapeType, Vector3.zero, currentlyHeldVerb.NameFunc());
+                    MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);                
             }
         }
 
         internal void PushSprite(ShapeType spriteType)
         {
-            GameObject sprite = ShapeContainer.InstantiateShape(spriteType, transform);
+            // Put the sprite in a hand-holder so it will be the right size.
+            // This lets us set hand scale in one place, controlled by the Unity scene graph.
+            GameObject spriteHolder = ShapeContainer.InstantiateShape(ShapeType.HandHolder, transform);
+            GameObject sprite = ShapeContainer.InstantiateShape(spriteType, spriteHolder.transform);
 
             // if there was a previous sprite, then hide it.
             // if no previous sprite, hide the currently held game object
@@ -154,7 +150,7 @@ namespace Holofunk.Controller
             }
 
             sprite.SetActive(true);
-            pushedSprites.Push(sprite);
+            pushedSprites.Push(spriteHolder);
         }
 
         internal void PopSprite()
@@ -233,8 +229,9 @@ namespace Holofunk.Controller
         /// </summary>
         void Start()
         {
-            headIcon = ShapeContainer.InstantiateShape(this.playerIndex == 0 ? ShapeType.Number1 : ShapeType.Number2, transform);
-            mikeIcon = ShapeContainer.InstantiateShape(ShapeType.Microphone, transform);
+            headIcon = ShapeContainer.InstantiateShape(this.playerIndex == 0 ? ShapeType.Number1Sprite : ShapeType.Number2Sprite, transform);
+            mikeIcon = ShapeContainer.InstantiateShape(ShapeType.HandHolder, transform);
+            ShapeContainer.InstantiateShape(ShapeType.MicrophoneSprite, mikeIcon.transform);
         }
 
         // Update is called once per frame

@@ -27,44 +27,59 @@ namespace Holofunk.Shape
         FlatCylinder,
 
         /// <summary>
-        /// Hollow circle sprite (0.1 m)
+        /// A container for a hand-held game object; scaled to 0.1m
         /// </summary>
-        HollowCircle,
+        HandHolder,
 
         /// <summary>
-        /// A menu item (0.05 m hollow circle w/text)
+        /// Hollow circle
+        /// </summary>
+        HollowCircleSprite,
+
+        /// <summary>
+        /// Hollow hexagon
+        /// </summary>
+        HollowHexagonSprite,
+
+        /// <summary>
+        /// Hollow square
+        /// </summary>
+        HollowSquareSprite,
+
+        /// <summary>
+        /// A menu item (child 0 = text; child 1 = shape); scaled to 0.1m
         /// </summary>
         MenuItem,
 
         /// <summary>
-        /// A microphone sprite
+        /// A microphone
         /// </summary>
-        Microphone,
+        MicrophoneSprite,
 
         /// <summary>
-        /// The mute icon in a circle.
+        /// The mute icon in a circle
         /// </summary>
-        MuteCircle,
+        MuteCircleSprite,
 
         /// <summary>
         /// A white dot in a circle, indicating recording mode (but not currently recording).
         /// </summary>
-        NoRecCircle,
+        NoRecCircleSprite,
 
         /// <summary>
         /// A number 1 in an oval
         /// </summary>
-        Number1,
+        Number1Sprite,
 
         /// <summary>
         /// A number 2 in an oval
         /// </summary>
-        Number2,
+        Number2Sprite,
 
         /// <summary>
         /// A red dot in a circle, indicating active recording.
         /// </summary>
-        RecCircle,
+        RecCircleSprite,
 
         /// <summary>
         /// Simple 0.1 m sphere
@@ -74,7 +89,7 @@ namespace Holofunk.Shape
         /// <summary>
         /// The "unmute" speaker-with-waves icon in a circle.
         /// </summary>
-        UnmuteCircle,
+        UnmuteCircleSprite,
     }
 
     public static class ShapeContainer

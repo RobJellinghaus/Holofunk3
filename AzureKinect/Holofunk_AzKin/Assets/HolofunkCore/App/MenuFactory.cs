@@ -6,6 +6,7 @@ using Holofunk.Core;
 using Holofunk.Distributed;
 using Holofunk.Loop;
 using Holofunk.Menu;
+using Holofunk.Shape;
 using Holofunk.Sound;
 using Holofunk.Viewpoint;
 using System;
@@ -96,24 +97,26 @@ namespace Holofunk.App
             (MenuVerb, MenuStructure) recordingItem;
             if (isRecording)
             {
-                recordingItem = (MenuVerb.MakePrompt("Stop\nRecording", _ => DistributedViewpoint.Instance.StopRecording()), null);
+                recordingItem = (MenuVerb.MakePrompt("Stop\nRecording", ShapeType.HollowSquareSprite, _ => DistributedViewpoint.Instance.StopRecording()), null);
             }
             else
             {
-                recordingItem = (MenuVerb.MakePrompt("Start\nRecording", _ => DistributedViewpoint.Instance.StartRecording()), null);
+                recordingItem = (MenuVerb.MakePrompt("Start\nRecording", ShapeType.HollowSquareSprite, _ => DistributedViewpoint.Instance.StartRecording()), null);
             }
 
 
-            items.Add((MenuVerb.MakeLabel("System"), new MenuStructure(
+            items.Add((MenuVerb.MakeLabel("System", ShapeType.HollowSquareSprite), new MenuStructure(
                 (MenuVerb.MakePrompt(
                     () => $"{DistributedSoundClock.Instance.TimeInfo.Value.BeatsPerMinute} BPM +",
+                    ShapeType.HollowSquareSprite,
                     _ => setBPMAction(2)),
                  null),
                 (MenuVerb.MakePrompt(
                     () => $"{DistributedSoundClock.Instance.TimeInfo.Value.BeatsPerMinute} BPM -",
+                    ShapeType.HollowSquareSprite,
                     _ => setBPMAction(-2)),
                  null),
-                (MenuVerb.MakePrompt("Delete\nMy Sounds", deleteMySoundsAction),
+                (MenuVerb.MakePrompt("Delete\nMy Sounds", ShapeType.HollowSquareSprite, deleteMySoundsAction),
                 null),
                 recordingItem
                 )));
@@ -199,18 +202,22 @@ namespace Holofunk.App
             };
 
             // Time > rewind/flip
-            items.Add((MenuVerb.MakeLabel("Touch"), new MenuStructure(
-                (MenuVerb.MakeTouch("Move", false, (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ false)),
+            items.Add((MenuVerb.MakeLabel("Grab", ShapeType.HollowHexagonSprite), new MenuStructure(
+                (MenuVerb.MakeTouch("Move", ShapeType.HollowHexagonSprite, false, (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ false)),
                  null),
-                (MenuVerb.MakeTouch("Copy", false, (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ true)),
-                 null),
+                (MenuVerb.MakeTouch("Copy", ShapeType.HollowHexagonSprite, false, (menuVerbModel, loopieIds) => grabAction(menuVerbModel, loopieIds, /*isCopy:*/ true)),
+                 null))));
+
+            items.Add((MenuVerb.MakeLabel("Time", ShapeType.HollowHexagonSprite), new MenuStructure( 
                 (MenuVerb.MakeTouch(
                     "Rewind",
+                    ShapeType.HollowHexagonSprite,
                     false,
                     (_, loopieIds) => timeAction(loopieIds, /*isFlip:*/ false)),
                  null),
                 (MenuVerb.MakePrompt(
                     "Flip",
+                    ShapeType.HollowHexagonSprite,
                     pplusController =>
                     {
                         HashSet<DistributedId> touchedLoopieIds = new HashSet<DistributedId>();
@@ -258,9 +265,10 @@ namespace Holofunk.App
                 programs.Add(effect.PluginProgramId);
             }
 
-            items.Add((MenuVerb.MakeLabel("FX"), new MenuStructure(
+            items.Add((MenuVerb.MakeLabel("FX", ShapeType.HollowCircleSprite), new MenuStructure(
                 (MenuVerb.MakeTouch(
                     "Clear\nAll",
+                    ShapeType.HollowCircleSprite,
                     /*mayBePerformer:*/ true,
                     (_, effectableIds) =>
                     {
@@ -279,6 +287,7 @@ namespace Holofunk.App
                 null),
                 (MenuVerb.MakeTouch(
                     "Pop\nLast",
+                    ShapeType.HollowCircleSprite,
                     /*mayBePerformer:*/ true,
                     (_, effectableIds) =>
                     {
@@ -340,7 +349,7 @@ namespace Holofunk.App
                             }
                         };
 
-                        subItems.Add((MenuVerb.MakeLevel(label, true, levelAction), null));
+                        subItems.Add((MenuVerb.MakeLevel(label, ShapeType.HollowCircleSprite, true, levelAction), null));
                     }
 
                     subItemIndex += subItemCount;
@@ -353,7 +362,7 @@ namespace Holofunk.App
 
                     MenuStructure subMenu = new MenuStructure(subItems.ToArray());
 
-                    items.Add((MenuVerb.MakeLabel(menuLabel), subMenu));
+                    items.Add((MenuVerb.MakeLabel(menuLabel, ShapeType.HollowCircleSprite), subMenu));
                 }
             }
         }

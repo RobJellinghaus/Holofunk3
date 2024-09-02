@@ -191,7 +191,7 @@ namespace Holofunk.Controller
                 initial,
                 (evt, pplusModel) =>
                 {
-                    pplusModel.Controller.PushSprite(ShapeType.RecCircle);
+                    pplusModel.Controller.PushSprite(ShapeType.RecCircleSprite);
 
                     // Creating the loopie here assigns it as the currently held loopie.
                     // Note that this implicitly starts recording.
@@ -240,7 +240,7 @@ namespace Holofunk.Controller
                 initial,
                 (evt, pplusModel) =>
                 {
-                    pplusModel.Controller.PushSprite(ShapeType.MuteCircle);
+                    pplusModel.Controller.PushSprite(ShapeType.MuteCircleSprite);
 
                     // initialize whether we are deleting the loopies we touch
                     Option<bool> deletingTouchedLoopies = Option<bool>.None;
@@ -296,7 +296,7 @@ namespace Holofunk.Controller
                 initial,
                 (evt, pplusModel) =>
                 {
-                    pplusModel.Controller.PushSprite(ShapeType.UnmuteCircle);
+                    pplusModel.Controller.PushSprite(ShapeType.UnmuteCircleSprite);
 
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
 
@@ -359,7 +359,7 @@ namespace Holofunk.Controller
                             }
                         };
 
-                        menuVerb = MenuVerb.MakeLevel("Set\nVolume", false, volumeAction);
+                        menuVerb = MenuVerb.MakeLevel("Set\nVolume", ShapeType.HollowCircleSprite, false, volumeAction);
                     }
 
                     if (menuVerb.Kind == MenuVerbKind.Prompt)
