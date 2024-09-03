@@ -147,7 +147,7 @@ namespace Holofunk.Menu
 
             }
 
-            if (priorMenuState.TopSelectedItem.IsInitialized)
+            if (priorMenuState.TopSelectedItem.IsInitialized && priorMenuState.TopSelectedItem != MenuState.TopSelectedItem)
             {
                 menuLevels[0].ColorizeMenuItem(priorMenuState.TopSelectedItem, Color.grey);
             }
@@ -156,7 +156,7 @@ namespace Holofunk.Menu
             {
                 if (menuLevels.Count == 1)
                 {
-                    // maybe need to create submenu?
+                    // Maybe need to create submenu
                     MenuStructure childMenuStructure = menuStructure.Child(menuState.TopSelectedItem);
 
                     if (childMenuStructure != null && childMenuStructure.Count > 0)
@@ -164,18 +164,56 @@ namespace Holofunk.Menu
                         Vector3 parentLocalPosition = menuLevels[0].GetRelativePosition(
                             Vector3.zero, MenuState.TopSelectedItem.AsIndex);
                         menuLevels.Add(new MenuLevel(this, parentLocalPosition, 1, childMenuStructure));
+
+                        // And actually hide all the other top-level menu items
+                        for (int i = 0; i < menuStructure.Count; i++)
+                        {
+                            if (i + 1 != menuState.TopSelectedItem)
+                            {
+                                menuLevels[0].ColorizeMenuItem(i + 1, Color.clear);
+                            }
+                        }
                     }
                 }
 
                 // is there a selected subitem? if so, highlight it
-
                 if (MenuState.SubSelectedItem.IsInitialized)
                 {
                     menuLevels[1].ColorizeMenuItem(MenuState.SubSelectedItem, Color.white);
+                    menuLevels[0].ColorizeMenuItem(MenuState.TopSelectedItem, Color.grey / 2);
                 }
                 else
                 {
+                    // highlight the top-level one we're touching
                     menuLevels[0].ColorizeMenuItem(MenuState.TopSelectedItem, Color.white);
+                }
+
+                Color otherTopLevelColor;
+                if (menuLevels.Count > 1)
+                {
+                    if (MenuState.SubSelectedItem.IsInitialized)
+                    {
+                        // Hide all other top-level items if we have a child selected.
+                        otherTopLevelColor = Color.clear;
+                    }
+                    else
+                    {
+                        // We have a top-level item selected but visible children; make other top-level items dimmer than grey.
+                        otherTopLevelColor = Color.grey / 2;
+                    }
+                }
+                else
+                {
+                    // There is no submenu; all other top level items are ordinary grey.
+                    otherTopLevelColor = Color.grey;
+                }
+
+                for (int i = 0; i < menuStructure.Count; i++)
+                {
+                    if (i + 1 != menuState.TopSelectedItem)
+                    {
+                        menuLevels[0].ColorizeMenuItem(i + 1, otherTopLevelColor);
+                    }
                 }
             }
 
