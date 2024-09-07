@@ -64,6 +64,9 @@ namespace Holofunk.Controller
         {
         }
 
+        /// <summary>
+        /// Model during recording; only adds the loopie being recorded.
+        /// </summary>
         public class RecordingModel : BaseModel<RecordingModel>
         {
             /// <summary>
@@ -223,6 +226,7 @@ namespace Holofunk.Controller
                 },
                 (_, recordingModel) =>
                 {
+                    // Here is where we need the loopie from the model, so we can finish recording it when we are exiting.
                     recordingModel.RecordingLoopie.GetComponent<DistributedLoopie>().FinishRecording();
                     ((PPlusModel)recordingModel.Parent).Controller.PopSprite();
                 });
@@ -235,15 +239,33 @@ namespace Holofunk.Controller
 
             #region Mute/unmute
 
-            ControllerState mute = new ControllerState(
-                "mute",
+            ControllerState muteUnmute = new ControllerState(
+                "mute-unmute",
                 initial,
                 (evt, pplusModel) =>
                 {
-                    pplusModel.Controller.PushSprite(ShapeType.MuteCircleSprite);
+                    // Are we muting or unmuting?
+                    bool isMuting = true;
+                    // Find the touched loopie that's closest to the hand.
+                    Vector3 handPosition = pplusModel.Controller.GetViewpointHandPosition();
+                    Option<float> minDistance = Option<float>.None;
+                    DistributedLoopie closestLoopie = null;
+                    pplusModel.Controller.ApplyToTouchedLoopies(loopie =>
+                    {
+                        float distance = Vector3.Distance(handPosition, loopie.gameObject.transform.position);
+                        if (!minDistance.HasValue || minDistance.Value > distance)
+                        {
+                            minDistance = distance;
+                            closestLoopie = loopie;
+                        }
+                    });
+                    // if closestLoopie exists, then isMuting is whether it's unmuted
+                    if (closestLoopie != null)
+                    {
+                        isMuting = !closestLoopie.GetState().IsMuted;
+                    }
 
-                    // initialize whether we are deleting the loopies we touch
-                    Option<bool> deletingTouchedLoopies = Option<bool>.None;
+                    pplusModel.Controller.PushSprite(isMuting ? ShapeType.MuteCircleSprite : ShapeType.UnmuteCircleSprite);
 
                     // Collection of loopies that makes sure we don't flip loopies back and forth between states.
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
@@ -256,49 +278,36 @@ namespace Holofunk.Controller
                             pplusModel.Controller.UpdateTouchedLoopieList();
                             pplusModel.Controller.ApplyToTouchedLoopies(loopie =>
                             {
-                                //HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: loopie {loopie.Id}, IsMuted {loopie.GetLoopie().IsMuted}");
-                                // the first loopie touched, if it's a double-mute, puts us into delete mode
-                                if (!deletingTouchedLoopies.HasValue)
-                                {
-                                    deletingTouchedLoopies = loopie.GetState().IsMuted;
-                                    //HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: deletingTouchedLoopies {deletingTouchedLoopies.Value}");
-                                }
-
                                 if (!toggledLoopies.Contains(loopie.Id))
                                 {
-                                    toggledLoopies.Add(loopie.Id); // loopity doo, I've got another puzzle for you
+                                    toggledLoopies.Add(loopie.Id);
 
-                                    // we know it has a value now
-                                    if (deletingTouchedLoopies.Value)
-                                    {
-                                        if (loopie.GetState().IsMuted)
-                                        {
-                                            HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: Deleting loopie {loopie.Id}");
-                                            loopie.Delete();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        HoloDebug.Log($"ControllerStateMachine.Mute.TouchedLoopieAction: Setting loopie to mute: {loopie.Id}");
-                                        loopie.SetMute(true);
-                                    }
+                                    HoloDebug.Log($"ControllerStateMachine.mute-unmute.TouchedLoopieAction: Setting loopie to {(isMuting ? "un" : "")}mute: {loopie.Id}");
+                                    loopie.SetMute(isMuting);
                                 }
                             });
                         });
                 },
                 (_1, pplusModel) => pplusModel.Controller.PopSprite());
 
-            AddTransition(stateMachine, initial, PPlusEvent.LeftDown, mute);
-            AddTransition(stateMachine, mute, PPlusEvent.LeftUp, initial);
+            AddTransition(stateMachine, initial, PPlusEvent.LeftDown, muteUnmute);
+            AddTransition(stateMachine, muteUnmute, PPlusEvent.LeftUp, initial);
 
-            ControllerState unmute = new ControllerState(
-                "unmute",
+            ControllerState clearDelete = new ControllerState(
+                "clear-delete",
                 initial,
                 (evt, pplusModel) =>
                 {
                     pplusModel.Controller.PushSprite(ShapeType.UnmuteCircleSprite);
 
+                    // The total set of loopies we have touched so far (so we don't keep clearing and re-clearing FX on the same loopies).
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
+                    // The time at which we first touched a loopie; once this goes over MagicNumbers.DeleteHoldDuration, it's gone time.
+                    Dictionary<DistributedId, ContinuousDuration<Beat>> loopieTouchTimes = new Dictionary<DistributedId, ContinuousDuration<Beat>>();
+                    // The set of currently touched loopies (so we can efficiently find which ones we touched in this update cycle).
+                    HashSet<DistributedId> touchedLoopieSet = new HashSet<DistributedId>();
+                    // The set of loopies we're no longer touching (to remove from loopieTouchTimes post-iteration).
+                    HashSet<DistributedId> noLongerTouchedLoopieSet = new HashSet<DistributedId>();
 
                     return new PPlusModel(
                         pplusModel,
@@ -306,20 +315,59 @@ namespace Holofunk.Controller
                         pplusModel =>
                         {
                             pplusModel.Controller.UpdateTouchedLoopieList();
+
+                            touchedLoopieSet.Clear();
+                            noLongerTouchedLoopieSet.Clear();
+
+                            ContinuousDuration<Beat> beatDurationNow = DistributedSoundClock.Instance.TimeInfo.Value.ExactBeat;
                             pplusModel.Controller.ApplyToTouchedLoopies(loopie =>
                             {
                                 if (!toggledLoopies.Contains(loopie.Id))
                                 {
-                                    toggledLoopies.Add(loopie.Id); // loopity doo, I've got another puzzle for you
-                                    loopie.SetMute(false);
+                                    toggledLoopies.Add(loopie.Id);
+                                    loopie.ClearSoundEffects();
+                                }
+
+                                if (!loopieTouchTimes.ContainsKey(loopie.Id))
+                                {
+                                    // we weren't touching this one... start the death timer
+                                    loopieTouchTimes.Add(loopie.Id, beatDurationNow);
+                                }
+
+                                ContinuousDuration<Beat> loopieTouchedTime;
+                                if (loopieTouchTimes.TryGetValue(loopie.Id, out loopieTouchedTime)
+                                    && (beatDurationNow - loopieTouchedTime) > MagicNumbers.DeleteHoldDuration)
+                                {
+                                    // we were touching this one and it's now reached its end
+                                    loopieTouchTimes.Remove(loopie.Id);
+                                    loopie.Delete();
+                                }
+                                else
+                                {
+                                    touchedLoopieSet.Add(loopie.Id);
                                 }
                             });
+
+                            // Now iterate over loopieTouchTimes and add any loopies that weren't touched to noLongerTouchedLoopieSet.
+                            foreach (DistributedId id in loopieTouchTimes.Keys)
+                            {
+                                if (!touchedLoopieSet.Contains(id))
+                                {
+                                    noLongerTouchedLoopieSet.Add(id);
+                                }
+                            }
+
+                            // Now remove everything in noLongerTouchedLoopieSet from loopieTouchTimes.
+                            foreach (DistributedId id in noLongerTouchedLoopieSet)
+                            {
+                                loopieTouchTimes.Remove(id);
+                            }
                         });
                 },
                 (_1, pplusModel) => pplusModel.Controller.PopSprite());
 
-            AddTransition(stateMachine, initial, PPlusEvent.RightDown, unmute);
-            AddTransition(stateMachine, unmute, PPlusEvent.RightUp, initial);
+            AddTransition(stateMachine, initial, PPlusEvent.RightDown, clearDelete);
+            AddTransition(stateMachine, clearDelete, PPlusEvent.RightUp, initial);
 
             #endregion
 
@@ -341,6 +389,7 @@ namespace Holofunk.Controller
                     Core.Contract.Assert(menuVerb.NameFunc != null);
                     //HoloDebug.Log($"Entering levelChange state, menuVerb is {menuVerb.NameFunc()} of kind {menuVerb.Kind}");
 
+                    /* TODO: maybe later
                     // If we got here with the LightDown button, then it's volume time.
                     if (evt.Button == PPlus.Button.LIGHT && evt.IsDown)
                     {
@@ -361,6 +410,7 @@ namespace Holofunk.Controller
 
                         menuVerb = MenuVerb.MakeLevel("Set\nVolume", ShapeType.HollowCircleSprite, false, volumeAction);
                     }
+                    */
 
                     if (menuVerb.Kind == MenuVerbKind.Prompt)
                     {
@@ -474,6 +524,7 @@ namespace Holofunk.Controller
             AddTransition(stateMachine, recording, PPlusEvent.MikeUp, initial);
             AddTransition(stateMachine, applyMenu, PPlusEvent.MikeUp, initial);
 
+            /* TODO: maybe later
             // Light button will do something if we're touching loopies. If we enter applyMenu with a LightDown
             // event, the currently held menu verb will be ignored, and the SetVolume action will be applied.
             AddTransition(
@@ -483,6 +534,7 @@ namespace Holofunk.Controller
                 applyMenu,
                 model => model.Controller.IsTouchingLoopies);
             AddTransition(stateMachine, applyMenu, PPlusEvent.LightUp, initial);
+            */
 
             #endregion
 

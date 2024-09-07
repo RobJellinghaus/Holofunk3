@@ -204,6 +204,11 @@ namespace Holofunk.Core
         /// </summary>
         public static readonly float BinValueDecay = 0.3f;
 
+        /// <summary>
+        /// The number of beats to hold the clear/delete button before deleting a touched loopie.
+        /// </summary>
+        public static readonly ContinuousDuration<Beat> DeleteHoldDuration = 2f;
+
         #endregion
 
         #region Menus

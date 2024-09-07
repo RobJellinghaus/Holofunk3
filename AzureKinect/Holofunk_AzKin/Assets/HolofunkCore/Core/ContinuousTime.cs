@@ -68,5 +68,35 @@ namespace Holofunk.Core
         {
             return new ContinuousDuration<TTime>(value * duration.m_duration);
         }
+
+        public static ContinuousDuration<TTime> operator +(ContinuousDuration<TTime> first, ContinuousDuration<TTime> second)
+        {
+            return new ContinuousDuration<TTime>((long)first + (long)second);
+        }
+
+        public static ContinuousDuration<TTime> operator -(ContinuousDuration<TTime> first, ContinuousDuration<TTime> second)
+        {
+            return new ContinuousDuration<TTime>((long)first - (long)second);
+        }
+
+        public static bool operator >(ContinuousDuration<TTime> first, ContinuousDuration<TTime> second)
+        {
+            return (long)first > (long)second;
+        }
+
+        public static bool operator <(ContinuousDuration<TTime> first, ContinuousDuration<TTime> second)
+        {
+            return (long)first < (long)second;
+        }
+
+        public static bool operator >=(ContinuousDuration<TTime> first, ContinuousDuration<TTime> second)
+        {
+            return (long)first >= (long)second;
+        }
+
+        public static bool operator <=(ContinuousDuration<TTime> first, ContinuousDuration<TTime> second)
+        {
+            return (long)first <= (long)second;
+        }
     }
 }
