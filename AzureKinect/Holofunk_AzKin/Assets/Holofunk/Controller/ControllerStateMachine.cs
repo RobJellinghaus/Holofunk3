@@ -298,7 +298,7 @@ namespace Holofunk.Controller
                 initial,
                 (evt, pplusModel) =>
                 {
-                    pplusModel.Controller.PushSprite(ShapeType.UnmuteCircleSprite);
+                    pplusModel.Controller.PushSprite(ShapeType.MuteCircleSprite);
 
                     // The total set of loopies we have touched so far (so we don't keep clearing and re-clearing FX on the same loopies).
                     HashSet<DistributedId> toggledLoopies = new HashSet<DistributedId>();
