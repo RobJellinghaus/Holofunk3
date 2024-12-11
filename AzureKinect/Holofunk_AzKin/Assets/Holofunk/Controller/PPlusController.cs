@@ -102,6 +102,15 @@ namespace Holofunk.Controller
         /// </remarks>
         private bool firstUpdate = false;
 
+        /// <summary>
+        /// Is this player in 3D mode?
+        /// </summary>
+        /// <remarks>
+        /// If not in 3D mode, then the player is in 2D mode, and the hand position is projected to a fixed plane
+        /// at MagicNumbers.PlaneDistance2DMode meters.
+        /// </remarks>
+        private bool is3D = false;
+
         #endregion Fields
 
         #region Properties
@@ -130,6 +139,8 @@ namespace Holofunk.Controller
                     MenuLevel.ColorizeMenuItem(currentlyHeldVerbGameObject, Color.white);                
             }
         }
+
+        internal void Set3DMode(bool is3DMode) => this.is3D = is3DMode;
 
         internal void PushSprite(ShapeType spriteType)
         {
@@ -521,6 +532,23 @@ namespace Holofunk.Controller
             // hand of this player
             PlayerState thisPlayer = DistributedViewpoint.Instance.GetPlayerByIndex(playerIndex);
             Vector3 viewpointHandPosition = handSide == Side.Left ? thisPlayer.LeftHandPosition : thisPlayer.RightHandPosition;
+
+            // TODO: if in 2D mode, then project ray from origin through viewpointHandPosition, get intercept point with plane,
+            // and make *that* be viewpointHandPosition.
+            if (is3D)
+            {
+                // leave viewpointHandPosition alone
+            }
+            else
+            {
+                // Treat the viewpoint hand position as a vector, and scale it by the ratio of the hand's Z position
+                // to the 2D plane's Z-depth.
+                // This winds up setting viewpointHandPosition.z to MagicNumbers.PlaneDistance2DMode, thereby making
+                // the hand position be on that plane.
+                float scaleFactor = viewpointHandPosition.z / MagicNumbers.PlaneDistance2DMode;
+                viewpointHandPosition /= scaleFactor;
+            }
+
             return viewpointHandPosition;
         }
     }

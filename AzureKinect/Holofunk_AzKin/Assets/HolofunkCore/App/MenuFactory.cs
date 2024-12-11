@@ -116,8 +116,9 @@ namespace Holofunk.App
                     ShapeType.HollowSquareSprite,
                     _ => setBPMAction(-2)),
                  null),
-                (MenuVerb.MakePrompt("Delete\nMy Sounds", ShapeType.HollowSquareSprite, deleteMySoundsAction),
-                null),
+                (MenuVerb.MakePrompt("Delete\nMy Sounds", ShapeType.HollowSquareSprite, deleteMySoundsAction), null),
+                (MenuVerb.MakePrompt("2D Mode", ShapeType.HollowSquareSprite, pplusController => pplusController.Set3DMode(false)), null),
+                (MenuVerb.MakePrompt("3D Mode", ShapeType.HollowSquareSprite, pplusController => pplusController.Set3DMode(true)), null),
                 recordingItem
                 )));
         }

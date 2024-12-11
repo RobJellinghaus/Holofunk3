@@ -32,6 +32,17 @@ namespace Holofunk.Core
         /// </summary>
         public static readonly ContinuousDuration<Second> RecognitionLossDuration = 5;
 
+        /// <summary>
+        /// How far away is the 2D plane for 2D mode?
+        /// </summary>
+        /// <remarks>
+        /// In 2D mode, the viewport hand position is projected to an XY plane that is PlaneDistance2DMode meters
+        /// directly in front of the origin.
+        /// 
+        /// TODO: tune this lol
+        /// </remarks>
+        public static readonly float PlaneDistance2DMode = 1.5f;
+
         #endregion
 
         #region Sound
