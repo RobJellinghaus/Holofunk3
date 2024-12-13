@@ -41,7 +41,7 @@ namespace Holofunk.Core
         /// 
         /// TODO: tune this lol
         /// </remarks>
-        public static readonly float PlaneDistance2DMode = 1.5f;
+        public static readonly float PlaneDistance2DMode = 1.3f;
 
         #endregion
 
@@ -218,7 +218,7 @@ namespace Holofunk.Core
         /// <summary>
         /// The number of beats to hold the clear/delete button before deleting a touched loopie.
         /// </summary>
-        public static readonly ContinuousDuration<Beat> DeleteHoldDuration = 2f;
+        public static readonly ContinuousDuration<Beat> DeleteHoldDuration = 0.5f;
 
         #endregion
 

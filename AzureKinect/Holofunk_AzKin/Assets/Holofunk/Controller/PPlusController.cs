@@ -111,6 +111,11 @@ namespace Holofunk.Controller
         /// </remarks>
         private bool is3D = false;
 
+        /// <summary>
+        /// Number of Updates. Used for throttling logging.
+        /// </summary>
+        private long updateCount;
+
         #endregion Fields
 
         #region Properties
@@ -140,7 +145,11 @@ namespace Holofunk.Controller
             }
         }
 
-        internal void Set3DMode(bool is3DMode) => this.is3D = is3DMode;
+        internal void Set3DMode(bool is3DMode)
+        {
+            this.is3D = is3DMode;
+            HoloDebug.Log($"Set3DMode for controller {playerIndex} to {is3DMode}");
+        }
 
         internal void PushSprite(ShapeType spriteType)
         {
@@ -252,6 +261,8 @@ namespace Holofunk.Controller
             {
                 return;
             }
+
+            updateCount++;
 
             if (!firstUpdate)
             {
@@ -533,20 +544,26 @@ namespace Holofunk.Controller
             PlayerState thisPlayer = DistributedViewpoint.Instance.GetPlayerByIndex(playerIndex);
             Vector3 viewpointHandPosition = handSide == Side.Left ? thisPlayer.LeftHandPosition : thisPlayer.RightHandPosition;
 
-            // TODO: if in 2D mode, then project ray from origin through viewpointHandPosition, get intercept point with plane,
-            // and make *that* be viewpointHandPosition.
             if (is3D)
             {
                 // leave viewpointHandPosition alone
             }
             else
             {
-                // Treat the viewpoint hand position as a vector, and scale it by the ratio of the hand's Z position
-                // to the 2D plane's Z-depth.
+                // Treat the viewpoint hand position as a vector with the viewpoint center as origin,
+                // and scale it by the ratio of the hand's Z position to the 2D plane's Z-depth.
                 // This winds up setting viewpointHandPosition.z to MagicNumbers.PlaneDistance2DMode, thereby making
                 // the hand position be on that plane.
                 float scaleFactor = viewpointHandPosition.z / MagicNumbers.PlaneDistance2DMode;
-                viewpointHandPosition /= scaleFactor;
+
+                // empirically, center viewport seems to be Y value 1.0, so subtracting 1 makes 0,0 be center of viewport
+                // theoretically this should be the sensor height, but we'll see about that (think it's hardcoded)
+                Vector3 adjustedHandPosition = viewpointHandPosition - new Vector3(0, 1, 0);
+
+                Vector3 scaledViewpointHandPosition = adjustedHandPosition / scaleFactor;
+
+                // and add it back again. Seems like this shouldn't work, but it does. I suppose because it's world space coordinates.
+                viewpointHandPosition = scaledViewpointHandPosition + new Vector3(0, 1, 0);
             }
 
             return viewpointHandPosition;
